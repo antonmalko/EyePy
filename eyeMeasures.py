@@ -256,13 +256,22 @@ def perReg(region, fixations, lowCutoff, highCutoff):
     return reg
 
 
-def single_fixation_duration(args):
-    pass
-    # duration of the first fixation into region if it was the only fixation
-    # in the region
+def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
+    '''Given a region, fixation list, and low/high cutoff values, returns
+    the duration of the fixation on the region if it was the only one.
+    Otherwise returns zero.
+    '''
+    first_fixation = firstFix(region, fixations, lowCutoff, highCutoff)
+    total_fixation = totalTime(region, fixations, lowCutoff, highCutoff)
+    if first_fixation == total_fixation:
+        return total_fixation
+    else:
+        return 0
 
 
-def rereading_prob(ars):
-    pass
-    # boolean flag of whether the region was re-read (does this include both
-    # directions?)
+def rereading_prob(region, fixations, lowCutoff, highCutoff):
+    '''given a region and a fixations list calculates whether the region was
+    reread or not.
+    Returns either 1 or 0, having converted boolean test to an integer.
+    '''
+    return int(rereadTime(region, fixations, lowCutoff, highCutoff) > 0)
