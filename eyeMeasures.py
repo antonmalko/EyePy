@@ -176,9 +176,6 @@ def totalTime(region, fixations, lowCutoff, highCutoff):
             if regionCheck(region,f)=='within':         ## if the fix is w/in the ROI
                 fixTimeSum = fixTimeSum + duration      ## add the duration to the sum
 
-    if fixTimeSum==0:
-        fixTimeSum='NA'
-
     return fixTimeSum
 
 #### % Regression calculation####
