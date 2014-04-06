@@ -22,6 +22,7 @@ import os
 import readline
 # import regular expressions
 import re
+from collections import OrderedDict
 # Import required files; these should be in the same directory
 import eyeMeasures
 from readInput import *
@@ -53,10 +54,11 @@ CUTOFF_PROMPT = '''The current cutoff settings are as follows.
 low: {0}
 high: {1}
 Would you like to change them?
-(type any variation on "yes" to change or anything else to proceed with current settings)'''
+(type any variation on "yes" to change or anything else to proceed with current settings)\n'''
 
 
 # IK: think about maybe setting default values for cutoffs?
+# IK: think about converting cutoffs to floats?
 def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     '''Routine for verifying cutoff values with the person running the program.
     Arguments:
@@ -75,10 +77,8 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     if bool(yes_rgx.match(decision)):
         # if user says something matching yes_rgx, ask them to input their own cutoffs
         user_cutoffs = ask_user_questions(['low cutoff', 'high cutoff'])
-        # then convert input strings to integers
-        user_cutoffs_int = (int(value) for key, value in user_cutoffs.items())
-        # return result as tuple
-        return tuple(user_cutoffs_int)
+        # return their responses converted to integers
+        return (int(user_cutoffs['low cutoff']), int(user_cutoffs['high cutoff']))
     # if user doesn't want to change stuff, return passed args unchanged
     return (low_cutoff, high_cutoff)
 
@@ -93,6 +93,13 @@ def main(enable_user_input=True):
         'Question data folder': 'Gardenias-q',
         'Output filename': 'huzzah.txt',
     }
+    our_questions = [
+        'REG filename',
+        'Question key filename',
+        'Sentence data folder',
+        'Question data folder',
+        'Output filename',
+    ]
 
     if enable_user_input:
         user_file_names = ask_user_questions(our_questions)
