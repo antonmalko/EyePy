@@ -100,9 +100,6 @@ def firstPass(region, fixations, lowCutoff, highCutoff):
             elif fixTimeSum>0 and regionCheck(region,f)=='before': ##if the region has already been entered at least once,
                 break                                   ## and fix is before the region, then break, because the first pass is over
 
-    if fixTimeSum==0:                                  ## if the first pass time is still 0, then there were no fixations
-        fixTimeSum = 'NA'                               # in that region, so save as 'NA'
-
     return fixTimeSum
 
 
