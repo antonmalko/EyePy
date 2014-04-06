@@ -106,6 +106,26 @@ def write_to_csv(file_name, data, header, **kwargs):
         output.writerows(data)
 
 
+def is_DA1_file(filename):
+    '''Checks if a file name has DA1 extension.
+    Currently accepts both ".da1" and ".DA1" files.
+    Retunrs a boolean (True or False).
+    '''
+    return filename.endswith('.da1') or filename.endswith('.DA1')
+
+
+def get_subj_num(filename):
+    return filename[0:3]
+
+
+def read_question_tables(question_dir):
+    file_list = os.listdir(question_dir)
+    subj_nums = (get_subj_num(f_name) for f_name in file_list)
+    question_tables = (QuestionTable(os.path.join(question_dir, f_name))
+        for f_name in file_list)
+    return dict(zip(subj_nums, question_tables))
+
+
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
 
@@ -132,28 +152,19 @@ def main(enable_user_input=True):
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
-    regionInfo = RegionTable(file_names['REG filename'], 0, 1)
+    table_of_regions = RegionTable(file_names['REG filename'], 0, 1)
 
     # Read in question answer key, create dictionar.
     # Key = item number; value = [correctButton, LorR]
-    qAns = dictTable(readTable(file_names['Question key filename']))
+    answer_key = dictTable(readTable(file_names['Question key filename']))
 
     # Get file lists (contents of the data and question directories)
     DataFileList = os.listdir(file_names['Sentence data folder'])
-    QFileList = os.listdir(file_names['Question data folder'])
-
-    # Create dictionary for question files:
-    # Key = subject number; value = question file name
-    # IK: think of changing this
-    qsubj = {}
-    for Qfile in QFileList:
-        qsubj[Qfile[0:3]] = Qfile
+    # create dictionary of question responses by subject
+    questions_by_subj = read_question_tables(file_names['Question data folder'])
 
 
-    # IK: check with Sol about low cutoff
-    lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
-
-    # Create output
+    # Create output header
     output_header = [
     'subj',
     'cond',
@@ -213,6 +224,13 @@ print("computing all measures")
 # regionInfo = RegionTable(REGFILENAME, 0, 1)
 
 
+def process_file(data_file_path):
+    if is_DA1_file(data_file_path):
+        print 'Processing ', data_file_path
+        fixation_table = FixationTable(data_file_path, 1, 2)
+        pass
+    else:
+        print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
 
 
 
@@ -223,8 +241,8 @@ dataOutput = []  # initialize output table
 
 for dataFile in DataFileList:
     ## Make sure it's a DA1 file
-    if dataFile[len(dataFile) - 3:].lower() != "da1":
-        print ("not a DA1 file: " + dataFile)
+    if is_DA1_file(dataFile):
+        print ("This is not a DA1 file: {}\nSkipping...".format(dataFile))
     else:
         ## initialize output table for subject
         subjOutput = []
