@@ -22,7 +22,6 @@ import os
 import readline
 # import regular expressions
 import re
-from collections import OrderedDict
 # Import required files; these should be in the same directory
 import eyeMeasures
 from readInput import *
@@ -83,10 +82,32 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     return (low_cutoff, high_cutoff)
 
 
+def write_to_csv(file_name, data, header, **kwargs):
+    '''Writes data to file specified by filename.
+
+    :type fName: string
+    :param fName: name of the file to be created
+    :type data: iterable
+    :param data: some iterable of dictionaries each of which
+    must not contain keys absent in the 'header' argument
+    :type header: list
+    :param header: list of columns to appear in the output
+    :type **kwargs: dict
+    :param **kwargs: parameters to be passed to DictWriter.
+    For instance, restvals specifies what to set empty cells to by default or
+    'dialect' loads a whole host of parameters associated with a certain csv
+    dialect (eg. "excel").
+    '''
+    with open(file_name, 'w') as f:
+        output = DictWriter(f, header, **kwargs)
+        output.writeheader()
+        output.writerows(data)
+
+
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
 
-    our_questions = {
+    default_files = {
         'REG filename': 'gardenias.reg.txt',
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
@@ -102,11 +123,35 @@ def main(enable_user_input=True):
     ]
 
     if enable_user_input:
-        user_file_names = ask_user_questions(our_questions)
+        file_names = ask_user_questions(our_questions)
     else:
-        user_file_names = our_questions
+        file_names = default_files
+
+    # Read in region key, create dictionary.
+    # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
+    # yStart],[xEnd, yEnd]], ...]
+    regionInfo = RegionTable(file_names['REG filename'], 0, 1)
+
+    # Read in question answer key, create dictionar.
+    # Key = item number; value = [correctButton, LorR]
+    qAns = dictTable(readTable(file_names['Question key filename']))
+
+    # Get file lists (contents of the data and question directories)
+    DataFileList = os.listdir(file_names['Sentence data folder'])
+    QFileList = os.listdir(file_names['Question data folder'])
+
+    # Create dictionary for question files:
+    # Key = subject number; value = question file name
+    # IK: think of changing this
+    qsubj = {}
+    for Qfile in QFileList:
+        qsubj[Qfile[0:3]] = Qfile
+
+
     # IK: check with Sol about low cutoff
     lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
+
+
     pass
 
 
@@ -119,13 +164,13 @@ def main(enable_user_input=True):
 ##outFileName = "goose.data5.txt"
 # other optional parameters:
 # Min and max fixation time to be counted
-lowCutoff = 80  # should be 40 ms
-highCutoff = 1000
-print("fixation time settings:")
-#FIXME: this should print whatever the value of lowCutoff is
-print("low cutoff: 80ms")
-#FIXME: this should print whatever the value of highCutoff is
-print("high cutoff: 1000ms")
+# lowCutoff = 80  # should be 40 ms
+# highCutoff = 1000
+# print("fixation time settings:")
+# #FIXME: this should print whatever the value of lowCutoff is
+# print("low cutoff: 80ms")
+# #FIXME: this should print whatever the value of highCutoff is
+# print("high cutoff: 1000ms")
 # List of measures to be included in the output:
 #'ff' = first fixation
 #'fp' = first pass
@@ -140,27 +185,12 @@ print("computing all measures")
 #
 # Do not edit below here
 
-# Read in region key, create dictionary.
-# Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
-# yStart],[xEnd, yEnd]], ...]
 
-regionInfo = RegionTable(REGFILENAME, 0, 1)
+# regionInfo = RegionTable(REGFILENAME, 0, 1)
 
-# Read in question answer key, create dictionar.
-# Key = item number; value = [correctButton, LorR]
 
-qAns = dictTable(readTable(QANSFILENAME))
 
-# Get file lists (contents of the data and question directories)
 
-DataFileList = os.listdir(dataDir)
-QFileList = os.listdir(questionDir)
-
-# Create dictionary for question files:
-# Key = subject number; value = question file name
-qsubj = {}
-for Qfile in QFileList:
-    qsubj[Qfile[0:3]] = Qfile
 
 #
 # Main loop that processes each file in the data directory
