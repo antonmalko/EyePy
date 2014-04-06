@@ -20,6 +20,8 @@
 # import python libraries: os for managing files, readline for tab-completion
 import os
 import readline
+# import regular expressions
+import re
 # Import required files; these should be in the same directory
 import eyeMeasures
 import readInput
@@ -36,17 +38,53 @@ def ask_user_questions(question_sequence):
     so that the user can input a value for every item.
     Returns a dictionary of (item_name : user_input) pairings.
     '''
-    # sets tab auto-completion, but only for current folder
+    # set tab auto-completion, but only for current folder
     readline.parse_and_bind("tab: complete")
+    # define question prompt template and return variable
     q_template = 'Please enter the {} below:\n'
     answers = {}
+
     for question in question_sequence:
         answers[question] = raw_input(q_template.format(question))
     return answers
 
 
-def main():
-    # think about generalizing using experiment names?
+CUTOFF_PROMPT = '''The current cutoff settings are as follows.
+low: {0}
+high: {1}
+Would you like to change them?
+(type any variation on "yes" to change or anything else to proceed with current settings)'''
+
+
+# IK: think about maybe setting default values for cutoffs?
+def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
+    '''Routine for verifying cutoff values with the person running the program.
+    Arguments:
+    low_cutoff -> the value for the low cutoff
+    high_cutoff -> the value for the high cutoff
+    prompt -> how to prompt the user to change the values, has a default value,
+    so it's optional
+
+    This function first prints the cutoff values and asks the user if they want
+    to change them. If their answer is yes, returns user-defined cutoffs, otherwise
+    returns passed cutoffs unchanged.
+    '''
+    decision = raw_input(prompt.format(low_cutoff, high_cutoff))
+    # define regular expression that checks for "yes" answers
+    yes_rgx = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
+    if bool(yes_rgx.match(decision)):
+        # if user says something matching yes_rgx, ask them to input their own cutoffs
+        user_cutoffs = ask_user_questions(['low cutoff', 'high cutoff'])
+        # then convert input strings to integers
+        user_cutoffs_int = (int(value) for key, value in user_cutoffs.items())
+        # return result as tuple
+        return tuple(user_cutoffs_int)
+    # if user doesn't want to change stuff, return passed args unchanged
+    return (low_cutoff, high_cutoff)
+
+
+def main(enable_user_input=True):
+    # IK: think about generalizing using experiment names?
 
     our_questions = {
         'REG filename': 'gardenias.reg.txt',
@@ -60,6 +98,8 @@ def main():
         user_file_names = ask_user_questions(our_questions)
     else:
         user_file_names = our_questions
+    # IK: check with Sol about low cutoff
+    lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
     pass
 
 
