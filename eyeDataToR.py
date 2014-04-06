@@ -37,7 +37,7 @@ def ask_user_questions(question_sequence):
     Returns a dictionary of (item_name : user_input) pairings.
     '''
     # sets tab auto-completion, but only for current folder
-    readline.set_completer()
+    readline.parse_and_bind("tab: complete")
     q_template = 'Please enter the {} below:\n'
     answers = {}
     for question in question_sequence:
@@ -55,6 +55,7 @@ def main():
         'Question data folder': 'Gardenias-q',
         'Output filename': 'huzzah.txt',
     }
+
     if enable_user_input:
         user_file_names = ask_user_questions(our_questions)
     else:
