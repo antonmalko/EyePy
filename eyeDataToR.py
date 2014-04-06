@@ -24,7 +24,7 @@ import readline
 import re
 # Import required files; these should be in the same directory
 import eyeMeasures
-import readInput
+from readInput import *
 
 #
 # this part is for using with the command line
@@ -137,12 +137,12 @@ print("computing all measures")
 # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
 # yStart],[xEnd, yEnd]], ...]
 
-regionInfo = readInput.RegionTable(REGFILENAME, 0, 1)
+regionInfo = RegionTable(REGFILENAME, 0, 1)
 
 # Read in question answer key, create dictionar.
 # Key = item number; value = [correctButton, LorR]
 
-qAns = readInput.dictTable(readInput.readTable(QANSFILENAME))
+qAns = dictTable(readTable(QANSFILENAME))
 
 # Get file lists (contents of the data and question directories)
 
@@ -172,12 +172,11 @@ for dataFile in DataFileList:
         ## Print file name to provide feedback to user
         print ("processing", dataFile)
         ## Read in and code data file --> dictionary with cond/item key
-        data = readInput.FixationTable(dataDir + "/" + dataFile, 1, 2)
+        data = FixationTable(dataDir + "/" + dataFile, 1, 2)
         ## if there is a question file for the subj,
         if subjNum in qsubj:
             ## lookup the file and make a dict with cond/item key
-            qdata = readInput.QuestionTable(
-                questionDir + "/" + qsubj[subjNum], 1, 2)
+            qdata = QuestionTable(questionDir + "/" + qsubj[subjNum], 1, 2)
         else:
             qdata = {}
             print ("no question data for " + subjNum)
