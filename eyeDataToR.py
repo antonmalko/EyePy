@@ -27,21 +27,31 @@ import readInput
 ## this part is for using with the command line
 
 #### Get info from user:
-def ask_user_questions(question_list):
+def ask_user_questions(questions):
     readline.set_completer()
     answers = {}
     q_template = 'Please enter the {} below:\n'
-    for question in question_list:
+    for question in questions:
         answers[question] = raw_input(q_template.format(question))
     return answers
 
-our_questions = [
-'REG filename',
-'Question key filename',
-'Sentence data folder',
-'Question data folder',
-'Output filename'
-]
+
+def main():
+    # think about generalizing using experiment names?
+
+    our_questions = {
+    'REG filename' : 'gardenias.reg.txt',
+    'Question key filename' : 'expquestions.txt',
+    'Sentence data folder': 'Gardenias-s',
+    'Question data folder': 'Gardenias-q',
+    'Output filename': 'huzzah.txt',
+    }
+    if enable_user_input:
+        answr = ask_user_questions(our_questions)
+    else:
+        answr = our_questions
+    pass
+
 
 
 ##to override the above (comment this out if using the command line prompts)
