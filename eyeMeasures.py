@@ -140,9 +140,6 @@ def rightBound(region, fixations, lowCutoff, highCutoff):
             elif regionCheck(region,f)=='within':        ## if the fix is w/in the ROI
                 fixTimeSum = fixTimeSum + duration      ## add the duration to the sum
 
-    if fixTimeSum==0:
-        fixTimeSum='NA'
-
     return fixTimeSum
 
 
