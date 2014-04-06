@@ -192,9 +192,6 @@ def perReg(region, fixations, lowCutoff, highCutoff):
                 reg = 1                                                 ## fix is in a region before the ROI, count it
                 break                                                   ## as a regression and break
 
-    if visitreg == 0:
-        reg = 'NA'
-
     return reg
 
 
