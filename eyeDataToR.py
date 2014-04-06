@@ -16,63 +16,32 @@
 
 #### Output: a single, long-format text file that can be loaded into R
 
+## import python libraries: os for managing files, readline for tab-completion
+import os
+import readline
 #### Import required files; these should be in the same directory
-
 import eyeMeasures
 import readInput
-import os
+
 ###################################################################################
 ## this part is for using with the command line
 
 #### Get info from user:
+def ask_user_questions(question_list):
+    readline.set_completer()
+    answers = {}
+    q_template = 'Please enter the {} below:\n'
+    for question in question_list:
+        answers[question] = raw_input(q_template.format(question))
+    return answers
 
-## Name of the CNT file (region key) you are using.
-try:
-    REGFILENAME = str(input('REG filename:'))  #e.g. 'goose_regions.reg.txt'
-except NameError:
-    print('Error: must be a string')
-    exit()
-except ValueError:
-    print('Error: must be a string')
-    exit()
-
-## Name of the QAns (question key) file you are using.
-try:
-    QANSFILENAME = str(input('Question key filename:'))
-except NameError:
-    print('Error: must be a string')
-    exit()
-except ValueError:
-    print('Error: must be a string')
-    exit()
-## Folder containing all subject data files
-maindirectory = os.getcwd()
-try:
-    dataDir = maindirectory+'/'+str(input('Sentence data folder:'))
-except NameError:
-    print('Error: must be a string')
-    exit()
-except ValueError:
-    print('Error: must be a string')
-    exit()
-## Folder containing all subject question files
-try:
-    questionDir = maindirectory+'/'+str(input('Question data folder:'))
-except NameError:
-    print('Error: must be a string')
-    exit()
-except ValueError:
-    print('Error: must be a string')
-    exit()
-## Output filename:
-try:
-    outFileName = str(input('Output file name:'))
-except NameError:
-    print('Error: must be a string')
-    exit()
-except ValueError:
-    print('Error: must be a string')
-    exit()
+our_questions = [
+'REG filename',
+'Question key filename',
+'Sentence data folder',
+'Question data folder',
+'Output filename'
+]
 
 
 ##to override the above (comment this out if using the command line prompts)
