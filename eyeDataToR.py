@@ -22,6 +22,8 @@ import os
 import readline
 # import regular expressions
 import re
+# import csv writing functionality
+from csv import DictWriter
 # Import required files; these should be in the same directory
 import eyeMeasures
 from readInput import *
@@ -150,6 +152,28 @@ def main(enable_user_input=True):
 
     # IK: check with Sol about low cutoff
     lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
+
+    # Create output
+    output_header = [
+    'subj',
+    'cond',
+    'item',
+    'value',
+    'region',
+    'Xstart',
+    'Xend',
+    'Ystart',
+    'Yend',
+    'fixationtype',
+    'order',
+    'questionRT',
+    'questionAcc'
+    ]
+
+    write_to_csv(file_names['Output filename'],
+        dataOutput,
+        output_header,
+        delimiter='\t')
 
 
     pass
@@ -292,15 +316,3 @@ for dataFile in DataFileList:
 
         ## Attach subjOutput to main dataOutput record of data
         dataOutput.extend(subjOutput)
-
-# Create output
-## Open output file for editing
-myOutFile = open(outFileName, "w")
-## add header
-myOutFile.write(
-    'subj\tcond\titem\tvalue\tregion\tXstart\tXend\tYstart\tYend\tfixationtype\torder\tquestionRT\tquestionAcc\n')
-## Loop through rows of data
-for row in dataOutput:
-    ## write row with tabs btw. fields and newline at the end
-    myOutFile.write('\t'.join(row) + '\n')
-myOutFile.close()
