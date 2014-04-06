@@ -119,9 +119,6 @@ def regPath(region, fixations, lowCutoff, highCutoff):
             elif regionCheck(region,f)=='within' or fixTimeSum>0:        ## if the fix is w/in the ROI or the ROI has already been visited
                 fixTimeSum = fixTimeSum + duration                      ## add the duration to the sum
 
-    if fixTimeSum==0:
-        fixTimeSum='NA'
-
     return fixTimeSum
 
 
