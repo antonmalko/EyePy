@@ -148,14 +148,8 @@ def rightBound(region, fixations, lowCutoff, highCutoff):
 
 def rereadTime(region, fixations, lowCutoff, highCutoff):
     first = firstPass(region, fixations, lowCutoff, highCutoff)
-    # change these two lines IK
-    if first=='NA':
-        reread = 'NA'
-    else:
-        reread = totalTime(region, fixations, lowCutoff, highCutoff) - first
-    if reread==0:
-        reread = 'NA'
-    return reread
+    return totalTime(region, fixations, lowCutoff, highCutoff) - first
+
 
 #### Total reading time calculation####
 ####################################
