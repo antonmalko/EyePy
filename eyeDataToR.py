@@ -155,6 +155,7 @@ def create_file_paths(sentence_dir):
         for f_name in file_list)
     return dict(zip(subj_nums, file_paths))
 
+
 def zero_to_NA(value):
     if value == 0:
         return 'NA'
