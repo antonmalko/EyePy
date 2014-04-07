@@ -57,7 +57,7 @@ def regionCheck(reg, fix):
 
 
 # First-pass Skip calculation####
-def firstSkip(region, fixations, lowCutoff, highCutoff):
+def first_skip(region, fixations, lowCutoff, highCutoff):
     skip = 1
 
     ## loop through each fixation
@@ -81,7 +81,7 @@ def firstSkip(region, fixations, lowCutoff, highCutoff):
 # First fixation calculation####
 #
 # returns the duration of the first fixation in the region
-def firstFix(region, fixations, lowCutoff, highCutoff):
+def first_fixation(region, fixations, lowCutoff, highCutoff):
     ## initialize fixTime as 'NA' (no fixation)
     fixTime = 'NA'
 
@@ -108,7 +108,7 @@ def firstFix(region, fixations, lowCutoff, highCutoff):
 # First pass calculation####
 # returns the sum of the fixations in the region before the region is
 # exited in either direction
-def firstPass(region, fixations, lowCutoff, highCutoff):
+def first_pass(region, fixations, lowCutoff, highCutoff):
     fixTimeSum = 0  # initialize sum to 0
 
     ## loop through each fixation
@@ -139,7 +139,7 @@ def firstPass(region, fixations, lowCutoff, highCutoff):
 # sums all the fixations in all the regions up to and including the
 # region of interest, before that region is exited to the right
 
-def regPath(region, fixations, lowCutoff, highCutoff):
+def regression_path(region, fixations, lowCutoff, highCutoff):
     fixTimeSum = 0
 
     ## loop through each fixation
@@ -162,7 +162,7 @@ def regPath(region, fixations, lowCutoff, highCutoff):
 # Right-bounded Reading Time calculation####
 #
 # sums all the fixations in a region before the region is exited to the right
-def rightBound(region, fixations, lowCutoff, highCutoff):
+def right_bound(region, fixations, lowCutoff, highCutoff):
     fixTimeSum = 0
 
     ## loop through each fixation
@@ -183,13 +183,13 @@ def rightBound(region, fixations, lowCutoff, highCutoff):
 
 
 # Re-reading time calculation####
-def rereadTime(region, fixations, lowCutoff, highCutoff):
-    first = firstPass(region, fixations, lowCutoff, highCutoff)
-    return totalTime(region, fixations, lowCutoff, highCutoff) - first
+def reread_time(region, fixations, lowCutoff, highCutoff):
+    first = first_pass(region, fixations, lowCutoff, highCutoff)
+    return total_time(region, fixations, lowCutoff, highCutoff) - first
 
 
 # Total reading time calculation####
-def totalTime(region, fixations, lowCutoff, highCutoff):
+def total_time(region, fixations, lowCutoff, highCutoff):
 
     fixTimeSum = 0
 
@@ -207,7 +207,7 @@ def totalTime(region, fixations, lowCutoff, highCutoff):
     return fixTimeSum
 
 # % Regression calculation####
-def perReg(region, fixations, lowCutoff, highCutoff):
+def percent_regression(region, fixations, lowCutoff, highCutoff):
     visitreg = 0
     reg = 0
 
@@ -239,9 +239,9 @@ def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
     the duration of the fixation on the region if it was the only one.
     Otherwise returns zero.
     '''
-    first_fixation = firstFix(region, fixations, lowCutoff, highCutoff)
-    total_fixation = totalTime(region, fixations, lowCutoff, highCutoff)
-    if first_fixation == total_fixation:
+    first_fix = first_fixation(region, fixations, lowCutoff, highCutoff)
+    total_fixation = total_time(region, fixations, lowCutoff, highCutoff)
+    if first_fix == total_fixation:
         return total_fixation
     else:
         return 0
@@ -252,4 +252,4 @@ def rereading_prob(region, fixations, lowCutoff, highCutoff):
     reread or not.
     Returns either 1 or 0, having converted boolean test to an integer.
     '''
-    return int(rereadTime(region, fixations, lowCutoff, highCutoff) > 0)
+    return int(reread_time(region, fixations, lowCutoff, highCutoff) > 0)
