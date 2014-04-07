@@ -115,10 +115,17 @@ def is_DA1_file(filename):
 
 
 def get_subj_num(filename):
+    '''Given a filename returns the subject number.
+    Currently uses convention that first 3 chars in filename are subj number.
+    Can (and should) be changed in the future to something more robust.
+    '''
     return filename[0:3]
 
 
 def read_question_tables(question_dir):
+    '''Given a folder name returns a dictionary where subject numbers are the keys
+    and QuestionTable lists are the values.
+    '''
     file_list = os.listdir(question_dir)
     subj_nums = (get_subj_num(f_name) for f_name in file_list)
     question_tables = (QuestionTable(os.path.join(question_dir, f_name))
@@ -126,7 +133,22 @@ def read_question_tables(question_dir):
     return dict(zip(subj_nums, question_tables))
 
 
+def lookup_question(number, question_tables):
+    '''Given a subject number and the table of qutestion files for subjects
+    returns the table relevant for this subject number.
+    If no such table is available, alerts the user and returns an empty dict.
+    '''
+    try:
+        return question_tables[number]
+    except:
+        print("No question data for subject " + number)
+        return {}
+
+
 def create_file_paths(sentence_dir):
+    '''Given a folder name returns a dictionary where subject numbers are keys
+    and file paths are values.
+    '''
     file_list = os.listdir(sentence_dir)
     subj_nums = (get_subj_num(f_name) for f_name in file_list)
     file_paths = (os.path.join(sentence_dir, f_name)
@@ -135,6 +157,9 @@ def create_file_paths(sentence_dir):
 
 
 def unpack_trial_data(row_dict, trial):
+    '''Takes a row and a trial and sets the values for some of the fields in
+    the row to stuff extracted from the trial list.
+    '''
     row_dict['order'] = trial[0]
     row_dict['cond'] = trial[1]
     row_dict['item'] = fixdata[2]
@@ -142,6 +167,10 @@ def unpack_trial_data(row_dict, trial):
 
 
 def unpack_region_data(row_dict, region):
+    '''Takes a row and a region as arguments. Sets some of the row's fields
+    to values gotten from the region.
+    Returns the row.
+    '''
     # number regions starting at "1"
     row_dict['region'] = str(regions.index(reg) + 1)
     # start and endpoints for region, so length, line change can be
@@ -154,9 +183,15 @@ def unpack_region_data(row_dict, region):
 
 
 def set_question_RT_Acc(row_dict, cond_item, subj_qs, answer):
+    '''Given a row, a condition/item tag, a list of subject responses to questions
+    as well as the correct answer, sets the RT and accuracy fields in the row.
+    Returns the row.
+    '''
+    # first try to look up/compute the values for the fields
     try:
         row_dict['questionRT'] = subj_qs[cond_item][3]
         row_dict['questionAcc'] = int(subj_qs[cond_item][4] == answer[0])
+    # if this fails, set all fieds to NA
     except:
         row_dict['questionRT'] = 'NA'
         row_dict['questionAcc'] = 'NA'
@@ -164,6 +199,14 @@ def set_question_RT_Acc(row_dict, cond_item, subj_qs, answer):
 
 
 def collect_measures(row_dict, region, fixations):
+    '''Given a row, a region and a list of fixations collects some eye-tracking
+    measures.
+    Uses the row fields to create output rows for every measure computed.
+    Returns the resulting list of output rows.
+    '''
+    # list below should be modified as needed (consider passing an argument)
+    # list below consists of "measure name": measure_function pairs
+    # measure functions are normally imported from eyeMeasures
     measures = {
     'ff': firstFix,
     'fp': firstPass,
@@ -200,6 +243,23 @@ def main(enable_user_input=True):
         'Output filename',
     ]
 
+    # Create output header
+    output_header = [
+    'subj',
+    'cond',
+    'item',
+    'value',
+    'region',
+    'Xstart',
+    'Xend',
+    'Ystart',
+    'Yend',
+    'fixationtype',
+    'order',
+    'questionRT',
+    'questionAcc'
+    ]
+
     if enable_user_input:
         file_names = ask_user_questions(our_questions)
     else:
@@ -234,7 +294,7 @@ def main(enable_user_input=True):
 
             for cond_item in fixation_table:
                 try:
-                    regions = region_table[cond_item]
+                    regions = table_of_regions[cond_item]
                 except:
                     raise 'Missing region information for this cond/item: ' + cond_item
 
@@ -254,40 +314,11 @@ def main(enable_user_input=True):
         else:
             print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
 
-
-    # Create output header
-    output_header = [
-    'subj',
-    'cond',
-    'item',
-    'value',
-    'region',
-    'Xstart',
-    'Xend',
-    'Ystart',
-    'Yend',
-    'fixationtype',
-    'order',
-    'questionRT',
-    'questionAcc'
-    ]
-
     write_to_csv(file_names['Output filename'],
         dataOutput,
         output_header,
         delimiter='\t')
 
-
-def lookup_question(number, question_tables):
-    try:
-        return question_tables[number]
-    except:
-        print("No question data for subject " + number)
-        return {}
-
-
-def process_file(subj_num, data_file_path, question_tables, region_table):
-    pass
 
 
 
