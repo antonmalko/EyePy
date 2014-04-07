@@ -205,7 +205,7 @@ def set_question_RT_Acc(row, cond_item, subj_qs, answer):
     try:
         new_row.append(('questionRT', subj_qs[cond_item][3]))
         new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
-    # if this fails, set all fieds to NA
+    # if this fails, set all fields to NA
     except:
         new_row.append(('questionRT', 'NA'))
         new_row.append(('questionAcc', 'NA'))
@@ -320,7 +320,7 @@ def main(enable_user_input=True):
                 # this may need to be revised, IK
                 row, item = unpack_trial_data(row, fixation_table[cond_item])
                 row = set_question_RT_Acc(row,
-                    cond_item, subj_questions, item)
+                    cond_item, subj_questions, answer_key[item])
                 # fixations is a list of the fixations--[X Y starttime endtime]
                 fixations = fixation_table[cond_item][8:]
                 # loop over regions (nested lists of the form
