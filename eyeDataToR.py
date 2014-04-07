@@ -225,18 +225,22 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'ff': firstFix,
     'fp': firstPass,
     'fs': firstSkip,
-    'rp': regPath,
     'pr': perReg,
+    'rp': regPath,
     'rb': rightBound,
     'tt': totalTime
     }
+    binomial_measures = ['fs', 'pr']
     row_list = []
     for measure in measures:
         new_row = reset_fields(row, ['fixationtype', 'value'])
         measure_calc = measures[measure]
         calculated = measure_calc(region, fixations, lowCutoff, highCutoff)
         new_row.append(('fixationtype', measure))
-        new_row.append(('value', zero_to_NA(calculated)))
+        if measure in binomial_measures:
+            new_row.append(('value', calculated))
+        else:
+            new_row.append(('value', zero_to_NA(calculated)))
         row_list.append(dict(new_row))
     return row_list
 
