@@ -278,39 +278,6 @@ def main(enable_user_input=True):
         delimiter='\t')
 
 
-# to override the above (comment this out if using the command line prompts)
-##maindirectory = os.getcwd()
-##REGFILENAME = "goose_regions4.reg.txt"
-##QANSFILENAME = "goose_qAns.txt"
-##dataDir = maindirectory+"/goose-sorted/goose-s"
-##questionDir = maindirectory+"/goose-sorted/goose-q"
-##outFileName = "goose.data5.txt"
-# other optional parameters:
-# Min and max fixation time to be counted
-# lowCutoff = 80  # should be 40 ms
-# highCutoff = 1000
-# print("fixation time settings:")
-# #FIXME: this should print whatever the value of lowCutoff is
-# print("low cutoff: 80ms")
-# #FIXME: this should print whatever the value of highCutoff is
-# print("high cutoff: 1000ms")
-# List of measures to be included in the output:
-#'ff' = first fixation
-#'fp' = first pass
-#'fs' = first-pass skips
-#'rp' = regression path
-#'pr' = probability of regression
-#'rb' = right-bounded
-#'rr' = re-read time
-#'tt' = total time
-measures = ["ff", "fp", "fs", "rp", "pr", "rb", "rr", "tt"]
-print("computing all measures")
-#
-# Do not edit below here
-
-
-# regionInfo = RegionTable(REGFILENAME, 0, 1)
-
 def lookup_question(number, question_tables):
     try:
         return question_tables[number]
@@ -324,79 +291,79 @@ def process_file(subj_num, data_file_path, question_tables, region_table):
 
 
 
-#
-# Main loop that processes each file in the data directory
+# #
+# # Main loop that processes each file in the data directory
 
-dataOutput = []  # initialize output table
+# dataOutput = []  # initialize output table
 
-for dataFile in DataFileList:
-    ## Make sure it's a DA1 file
-    if is_DA1_file(dataFile):
-        print ("This is not a DA1 file: {}\nSkipping...".format(dataFile))
-    else:
-        ## initialize output table for subject
-        subjOutput = []
-        ## Assume first three characters in filename is subject number
-        subjNum = dataFile[0:3]
-        ## Print file name to provide feedback to user
-        print ("processing", dataFile)
-        ## Read in and code data file --> dictionary with cond/item key
-        data = FixationTable(dataDir + "/" + dataFile, 1, 2)
-        ## if there is a question file for the subj,
-        if subjNum in qsubj:
-            ## lookup the file and make a dict with cond/item key
-            qdata = QuestionTable(questionDir + "/" + qsubj[subjNum], 1, 2)
-        else:
-            qdata = {}
-            print ("no question data for " + subjNum)
+# for dataFile in DataFileList:
+#     ## Make sure it's a DA1 file
+#     if is_DA1_file(dataFile):
+#         print ("This is not a DA1 file: {}\nSkipping...".format(dataFile))
+#     else:
+#         ## initialize output table for subject
+#         subjOutput = []
+#         ## Assume first three characters in filename is subject number
+#         subjNum = dataFile[0:3]
+#         ## Print file name to provide feedback to user
+#         print ("processing", dataFile)
+#         ## Read in and code data file --> dictionary with cond/item key
+#         data = FixationTable(dataDir + "/" + dataFile, 1, 2)
+#         ## if there is a question file for the subj,
+#         if subjNum in qsubj:
+#             ## lookup the file and make a dict with cond/item key
+#             qdata = QuestionTable(questionDir + "/" + qsubj[subjNum], 1, 2)
+#         else:
+#             qdata = {}
+#             print ("no question data for " + subjNum)
 
-        ## Loop over keys in the data dictionary
-        for dRow in data:
-            ## if regionInfo has a row with a matching cond/item key
-            if dRow in regionInfo:
-                ## 'regions' is a list of regions for that cond/item key
-                regions = regionInfo[dRow][3:]
-                # print regions
-                fixdata = data[dRow]
-                fixations = fixdata[8:]
-                    # fixations is a list of the fixations--[X Y starttime
-                    # endtime]
-                cond = fixdata[1]
-                item = fixdata[2]
-                order = fixdata[0]
-                if subjNum in qsubj and dRow in qdata:
-                    ## get RT for question from qdata dictionary
-                    questionRT = qdata[dRow][3]
-                    # if buttonpress matches answer in qAns, then accuracy = 1,
-                    # else 0
-                    if qdata[dRow][4] == qAns[item][0]:
-                        questionAcc = '1'
-                    else:
-                        questionAcc = '0'
-                else:
-                    questionAcc = 'NA'
-                    questionRT = 'NA'
+#         ## Loop over keys in the data dictionary
+#         for dRow in data:
+#             ## if regionInfo has a row with a matching cond/item key
+#             if dRow in regionInfo:
+#                 ## 'regions' is a list of regions for that cond/item key
+#                 regions = regionInfo[dRow][3:]
+#                 # print regions
+#                 fixdata = data[dRow]
+#                 fixations = fixdata[8:]
+#                     # fixations is a list of the fixations--[X Y starttime
+#                     # endtime]
+#                 cond = fixdata[1]
+#                 item = fixdata[2]
+#                 order = fixdata[0]
+#                 if subjNum in qsubj and dRow in qdata:
+#                     ## get RT for question from qdata dictionary
+#                     questionRT = qdata[dRow][3]
+#                     # if buttonpress matches answer in qAns, then accuracy = 1,
+#                     # else 0
+#                     if qdata[dRow][4] == qAns[item][0]:
+#                         questionAcc = '1'
+#                     else:
+#                         questionAcc = '0'
+#                 else:
+#                     questionAcc = 'NA'
+#                     questionRT = 'NA'
 
-            ## if no matching region info, provide feedback
-            else:
-                print ("no region info: " + dRow)
+#             ## if no matching region info, provide feedback
+#             else:
+#                 print ("no region info: " + dRow)
 
-            # loop over regions (nested lists of the form
-            # [[Xstart,Ystart],[Xend,Yend]])
-            for reg in regions:
-                ## number regions starting at "1"
-                regnum = str(regions.index(reg) + 1)
-                # start and endpoints for region, so length, line change can be
-                # computed later
-                regXstart = str(reg[0][0])
-                regYstart = str(reg[0][1])
-                regXend = str(reg[1][0])
-                regYend = str(reg[1][1])
-                for measure in measures:
-                    outLine = [
-                        subjNum, cond, item, value, regnum, regXstart, regXend,
-                        regYstart, regYend, measure, order, questionRT, questionAcc]
-                    subjOutput.append(outLine)
+#             # loop over regions (nested lists of the form
+#             # [[Xstart,Ystart],[Xend,Yend]])
+#             for reg in regions:
+#                 ## number regions starting at "1"
+#                 regnum = str(regions.index(reg) + 1)
+#                 # start and endpoints for region, so length, line change can be
+#                 # computed later
+#                 regXstart = str(reg[0][0])
+#                 regYstart = str(reg[0][1])
+#                 regXend = str(reg[1][0])
+#                 regYend = str(reg[1][1])
+#                 for measure in measures:
+#                     outLine = [
+#                         subjNum, cond, item, value, regnum, regXstart, regXend,
+#                         regYstart, regYend, measure, order, questionRT, questionAcc]
+#                     subjOutput.append(outLine)
 
-        ## Attach subjOutput to main dataOutput record of data
-        dataOutput.extend(subjOutput)
+#         ## Attach subjOutput to main dataOutput record of data
+#         dataOutput.extend(subjOutput)
