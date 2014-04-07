@@ -25,7 +25,7 @@ import re
 # import csv writing functionality
 from csv import DictWriter
 # Import required files; these should be in the same directory
-import eyeMeasures
+from eyeMeasures import *
 from readInput import *
 
 #
@@ -128,7 +128,7 @@ def read_question_tables(question_dir):
     '''
     file_list = os.listdir(question_dir)
     subj_nums = (get_subj_num(f_name) for f_name in file_list)
-    question_tables = (QuestionTable(os.path.join(question_dir, f_name))
+    question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
         for f_name in file_list)
     return dict(zip(subj_nums, question_tables))
 
@@ -156,49 +156,57 @@ def create_file_paths(sentence_dir):
     return dict(zip(subj_nums, file_paths))
 
 
-def unpack_trial_data(row_dict, trial):
+def reset_fields(row, fields_to_reset):
+    return [pair for pair in row if pair[0] not in fields_to_reset]
+
+
+def unpack_trial_data(row, trial):
     '''Takes a row and a trial and sets the values for some of the fields in
     the row to stuff extracted from the trial list.
     '''
-    row_dict['order'] = trial[0]
-    row_dict['cond'] = trial[1]
-    row_dict['item'] = fixdata[2]
-    return row_dict
+    new_row = reset_fields(row, ['order', 'cond', 'item'])
+    new_row.append(('order', trial[0]))
+    new_row.append(('cond', trial[1]))
+    new_row.append(('item', trial[2]))
+    return (new_row, trial[2])
 
 
-def unpack_region_data(row_dict, region):
+def unpack_region_data(row, region, region_index):
     '''Takes a row and a region as arguments. Sets some of the row's fields
     to values gotten from the region.
     Returns the row.
     '''
+    new_row = reset_fields(row, ['region', 'Xstart', 'Ystart', 'Xend', 'Yend'])
     # number regions starting at "1"
-    row_dict['region'] = str(regions.index(reg) + 1)
+    new_row.append(('region', str(region_index + 1)))
     # start and endpoints for region, so length, line change can be
     # computed later
-    row_dict['regXstart'] = str(reg[0][0])
-    row_dict['regYstart'] = str(reg[0][1])
-    row_dict['regXend'] = str(reg[1][0])
-    row_dict['regYend'] = str(reg[1][1])
-    return row_dict
+    # print region
+    new_row.append(('Xstart', str(region[0][0])))
+    new_row.append(('Ystart', str(region[0][1])))
+    new_row.append(('Xend', str(region[1][0])))
+    new_row.append(('Yend', str(region[1][1])))
+    return new_row
 
 
-def set_question_RT_Acc(row_dict, cond_item, subj_qs, answer):
+def set_question_RT_Acc(row, cond_item, subj_qs, answer):
     '''Given a row, a condition/item tag, a list of subject responses to questions
     as well as the correct answer, sets the RT and accuracy fields in the row.
     Returns the row.
     '''
-    # first try to look up/compute the values for the fields
+    new_row = reset_fields(row, ['questionRT', 'questionAcc'])
+    # try to look up/compute the values for the fields
     try:
-        row_dict['questionRT'] = subj_qs[cond_item][3]
-        row_dict['questionAcc'] = int(subj_qs[cond_item][4] == answer[0])
+        'questionRT', subj_qs[cond_item][3]
+        new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
     # if this fails, set all fieds to NA
     except:
-        row_dict['questionRT'] = 'NA'
-        row_dict['questionAcc'] = 'NA'
-    return row_dict
+        new_row.append(('questionRT', 'NA'))
+        new_row.append(('questionAcc', 'NA'))
+    return new_row
 
 
-def collect_measures(row_dict, region, fixations):
+def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     '''Given a row, a region and a list of fixations collects some eye-tracking
     measures.
     Uses the row fields to create output rows for every measure computed.
@@ -218,10 +226,13 @@ def collect_measures(row_dict, region, fixations):
     }
     row_list = []
     for measure in measures:
+        new_row = reset_fields(row, ['fixationtype', 'value'])
         measure_calc = measures[measure]
         # will need to think about cutoff values
-        row_dict['value'] = measure_calc(region, fixations)
-        row_list.append(row_dict)
+        new_row.append(('fixationtype', measure))
+        new_row.append(('value', measure_calc(region, fixations,
+                            lowCutoff, highCutoff)))
+        row_list.append(dict(new_row))
     return row_list
 
 
@@ -233,7 +244,7 @@ def main(enable_user_input=True):
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
         'Question data folder': 'Gardenias-q',
-        'Output filename': 'huzzah.txt',
+        'Output filename': 'testing2.csv',
     }
     our_questions = [
         'REG filename',
@@ -271,6 +282,8 @@ def main(enable_user_input=True):
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
     table_of_regions = RegionTable(file_names['REG filename'], 0, 1)
+    # print 'regions:'
+    # print table_of_regions
 
     # Read in question answer key, create dictionar.
     # Key = item number; value = [correctButton, LorR]
@@ -284,8 +297,8 @@ def main(enable_user_input=True):
     dataOutput = []
 
     for subj_num, data_file_path in sentences_by_subj.items():
-        row_dict = {}
-        row_dict['subj'] = subj_num
+        row = []
+        row.append(('subj', subj_num))
         if is_DA1_file(data_file_path):
 
             print 'Processing ', os.path.basename(data_file_path)
@@ -294,23 +307,24 @@ def main(enable_user_input=True):
 
             for cond_item in fixation_table:
                 try:
-                    regions = table_of_regions[cond_item]
+                    # IK: why do we need items 0-2 in that list anyway?
+                    regions = table_of_regions[cond_item][3:]
                 except:
                     raise 'Missing region information for this cond/item: ' + cond_item
 
                 # this may need to be revised, IK
-                row_dict = unpack_trial_data(row_dict, fixation_table[cond_item])
-                row_dict = set_question_RT_Acc(row_dict,
-                    cond_item,
-                    subj_questions,
-                    answer_key[row_dict['item']])
+                row, item = unpack_trial_data(row, fixation_table[cond_item])
+                row = set_question_RT_Acc(row,
+                    cond_item, subj_questions, item)
                 # fixations is a list of the fixations--[X Y starttime endtime]
                 fixations = fixation_table[cond_item][8:]
                 # loop over regions (nested lists of the form
                 # [[Xstart,Ystart],[Xend,Yend]])
                 for region in regions:
-                    row_dict = unpack_region_data(row_dict, region)
-                    dataOutput += collect_measures(row_dict, region, fixations)
+                    row = unpack_region_data(row, region,
+                        regions.index(region))
+                    dataOutput += collect_measures(row, region,
+                        fixations, lowCutoff, highCutoff)
         else:
             print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
 
@@ -319,6 +333,9 @@ def main(enable_user_input=True):
         output_header,
         delimiter='\t')
 
+
+if __name__ == '__main__':
+    main(enable_user_input=False)
 
 
 
