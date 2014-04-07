@@ -87,8 +87,8 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
 
-    :type fName: string
-    :param fName: name of the file to be created
+    :type file_name: string
+    :param file_name: name of the file to be created
     :type data: iterable
     :param data: some iterable of dictionaries each of which
     must not contain keys absent in the 'header' argument
