@@ -126,6 +126,62 @@ def read_question_tables(question_dir):
     return dict(zip(subj_nums, question_tables))
 
 
+def create_file_paths(sentence_dir):
+    file_list = os.listdir(sentence_dir)
+    subj_nums = (get_subj_num(f_name) for f_name in file_list)
+    file_paths = (os.path.join(sentence_dir, f_name)
+        for f_name in file_list)
+    return dict(zip(subj_nums, file_paths))
+
+
+def unpack_trial_data(row_dict, trial):
+    row_dict['order'] = trial[0]
+    row_dict['cond'] = trial[1]
+    row_dict['item'] = fixdata[2]
+    return row_dict
+
+
+def unpack_region_data(row_dict, region):
+    # number regions starting at "1"
+    row_dict['region'] = str(regions.index(reg) + 1)
+    # start and endpoints for region, so length, line change can be
+    # computed later
+    row_dict['regXstart'] = str(reg[0][0])
+    row_dict['regYstart'] = str(reg[0][1])
+    row_dict['regXend'] = str(reg[1][0])
+    row_dict['regYend'] = str(reg[1][1])
+    return row_dict
+
+
+def set_question_RT_Acc(row_dict, cond_item, subj_qs, answer):
+    try:
+        row_dict['questionRT'] = subj_qs[cond_item][3]
+        row_dict['questionAcc'] = int(subj_qs[cond_item][4] == answer[0])
+    except:
+        row_dict['questionRT'] = 'NA'
+        row_dict['questionAcc'] = 'NA'
+    return row_dict
+
+
+def collect_measures(row_dict, region, fixations):
+    measures = {
+    'ff': firstFix,
+    'fp': firstPass,
+    'fs': firstSkip,
+    'rp': regPath,
+    'pr': perReg,
+    'rb': rightBound,
+    'tt': totalTime
+    }
+    row_list = []
+    for measure in measures:
+        measure_calc = measures[measure]
+        # will need to think about cutoff values
+        row_dict['value'] = measure_calc(region, fixations)
+        row_list.append(row_dict)
+    return row_list
+
+
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
 
@@ -149,6 +205,8 @@ def main(enable_user_input=True):
     else:
         file_names = default_files
 
+    lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
+
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
@@ -159,9 +217,42 @@ def main(enable_user_input=True):
     answer_key = dictTable(readTable(file_names['Question key filename']))
 
     # Get file lists (contents of the data and question directories)
-    DataFileList = os.listdir(file_names['Sentence data folder'])
+    sentences_by_subj = create_file_paths(file_names['Sentence data folder'])
     # create dictionary of question responses by subject
     questions_by_subj = read_question_tables(file_names['Question data folder'])
+
+    dataOutput = []
+
+    for subj_num, data_file_path in sentences_by_subj.items():
+        row_dict = {}
+        row_dict['subj'] = subj_num
+        if is_DA1_file(data_file_path):
+
+            print 'Processing ', os.path.basename(data_file_path)
+            fixation_table = FixationTable(data_file_path, 1, 2)
+            subj_questions = lookup_question(subj_num, questions_by_subj)
+
+            for cond_item in fixation_table:
+                try:
+                    regions = region_table[cond_item]
+                except:
+                    raise 'Missing region information for this cond/item: ' + cond_item
+
+                # this may need to be revised, IK
+                row_dict = unpack_trial_data(row_dict, fixation_table[cond_item])
+                row_dict = set_question_RT_Acc(row_dict,
+                    cond_item,
+                    subj_questions,
+                    answer_key[row_dict['item']])
+                # fixations is a list of the fixations--[X Y starttime endtime]
+                fixations = fixation_table[cond_item][8:]
+                # loop over regions (nested lists of the form
+                # [[Xstart,Ystart],[Xend,Yend]])
+                for region in regions:
+                    row_dict = unpack_region_data(row_dict, region)
+                    dataOutput += collect_measures(row_dict, region, fixations)
+        else:
+            print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
 
 
     # Create output header
@@ -185,9 +276,6 @@ def main(enable_user_input=True):
         dataOutput,
         output_header,
         delimiter='\t')
-
-
-    pass
 
 
 # to override the above (comment this out if using the command line prompts)
@@ -223,14 +311,16 @@ print("computing all measures")
 
 # regionInfo = RegionTable(REGFILENAME, 0, 1)
 
+def lookup_question(number, question_tables):
+    try:
+        return question_tables[number]
+    except:
+        print("No question data for subject " + number)
+        return {}
 
-def process_file(data_file_path):
-    if is_DA1_file(data_file_path):
-        print 'Processing ', data_file_path
-        fixation_table = FixationTable(data_file_path, 1, 2)
-        pass
-    else:
-        print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
+
+def process_file(subj_num, data_file_path, question_tables, region_table):
+    pass
 
 
 
@@ -303,30 +393,6 @@ for dataFile in DataFileList:
                 regXend = str(reg[1][0])
                 regYend = str(reg[1][1])
                 for measure in measures:
-                    if measure == 'ff':
-                        value = str(eyeMeasures.firstFix(
-                            reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'fp':
-                        value = str(eyeMeasures.firstPass(
-                            reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'fs':
-                        value = str(eyeMeasures.firstSkip(
-                            reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'rp':
-                        value = str(
-                            eyeMeasures.regPath(reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'pr':
-                        value = str(
-                            eyeMeasures.perReg(reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'rb':
-                        value = str(eyeMeasures.rightBound(
-                            reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'rr':
-                        value = str(eyeMeasures.rereadTime(
-                            reg, fixations, lowCutoff, highCutoff))
-                    elif measure == 'tt':
-                        value = str(eyeMeasures.totalTime(
-                            reg, fixations, lowCutoff, highCutoff))
                     outLine = [
                         subjNum, cond, item, value, regnum, regXstart, regXend,
                         regYstart, regYend, measure, order, questionRT, questionAcc]
