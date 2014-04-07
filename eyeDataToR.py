@@ -229,7 +229,7 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'rp': regPath,
     'rb': rightBound,
     'tt': totalTime,
-    'rr': rereadTme,
+    'rr': rereadTime,
     }
     binomial_measures = ['fs', 'pr']
     row_list = []
@@ -345,7 +345,8 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    main(enable_user_input=False)
+    # main(enable_user_input=False)
+    main()
 
 
 
