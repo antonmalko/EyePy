@@ -197,7 +197,7 @@ def set_question_RT_Acc(row, cond_item, subj_qs, answer):
     new_row = reset_fields(row, ['questionRT', 'questionAcc'])
     # try to look up/compute the values for the fields
     try:
-        'questionRT', subj_qs[cond_item][3]
+        new_row.append(('questionRT', subj_qs[cond_item][3]))
         new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
     # if this fails, set all fieds to NA
     except:
