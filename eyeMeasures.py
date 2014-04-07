@@ -12,7 +12,6 @@
 # regionCheck takes a region [[Xstart, Ystart],[Xend, Yend]] and a pair of coordinates for a fixation.
 # It returns 'within' if the fixation is in the region, 'before' if it's in a preceding region, and
 # 'after' if it's in a later region.
-
 def regionCheck(reg, fix):
 
     ## unpack region delimiters from reg
@@ -56,14 +55,9 @@ def regionCheck(reg, fix):
             else:
                 return 'after'
 
+
 # First-pass Skip calculation####
-#
-# FIXME: define
-
-
 def firstSkip(region, fixations, lowCutoff, highCutoff):
-    ## initialize fixTime as 'NA' (no fixation)
-    fixTime = 'NA'
     skip = 1
 
     ## loop through each fixation
@@ -74,8 +68,6 @@ def firstSkip(region, fixations, lowCutoff, highCutoff):
         if duration > lowCutoff and duration < highCutoff:
             ## if fix is within region
             if regionCheck(region, f) == 'within':
-                ## store duration as first fixation time
-                fixTime = duration
                 skip = 0
                 ## break the search as soon as you find the first fixation
                 break
@@ -85,11 +77,10 @@ def firstSkip(region, fixations, lowCutoff, highCutoff):
                 break
     return skip  # return the skip boolean
 
+
 # First fixation calculation####
 #
 # returns the duration of the first fixation in the region
-
-
 def firstFix(region, fixations, lowCutoff, highCutoff):
     ## initialize fixTime as 'NA' (no fixation)
     fixTime = 'NA'
@@ -113,12 +104,10 @@ def firstFix(region, fixations, lowCutoff, highCutoff):
     ## return the first fixation time (which is 'NA' if none other is found)
     return fixTime
 
+
 # First pass calculation####
-#
 # returns the sum of the fixations in the region before the region is
 # exited in either direction
-
-
 def firstPass(region, fixations, lowCutoff, highCutoff):
     fixTimeSum = 0  # initialize sum to 0
 
@@ -173,7 +162,6 @@ def regPath(region, fixations, lowCutoff, highCutoff):
 # Right-bounded Reading Time calculation####
 #
 # sums all the fixations in a region before the region is exited to the right
-
 def rightBound(region, fixations, lowCutoff, highCutoff):
     fixTimeSum = 0
 
@@ -195,16 +183,12 @@ def rightBound(region, fixations, lowCutoff, highCutoff):
 
 
 # Re-reading time calculation####
-#
-
 def rereadTime(region, fixations, lowCutoff, highCutoff):
     first = firstPass(region, fixations, lowCutoff, highCutoff)
     return totalTime(region, fixations, lowCutoff, highCutoff) - first
 
 
 # Total reading time calculation####
-#
-
 def totalTime(region, fixations, lowCutoff, highCutoff):
 
     fixTimeSum = 0
@@ -223,12 +207,6 @@ def totalTime(region, fixations, lowCutoff, highCutoff):
     return fixTimeSum
 
 # % Regression calculation####
-#
-# FIXME:define
-# Note that if you ever go past the region, you break from loop; so
-# doesn't count any regressions after you leave region to right
-
-
 def perReg(region, fixations, lowCutoff, highCutoff):
     visitreg = 0
     reg = 0
