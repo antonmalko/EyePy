@@ -155,6 +155,11 @@ def create_file_paths(sentence_dir):
         for f_name in file_list)
     return dict(zip(subj_nums, file_paths))
 
+def zero_to_NA(value):
+    if value == 0:
+        return 'NA'
+    return value
+
 
 def reset_fields(row, fields_to_reset):
     return [pair for pair in row if pair[0] not in fields_to_reset]
@@ -228,10 +233,9 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     for measure in measures:
         new_row = reset_fields(row, ['fixationtype', 'value'])
         measure_calc = measures[measure]
-        # will need to think about cutoff values
+        calculated = measure_calc(region, fixations, lowCutoff, highCutoff)
         new_row.append(('fixationtype', measure))
-        new_row.append(('value', measure_calc(region, fixations,
-                            lowCutoff, highCutoff)))
+        new_row.append(('value', zero_to_NA(calculated)))
         row_list.append(dict(new_row))
     return row_list
 
