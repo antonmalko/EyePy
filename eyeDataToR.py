@@ -228,7 +228,8 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'pr': perReg,
     'rp': regPath,
     'rb': rightBound,
-    'tt': totalTime
+    'tt': totalTime,
+    'rr': rereadTme,
     }
     binomial_measures = ['fs', 'pr']
     row_list = []
