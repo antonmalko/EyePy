@@ -180,29 +180,28 @@ def right_bound(region, fixations, lowCutoff, highCutoff):
     return right_bound_sum
 
 
-# Re-reading time calculation####
 def reread_time(region, fixations, lowCutoff, highCutoff):
-    first = first_pass(region, fixations, lowCutoff, highCutoff)
-    return total_time(region, fixations, lowCutoff, highCutoff) - first
+    '''Returns the difference between total reading time and the first pass 
+    reading time for the current region.
+    '''
+    first_duration = first_pass(region, fixations, lowCutoff, highCutoff)
+    return total_time(region, fixations, lowCutoff, highCutoff) - first_duration
 
 
-# Total reading time calculation####
 def total_time(region, fixations, lowCutoff, highCutoff):
+    '''Calculates overall total reading time for current ROI.
+    '''
+    total_time_sum = 0
 
-    first_fixation_timeSum = 0
-
-    ## loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        ## only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixation is w/in the ROI
+            # only add fixations in the ROI
             if region_check(region, f) == 'within':
-                ## add the duration to the sum
-                first_fixation_timeSum = first_fixation_timeSum + duration
+                total_time_sum = total_time_sum + duration
 
-    return first_fixation_timeSum
+    return total_time_sum
 
 # % Regression calculation####
 def percent_regression(region, fixations, lowCutoff, highCutoff):
