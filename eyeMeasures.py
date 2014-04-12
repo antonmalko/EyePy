@@ -158,27 +158,26 @@ def regression_path(region, fixations, lowCutoff, highCutoff):
     return regression_sum
 
 
-# Right-bounded Reading Time calculation####
-#
-# sums all the fixations in a region before the region is exited to the right
 def right_bound(region, fixations, lowCutoff, highCutoff):
-    first_fixation_timeSum = 0
+    '''Sum of all fixations in a region before it is exited to the right.
+    '''
+    right_bound_sum = 0.0
 
-    ## loop through each fixation
+    # loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        ## only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixation is after the ROI, break
-            if region_check(region, f) == 'after':
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # break as soon as region is exited to the right
+            if fixation_position == 'after':
                 break
-            ## if the fixation is w/in the ROI
-            elif region_check(region, f) == 'within':
-                ## add the duration to the sum
-                first_fixation_timeSum = first_fixation_timeSum + duration
+            # until that happens, keep adding up durations
+            elif fixation_position == 'within':
+                right_bound_sum = right_bound_sum + duration
 
-    return first_fixation_timeSum
+    return right_bound_sum
 
 
 # Re-reading time calculation####
