@@ -52,26 +52,29 @@ def region_check(region, fixation):
                 return 'after'
 
 
-# First-pass Skip calculation####
 def first_skip(region, fixations, lowCutoff, highCutoff):
-    skip = 1
+    '''Given a region, a list of fixations and cutoff values returns either 
+    1 or 0 for whether the region was skipped or not.
+    '''
+    was_skipped = 1
 
-    ## loop through each fixation
+    # loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        #only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if fixation is within region
-            if region_check(region, f) == 'within':
-                skip = 0
-                ## break the search as soon as you find the first fixation
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # if fixation is within region
+            if fixation_position == 'within':
+                was_skipped = 0
+                # break the search as soon as you find the first fixation
                 break
-            ## if fixation is after the region
-            elif region_check(region, f) == 'after':
-                ## break the search since the region has been skipped
+            # if fixation is after the region
+            elif fixation_position == 'after':
+                # break the search since the region has been
                 break
-    return skip  # return the skip boolean
+    return was_skipped  # return the was_skipped boolean
 
 
 # First fixation calculation####
