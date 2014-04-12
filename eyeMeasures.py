@@ -133,29 +133,29 @@ def first_pass(region, fixations, lowCutoff, highCutoff):
     return first_pass_sum
 
 
-# Regression path calculation####
-#
-# sums all the fixations in all the regions up to and including the
-# region of interest, before that region is exited to the right
-
 def regression_path(region, fixations, lowCutoff, highCutoff):
-    first_fixation_timeSum = 0
+    '''Sums up fixation durations for the current region N and all regions 
+    to the left of N starting with when region N was entered and up to the point
+    when it was exited to the right.
+    '''
+    regression_sum = 0.0
 
-    ## loop through each fixation
+    # loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        ## only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixation is after the ROI, break
-            if region_check(region, f) == 'after':
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # if the region was exited to the right, break
+            if fixation_position == 'after':
                 break
-            ## if the fixation is w/in the ROI or the ROI has already been visited
-            elif region_check(region, f) == 'within' or first_fixation_timeSum > 0:
-                ## add the duration to the sum
-                first_fixation_timeSum = first_fixation_timeSum + duration
+            # if the fixation is w/in the ROI or the ROI has already been visited
+            elif fixation_position == 'within' or regression_sum > 0:
+                # add the duration to the sum
+                regression_sum = regression_sum + duration
 
-    return first_fixation_timeSum
+    return regression_sum
 
 
 # Right-bounded Reading Time calculation####
