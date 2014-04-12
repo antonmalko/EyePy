@@ -222,14 +222,14 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     # list below consists of "measure name": measure_function pairs
     # measure functions are normally imported from eyeMeasures
     measures = {
-    'ff': firstFix,
-    'fp': firstPass,
-    'fs': firstSkip,
-    'pr': perReg,
-    'rp': regPath,
-    'rb': rightBound,
-    'tt': totalTime,
-    'rr': rereadTime,
+    'ff': first_fixation,
+    'fp': first_pass,
+    'fs': first_skip,
+    'pr': percent_regression,
+    'rp': regression_path,
+    'rb': right_bound,
+    'tt': total_time,
+    'rr': reread_time,
     }
     binomial_measures = ['fs', 'pr']
     row_list = []
