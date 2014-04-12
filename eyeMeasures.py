@@ -7,7 +7,7 @@
 
 def region_check(region, fixation):
     '''Takes a region in the form [[Xstart, Ystart],[Xend, Yend]] and a pair of 
-    coordinates for a fixationation. It then checks where the coordinates are with
+    coordinates for a fixation. It then checks where the coordinates are with
     respect to the region.
     Depending on where that is returns 'within', 'before' or 'after'.
     '''
@@ -17,14 +17,14 @@ def region_check(region, fixation):
     xEnd = region[1][0]
     yEnd = region[1][1]
 
-    # if the x=coordinate of fixation is -1, the fixationation was
+    # if the x=coordinate of fixation is -1, the fixation was
     # not properly edited/rejected. ignore for calculations, print feedback.
     if fixation[0] == -1:
         return 'ignore'
-        print "fixationation out of bounds: " + fixation
+        print "fixation out of bounds: " + fixation
     # if the region starts and ends on the same line
     elif yStart == yEnd:
-        # UPDATED: you have to check which line the fixationATION is on!!!
+        # UPDATED: you have to check which line the fixation is on!!!
         if fixation[1] == yStart:
             if fixation[0] >= xStart and fixation[0] < xEnd:
                 return 'within'
@@ -38,13 +38,13 @@ def region_check(region, fixation):
             return 'after'
     # if the region starts and ends on different lines
     else:
-        # if the fixationation is on the first line
+        # if the fixation is on the first line
         if fixation[1] == yStart:
             if fixation[0] >= xStart:
                 return 'within'
             else:
                 return 'before'
-        # if the fixationation is on the second line
+        # if the fixation is on the second line
         elif fixation[1] == yEnd:
             if fixation[0] < xEnd:
                 return 'within'
@@ -53,19 +53,19 @@ def region_check(region, fixation):
 
 
 # First-pass Skip calculation####
-def first_skip(region, fixationations, lowCutoff, highCutoff):
+def first_skip(region, fixations, lowCutoff, highCutoff):
     skip = 1
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        #only use fixationation if duration is within cutoffs
+        #only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
             ## if fixation is within region
             if region_check(region, f) == 'within':
                 skip = 0
-                ## break the search as soon as you find the first fixationation
+                ## break the search as soon as you find the first fixation
                 break
             ## if fixation is after the region
             elif region_check(region, f) == 'after':
@@ -74,48 +74,48 @@ def first_skip(region, fixationations, lowCutoff, highCutoff):
     return skip  # return the skip boolean
 
 
-# First fixationation calculation####
+# First fixation calculation####
 #
-# returns the duration of the first fixationation in the region
-def first_fixationation(region, fixationations, lowCutoff, highCutoff):
-    ## initialize fixationTime as 'NA' (no fixationation)
+# returns the duration of the first fixation in the region
+def first_fixation(region, fixatios, lowCutoff, highCutoff):
+    ## initialize fixationTime as 'NA' (no fixation)
     fixationTime = 'NA'
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixationas:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        #only use fixationation if duration is within cutoffs
+        #only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
             ## if fixation is within region
             if region_check(region, f) == 'within':
-                ## store duration as first fixationation time
+                ## store duration as first fixation time
                 fixationTime = duration
-                ## break the search as soon as you find the first fixationation
+                ## break the search as soon as you find the first fixation
                 break
             ## if fixation is after the region
             elif region_check(region, f) == 'after':
                 ## break the search since the region has been skipped
                 break
-    ## return the first fixationation time (which is 'NA' if none other is found)
+    ## return the first fixation time (which is 'NA' if none other is found)
     return fixationTime
 
 
 # First pass calculation####
-# returns the sum of the fixationations in the region before the region is
+# returns the sum of the fixations in the region before the region is
 # exited in either direction
-def first_pass(region, fixationations, lowCutoff, highCutoff):
+def first_pass(region, fixations, lowCutoff, highCutoff):
     fixationTimeSum = 0  # initialize sum to 0
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        ## only use fixationation if duration is within cutoffs
+        ## only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
             ## if fixation is within region
             if region_check(region, f) == 'within':
-                ## add duration to sum of fixationations
+                ## add duration to sum of fixations
                 fixationTimeSum = fixationTimeSum + duration
             ## if fixation is after the region
             elif region_check(region, f) == 'after':
@@ -132,19 +132,19 @@ def first_pass(region, fixationations, lowCutoff, highCutoff):
 
 # Regression path calculation####
 #
-# sums all the fixationations in all the regions up to and including the
+# sums all the fixations in all the regions up to and including the
 # region of interest, before that region is exited to the right
 
-def regression_path(region, fixationations, lowCutoff, highCutoff):
+def regression_path(region, fixations, lowCutoff, highCutoff):
     fixationTimeSum = 0
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        ## only use fixationation if duration is within cutoffs
+        ## only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixationation is after the ROI, break
+            ## if the fixation is after the ROI, break
             if region_check(region, f) == 'after':
                 break
             ## if the fixation is w/in the ROI or the ROI has already been visited
@@ -157,17 +157,17 @@ def regression_path(region, fixationations, lowCutoff, highCutoff):
 
 # Right-bounded Reading Time calculation####
 #
-# sums all the fixationations in a region before the region is exited to the right
-def right_bound(region, fixationations, lowCutoff, highCutoff):
+# sums all the fixations in a region before the region is exited to the right
+def right_bound(region, fixations, lowCutoff, highCutoff):
     fixationTimeSum = 0
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        ## only use fixationation if duration is within cutoffs
+        ## only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixationation is after the ROI, break
+            ## if the fixation is after the ROI, break
             if region_check(region, f) == 'after':
                 break
             ## if the fixation is w/in the ROI
@@ -179,21 +179,21 @@ def right_bound(region, fixationations, lowCutoff, highCutoff):
 
 
 # Re-reading time calculation####
-def reread_time(region, fixationations, lowCutoff, highCutoff):
-    first = first_pass(region, fixationations, lowCutoff, highCutoff)
-    return total_time(region, fixationations, lowCutoff, highCutoff) - first
+def reread_time(region, fixations, lowCutoff, highCutoff):
+    first = first_pass(region, fixations, lowCutoff, highCutoff)
+    return total_time(region, fixations, lowCutoff, highCutoff) - first
 
 
 # Total reading time calculation####
-def total_time(region, fixationations, lowCutoff, highCutoff):
+def total_time(region, fixations, lowCutoff, highCutoff):
 
     fixationTimeSum = 0
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        ## only use fixationation if duration is within cutoffs
+        ## only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
             ## if the fixation is w/in the ROI
             if region_check(region, f) == 'within':
@@ -203,20 +203,20 @@ def total_time(region, fixationations, lowCutoff, highCutoff):
     return fixationTimeSum
 
 # % Regression calculation####
-def percent_regression(region, fixationations, lowCutoff, highCutoff):
+def percent_regression(region, fixationas, lowCutoff, highCutoff):
     visitreg = 0
     reg = 0
 
-    ## loop through each fixationation
-    for f in fixationations:
+    ## loop through each fixation
+    for f in fixations:
         duration = f[3] - f[2]
             ## calculate duration (endtime - starttime)
-        ## only use fixationation if duration is within cutoffs
+        ## only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixationation is after the ROI, break
+            ## if the fixation is after the ROI, break
             if region_check(region, f) == 'after':
                 break
-            ## if the fixationation is in the ROI,
+            ## if the fixation is in the ROI,
             elif region_check(region, f) == 'within':
                 ## mark the ROI as having been visited at least once
                 visitreg = 1
@@ -230,22 +230,22 @@ def percent_regression(region, fixationations, lowCutoff, highCutoff):
     return reg
 
 
-def single_fixationation_duration(region, fixationations, lowCutoff, highCutoff):
-    '''Given a region, fixationation list, and low/high cutoff values, returns
-    the duration of the fixationation on the region if it was the only one.
+def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
+    '''Given a region, fixation list, and low/high cutoff values, returns
+    the duration of the fixation on the region if it was the only one.
     Otherwise returns zero.
     '''
-    first_fixation = first_fixationation(region, fixationations, lowCutoff, highCutoff)
-    total_fixationation = total_time(region, fixationations, lowCutoff, highCutoff)
-    if first_fixation == total_fixationation:
-        return total_fixationation
+    first_fixation = first_fixationn(region, fixations, lowCutoff, highCutoff)
+    total_fixation = total_time(region, fixations, lowCutoff, highCutoff)
+    if first_fixation == total_fixation:
+        return total_fixation
     else:
         return 0
 
 
-def rereading_prob(region, fixationations, lowCutoff, highCutoff):
-    '''given a region and a fixationations list calculates whether the region was
+def rereading_prob(region, fixations, lowCutoff, highCutoff):
+    '''given a region and a fixations list calculates whether the region was
     reread or not.
     Returns either 1 or 0, having converted boolean test to an integer.
     '''
-    return int(reread_time(region, fixationations, lowCutoff, highCutoff) > 0)
+    return int(reread_time(region, fixations, lowCutoff, highCutoff) > 0)
