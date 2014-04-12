@@ -91,45 +91,46 @@ def first_fixation(region, fixations, lowCutoff, highCutoff):
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # if fixation is within region
-            if region_check(region, f) == 'within':
+            if fixation_position == 'within':
                 ## store duration as first fixation time
                 first_fixation_time = duration
                 # break the search as soon as you find the first fixation
                 break
             # if fixation is after the region
-            elif region_check(region, f) == 'after':
+            elif fixation_position == 'after':
                 # break the search once the region has been passed
                 break
     return first_fixation_time
 
 
-# First pass calculation####
-# returns the sum of the fixations in the region before the region is
-# exited in either direction
 def first_pass(region, fixations, lowCutoff, highCutoff):
-    first_fixation_timeSum = 0  # initialize sum to 0
+    '''Given a region and a list of fixations as well as cutoff values,
+    returns the sum of all the fixations in the region before it is exited in 
+    either direction.
+    '''
+    first_pass_sum = 0  # initialize sum to 0
 
-    ## loop through each fixation
+    # loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        ## only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if fixation is within region
-            if region_check(region, f) == 'within':
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # if fixation is within region
+            if fixation_position == 'within':
                 ## add duration to sum of fixations
-                first_fixation_timeSum = first_fixation_timeSum + duration
-            ## if fixation is after the region
-            elif region_check(region, f) == 'after':
-                ## break, because the first pass is over.
+                first_pass_sum = first_pass_sum + duration
+            # if fixation is after the region
+            elif fixation_position == 'after':
+                # break, because the first pass is over.
                 break
-            ##if the region has already been entered at least once,
-            elif first_fixation_timeSum > 0 and region_check(region, f) == 'before':
-                # and fixation is before the region, then break, because the first
-                # pass is over
+            #if the region has already been entered at least once and fixation 
+            # is before the region, break, because the first pass is over
+            elif first_pass_sum > 0 and fixation_position == 'before':
                 break
 
-    return first_fixation_timeSum
+    return first_pass_sum
 
 
 # Regression path calculation####
