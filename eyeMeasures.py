@@ -77,38 +77,37 @@ def first_skip(region, fixations, lowCutoff, highCutoff):
     return was_skipped  # return the was_skipped boolean
 
 
-# First fixation calculation####
-#
-# returns the duration of the first fixation in the region
-def first_fixation(region, fixatios, lowCutoff, highCutoff):
-    ## initialize fixationTime as 'NA' (no fixation)
-    fixationTime = 'NA'
+def first_fixation(region, fixations, lowCutoff, highCutoff):
+    '''Given a region, a list of fixations and cutoff values, returns 
+    the duration of the first fixation.
+    '''
+    first_fixation_time = 0
 
-    ## loop through each fixation
-    for f in fixationas:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        #only use fixation if duration is within cutoffs
+    # loop through each fixation
+    for f in fixations:
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if fixation is within region
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # if fixation is within region
             if region_check(region, f) == 'within':
                 ## store duration as first fixation time
-                fixationTime = duration
-                ## break the search as soon as you find the first fixation
+                first_fixation_time = duration
+                # break the search as soon as you find the first fixation
                 break
-            ## if fixation is after the region
+            # if fixation is after the region
             elif region_check(region, f) == 'after':
-                ## break the search since the region has been skipped
+                # break the search once the region has been passed
                 break
-    ## return the first fixation time (which is 'NA' if none other is found)
-    return fixationTime
+    return first_fixation_time
 
 
 # First pass calculation####
 # returns the sum of the fixations in the region before the region is
 # exited in either direction
 def first_pass(region, fixations, lowCutoff, highCutoff):
-    fixationTimeSum = 0  # initialize sum to 0
+    first_fixation_timeSum = 0  # initialize sum to 0
 
     ## loop through each fixation
     for f in fixations:
@@ -119,18 +118,18 @@ def first_pass(region, fixations, lowCutoff, highCutoff):
             ## if fixation is within region
             if region_check(region, f) == 'within':
                 ## add duration to sum of fixations
-                fixationTimeSum = fixationTimeSum + duration
+                first_fixation_timeSum = first_fixation_timeSum + duration
             ## if fixation is after the region
             elif region_check(region, f) == 'after':
                 ## break, because the first pass is over.
                 break
             ##if the region has already been entered at least once,
-            elif fixationTimeSum > 0 and region_check(region, f) == 'before':
+            elif first_fixation_timeSum > 0 and region_check(region, f) == 'before':
                 # and fixation is before the region, then break, because the first
                 # pass is over
                 break
 
-    return fixationTimeSum
+    return first_fixation_timeSum
 
 
 # Regression path calculation####
@@ -139,7 +138,7 @@ def first_pass(region, fixations, lowCutoff, highCutoff):
 # region of interest, before that region is exited to the right
 
 def regression_path(region, fixations, lowCutoff, highCutoff):
-    fixationTimeSum = 0
+    first_fixation_timeSum = 0
 
     ## loop through each fixation
     for f in fixations:
@@ -151,18 +150,18 @@ def regression_path(region, fixations, lowCutoff, highCutoff):
             if region_check(region, f) == 'after':
                 break
             ## if the fixation is w/in the ROI or the ROI has already been visited
-            elif region_check(region, f) == 'within' or fixationTimeSum > 0:
+            elif region_check(region, f) == 'within' or first_fixation_timeSum > 0:
                 ## add the duration to the sum
-                fixationTimeSum = fixationTimeSum + duration
+                first_fixation_timeSum = first_fixation_timeSum + duration
 
-    return fixationTimeSum
+    return first_fixation_timeSum
 
 
 # Right-bounded Reading Time calculation####
 #
 # sums all the fixations in a region before the region is exited to the right
 def right_bound(region, fixations, lowCutoff, highCutoff):
-    fixationTimeSum = 0
+    first_fixation_timeSum = 0
 
     ## loop through each fixation
     for f in fixations:
@@ -176,9 +175,9 @@ def right_bound(region, fixations, lowCutoff, highCutoff):
             ## if the fixation is w/in the ROI
             elif region_check(region, f) == 'within':
                 ## add the duration to the sum
-                fixationTimeSum = fixationTimeSum + duration
+                first_fixation_timeSum = first_fixation_timeSum + duration
 
-    return fixationTimeSum
+    return first_fixation_timeSum
 
 
 # Re-reading time calculation####
@@ -190,7 +189,7 @@ def reread_time(region, fixations, lowCutoff, highCutoff):
 # Total reading time calculation####
 def total_time(region, fixations, lowCutoff, highCutoff):
 
-    fixationTimeSum = 0
+    first_fixation_timeSum = 0
 
     ## loop through each fixation
     for f in fixations:
@@ -201,12 +200,12 @@ def total_time(region, fixations, lowCutoff, highCutoff):
             ## if the fixation is w/in the ROI
             if region_check(region, f) == 'within':
                 ## add the duration to the sum
-                fixationTimeSum = fixationTimeSum + duration
+                first_fixation_timeSum = first_fixation_timeSum + duration
 
-    return fixationTimeSum
+    return first_fixation_timeSum
 
 # % Regression calculation####
-def percent_regression(region, fixationas, lowCutoff, highCutoff):
+def percent_regression(region, fixations, lowCutoff, highCutoff):
     visitreg = 0
     reg = 0
 
