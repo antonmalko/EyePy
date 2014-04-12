@@ -62,7 +62,7 @@ def first_skip(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # if fixation is within region
@@ -87,7 +87,7 @@ def first_fixation(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # if fixation is within region
@@ -114,7 +114,7 @@ def first_pass(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # if fixation is within region
@@ -144,7 +144,7 @@ def regression_path(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # if the region was exited to the right, break
@@ -167,7 +167,7 @@ def right_bound(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # break as soon as region is exited to the right
@@ -196,7 +196,7 @@ def total_time(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # only add fixations in the ROI
             if region_check(region, f) == 'within':
                 total_time_sum = total_time_sum + duration
@@ -215,7 +215,7 @@ def percent_regression(region, fixations, lowCutoff, highCutoff):
     for f in fixations:
         duration = f[3] - f[2]  # calculate duration (endtime - starttime)
         # only use fixation if duration is within cutoffs
-        if duration > lowCutoff and duration < highCutoff:
+        if lowCutoff < duration < highCutoff:
             # check where fixation was relative to region
             fixation_position = region_check(region, f)
             # break if region exited to the right
