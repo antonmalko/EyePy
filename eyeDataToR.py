@@ -286,7 +286,7 @@ def main(enable_user_input=True):
     else:
         file_names = default_files
 
-    lowCutoff, highCutoff = verify_cutoff_values(80, 1000)
+    lowCutoff, highCutoff = verify_cutoff_values(40, 1000)
 
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
