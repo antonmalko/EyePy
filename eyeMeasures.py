@@ -234,7 +234,7 @@ def percent_regression(region, fixations, lowCutoff, highCutoff):
 
 def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
     '''Given a region, fixation list, and low/high cutoff values, returns
-    the duration of the fixation on the region if it was the only one.
+    the duration of the fixation on the region if it was the only fixation.
     Otherwise returns zero.
     '''
     first_fixation = first_fixation(region, fixations, lowCutoff, highCutoff)
