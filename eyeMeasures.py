@@ -203,32 +203,33 @@ def total_time(region, fixations, lowCutoff, highCutoff):
 
     return total_time_sum
 
-# % Regression calculation####
+
 def percent_regression(region, fixations, lowCutoff, highCutoff):
-    visitreg = 0
-    reg = 0
+    '''Returns either 1 or 0 depending on whether a regression happens 
+    from current region.
+    '''
+    was_visited = False
+    regression_prob = 0
 
     ## loop through each fixation
     for f in fixations:
-        duration = f[3] - f[2]
-            ## calculate duration (endtime - starttime)
-        ## only use fixation if duration is within cutoffs
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
         if duration > lowCutoff and duration < highCutoff:
-            ## if the fixation is after the ROI, break
-            if region_check(region, f) == 'after':
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # break if region exited to the right
+            if fixation_position == 'after':
                 break
-            ## if the fixation is in the ROI,
-            elif region_check(region, f) == 'within':
-                ## mark the ROI as having been visited at least once
-                visitreg = 1
-            ## if the ROI has been visited at least once and the
-            elif visitreg == 1 and region_check(region, f) == 'before':
-                ## fixation is in a region before the ROI, count it
-                reg = 1
-                ## as a regression and break
+            # if the fixation is in ROI, mark ROI as having been visited
+            elif fixation_position == 'within':
+                was_visited = True
+            # if ROI was visited and regression to preceding region happened
+            elif was_visited and fixation_position == 'before':
+                regression_prob = 1
                 break
 
-    return reg
+    return regression_prob
 
 
 def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
@@ -236,7 +237,7 @@ def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
     the duration of the fixation on the region if it was the only one.
     Otherwise returns zero.
     '''
-    first_fixation = first_fixationn(region, fixations, lowCutoff, highCutoff)
+    first_fixation = first_fixation(region, fixations, lowCutoff, highCutoff)
     total_fixation = total_time(region, fixations, lowCutoff, highCutoff)
     if first_fixation == total_fixation:
         return total_fixation
