@@ -47,7 +47,7 @@ def ask_user_questions(question_sequence):
     answers = {}
 
     for question in question_sequence:
-        answers[question] = raw_input(q_template.format(question))
+        answers[question] = input(q_template.format(question))
     return answers
 
 
@@ -72,7 +72,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     to change them. If their answer is yes, returns user-defined cutoffs, otherwise
     returns passed cutoffs unchanged.
     '''
-    decision = raw_input(prompt.format(low_cutoff, high_cutoff))
+    decision = input(prompt.format(low_cutoff, high_cutoff))
     # define regular expression that checks for "yes" answers
     yes_rgx = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
     if bool(yes_rgx.match(decision)):
@@ -311,7 +311,7 @@ def main(enable_user_input=True):
         row.append(('subj', subj_num))
         if is_DA1_file(data_file_path):
 
-            print 'Processing ', os.path.basename(data_file_path)
+            print('Processing ', os.path.basename(data_file_path))
             fixation_table = FixationTable(data_file_path, 1, 2)
             subj_questions = lookup_question(subj_num, questions_by_subj)
 

@@ -21,7 +21,7 @@ def region_check(region, fixation):
     # not properly edited/rejected. ignore for calculations, print feedback.
     if fixation[0] == -1:
         return 'ignore'
-        print "fixation out of bounds: " + fixation
+        print("fixation out of bounds: " + fixation)
     # if the region starts and ends on the same line
     elif yStart == yEnd:
         # UPDATED: you have to check which line the fixation is on!!!

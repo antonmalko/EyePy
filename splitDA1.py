@@ -80,7 +80,7 @@ def DA1splitTypeFolder(dataFolder, studyname):
 ## trials from the desired experiment.
 def DA1getExp(dataFile, expFirstCond, numConds):
     expData = []
-    expCondRange = range(expFirstCond,expFirstCond+numConds)
+    expCondRange = list(range(expFirstCond,expFirstCond+numConds))
 
     data = open(dataFile, "r")
     for line in data:
@@ -109,6 +109,6 @@ def DA1splitExpFolder(dataFolder, outFolder, expFirstCond, numConds, expname):
                 outFile.write(str(row))
             outFile.close()
         else:
-            print ("no data for "+expname+" in "+dataFile)
+            print("no data for "+expname+" in "+dataFile)
     
     

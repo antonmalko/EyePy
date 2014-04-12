@@ -10,7 +10,7 @@ import splitDA1
 print("Do you need to split the DA1s into -s, -q, and -reject files?")
 
 try:
-    DOSPLIT = str(raw_input("y or n:"))
+    DOSPLIT = str(input("y or n:"))
 except NameError:
     print('Error: must input y or n')
     exit()
@@ -34,7 +34,7 @@ else:
     print("These three folders should be stored inside a single folder. Enter that directory address for that folder below.")
 
 try:
-    DATAFOLDER = str(raw_input("Complete directory address with DA1 files:"))
+    DATAFOLDER = str(input("Complete directory address with DA1 files:"))
 except NameError:
     print('Error: must be a string')
     exit()
@@ -44,7 +44,7 @@ except ValueError:
 
 if DOSPLIT=="y":
     try:
-        STUDYNAME = str(raw_input("Name of study:"))
+        STUDYNAME = str(input("Name of study:"))
     except NameError:
         print('Error: must be a string')
         exit()
@@ -64,7 +64,7 @@ if DOSPLIT=="y":
 	DATAFOLDER = DATAFOLDER+"/"+STUDYNAME+"-sorted"
 
 try:
-    CONTINUE = str(raw_input("y or n:"))
+    CONTINUE = str(input("y or n:"))
 except NameError:
     print('Error: must input y or n')
     exit()
@@ -74,7 +74,7 @@ except ValueError:
 
 while CONTINUE=="y":
     try:
-        EXPNAME = str(raw_input("Enter the experiment name:"))
+        EXPNAME = str(input("Enter the experiment name:"))
     except NameError:
         print('Error: must be a string')
         exit()
@@ -83,7 +83,7 @@ while CONTINUE=="y":
         exit()
 
     try:
-        FIRSTCOND = int(raw_input("Enter the number of the first condition for this experiment (from EyeTrack):"))
+        FIRSTCOND = int(input("Enter the number of the first condition for this experiment (from EyeTrack):"))
     except NameError:
         print('Error: must be an integer')
         exit()
@@ -92,7 +92,7 @@ while CONTINUE=="y":
         exit()
 
     try:
-        NUMCONDS = int(raw_input("Enter the number of conditions for this experiment:"))
+        NUMCONDS = int(input("Enter the number of conditions for this experiment:"))
     except NameError:
         print('Error: must be an integer')
         exit()
@@ -116,7 +116,7 @@ while CONTINUE=="y":
     print("Done. The processed DA1 files have been stored in "+expFolder+", located within your original data folder.")
     print("Do you want to get another experiment?")
     try:
-        CONTINUE = str(raw_input("y or n:"))
+        CONTINUE = str(input("y or n:"))
     except NameError:
         print('Error: must input y or n')
         exit()
