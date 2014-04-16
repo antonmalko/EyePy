@@ -22,7 +22,12 @@
 # First we import all the necessary python modules
 # Then we define functions for printing messages to the user/getting information
 # from them.
-# 
+# Then we have one random function that finds questions based on subject number.
+# Finally, we have a bunch of functions that are used to create the output rows
+# From this it becomes apparent that if you want to understand what the program
+# does overall, you are best served by looking at the very end of this file
+# at the main() function. 
+# That's where things come together.
 
 # import python libraries: os for managing files, readline for tab-completion
 import os
@@ -89,7 +94,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 
 
 #######################################
-## Dealing with files
+## Dealing with files 
 
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
@@ -130,8 +135,8 @@ def get_subj_num(filename):
 
 
 def read_question_tables(question_dir):
-    '''Given a folder name returns a dictionary where subject numbers are the keys
-    and QuestionTable lists are the values.
+    '''Given a folder name returns a dictionary where subject numbers are the 
+    keys and QuestionTable lists are the values.
     '''
     file_list = os.listdir(question_dir)
     subj_nums = (get_subj_num(f_name) for f_name in file_list)
@@ -150,6 +155,9 @@ def create_file_paths(sentence_dir):
         for f_name in file_list)
     return dict(zip(subj_nums, file_paths))
 
+
+#######################################
+## Misc (and Other)
 
 def lookup_question(number, question_tables):
     '''Given a subject number and the table of qutestion files for subjects
@@ -196,11 +204,7 @@ def unpack_region_data(row, region, region_index):
     Returns the row.
     '''
     new_row = reset_fields(row, ['region', 'Xstart', 'Ystart', 'Xend', 'Yend'])
-    # number regions starting at "1"
     new_row.append(('region', str(region_index + 1)))
-    # start and endpoints for region, so length, line change can be
-    # computed later
-    # print region
     new_row.append(('Xstart', str(region[0][0])))
     new_row.append(('Ystart', str(region[0][1])))
     new_row.append(('Xend', str(region[1][0])))
@@ -267,6 +271,10 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
         row_list.append(dict(new_row))
     return row_list
 
+
+#######################################
+## This is the main function that actually puts all of the above together and 
+## does stuff...
 
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
