@@ -1,20 +1,5 @@
 from gum import *
 
-def readTable(filename):
-
-    myFile = open(filename, "r")
-    temp = 1 # unused variable, IK
-    dataTable = []
-
-    for line in myFile:
-        if line != "":
-            nonewline = line.split('\n')[0] # somewhat weird way of trimming a line
-            dataTable.append(nonewline.split())
-
-    myFile.close()
-    return dataTable
-
-
 def read_table(filename):
     '''Takes a file name as a string, opens it. Once that's done, takes each
     non-empty row of the file and converts it into a list of strings.
@@ -48,7 +33,7 @@ def regStarts(taggedTable):
     for line in taggedTable:
         idcols = line[0:4]
         p = 'x'         #p keeps track of whether the current value is an X or a Y
-        regstarts = []
+        regstarts = [] 
         for pos in line[4:]:
             if p=='x':
                 regstarts.append(int(pos))
@@ -79,7 +64,7 @@ def regPairs(regStartsTable):
 # RegionTable converts a REG file into a dictionary where the key is the tag, and
 # the value is the list of start/end coordinate pairs for each region.
 def RegionTable(regFile, one, two):
-    return dictTable(regPairs(regStarts(tableTag(readTable(regFile),one,two))))
+    return dictTable(regPairs(regStarts(tableTag(read_table(regFile),one,two))))
 
 # fixGroups restructures a table from a DA1 file, assuming that it contains 9 id
 # columns (tag, order, cond, item, totaltime, buttonpress, [unknown], [unknown],
@@ -112,12 +97,12 @@ def fixGroups(taggedTable):
 # FixationTable converts a DA1 file into a dictionary where the key is the tag and
 # the value is a list of lists of [X Y starttime endtime] for each fixation.
 def FixationTable(da1File, one, two):
-    return dictTable(fixGroups(tableTag(readTable(da1File),one,two)))
+    return dictTable(fixGroups(tableTag(read_table(da1File),one,two)))
 
 # QuestionTable converts a DA1 file into a dictionary, where the key is the tag and the value
 # is a list with the following fields: order, cond, item, rt, buttonpress
 def QuestionTable(da1QFile, one, two):
-    qtable = tableTag(readTable(da1QFile), one, two)
+    qtable = tableTag(read_table(da1QFile), one, two)
     qDict = {}
     for row in qtable:
         qDict[row[0]] = row[1:6]

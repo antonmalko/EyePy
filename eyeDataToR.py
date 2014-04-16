@@ -332,7 +332,7 @@ def main(enable_user_input=True):
 
     # Read in question answer key, create dictionar.
     # Key = item number; value = [correctButton, LorR]
-    answer_key = dictTable(readTable(file_names['Question key filename']))
+    answer_key = dictTable(read_table(file_names['Question key filename']))
 
     # Get file lists (contents of the data and question directories)
     sentences_by_subj = create_file_paths(file_names['Sentence data folder'])
