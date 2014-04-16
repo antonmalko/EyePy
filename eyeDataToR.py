@@ -17,6 +17,13 @@
 
 # Output: a single, long-format text file that can be loaded into R
 
+# Revised by Ilia
+# This file is structured in the following way:
+# First we import all the necessary python modules
+# Then we define functions for printing messages to the user/getting information
+# from them.
+# 
+
 # import python libraries: os for managing files, readline for tab-completion
 import os
 import readline
@@ -28,11 +35,9 @@ from csv import DictWriter
 from eyeMeasures import *
 from readInput import *
 
-#
-# this part is for using with the command line
 
-# Get info from user:
-
+#######################################
+## Interacting with the user
 
 def ask_user_questions(question_sequence):
     '''Given a sequence of items (can be a list or a dictionary, anything
@@ -82,6 +87,9 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     # if user doesn't want to change stuff, return passed args unchanged
     return (low_cutoff, high_cutoff)
 
+
+#######################################
+## Writing output
 
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
@@ -155,12 +163,6 @@ def create_file_paths(sentence_dir):
     return dict(zip(subj_nums, file_paths))
 
 
-def zero_to_NA(value):
-    if value == 0:
-        return 'NA'
-    return value
-
-
 def reset_fields(row, fields_to_reset):
     return [pair for pair in row if pair[0] not in fields_to_reset]
 
@@ -209,6 +211,15 @@ def set_question_RT_Acc(row, cond_item, subj_qs, answer):
         new_row.append(('questionRT', 'NA'))
         new_row.append(('questionAcc', 'NA'))
     return new_row
+
+
+def zero_to_NA(value):
+    """Given any numeric value converts it to "NA" if it's zero. 
+    Returns unchanged value otherwise.
+    """
+    if value == 0:
+        return 'NA'
+    return value
 
 
 def collect_measures(row, region, fixations, lowCutoff, highCutoff):
