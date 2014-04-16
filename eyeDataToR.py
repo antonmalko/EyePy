@@ -89,7 +89,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 
 
 #######################################
-## Writing output
+## Dealing with files
 
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
@@ -140,6 +140,17 @@ def read_question_tables(question_dir):
     return dict(zip(subj_nums, question_tables))
 
 
+def create_file_paths(sentence_dir):
+    '''Given a folder name returns a dictionary where subject numbers are keys
+    and file paths are values.
+    '''
+    file_list = os.listdir(sentence_dir)
+    subj_nums = (get_subj_num(f_name) for f_name in file_list)
+    file_paths = (os.path.join(sentence_dir, f_name)
+        for f_name in file_list)
+    return dict(zip(subj_nums, file_paths))
+
+
 def lookup_question(number, question_tables):
     '''Given a subject number and the table of qutestion files for subjects
     returns the table relevant for this subject number.
@@ -152,18 +163,19 @@ def lookup_question(number, question_tables):
         return {}
 
 
-def create_file_paths(sentence_dir):
-    '''Given a folder name returns a dictionary where subject numbers are keys
-    and file paths are values.
-    '''
-    file_list = os.listdir(sentence_dir)
-    subj_nums = (get_subj_num(f_name) for f_name in file_list)
-    file_paths = (os.path.join(sentence_dir, f_name)
-        for f_name in file_list)
-    return dict(zip(subj_nums, file_paths))
-
+#######################################
+## Functions for creting/updating what will be a row in the output file
 
 def reset_fields(row, fields_to_reset):
+    '''The way Python dictionaries are set up, if we use them directly, we will
+    simply overwrite every row's entry with the data we collect from the next row.
+    In order to avoid this, we instead accumulate lists of (key, value) tuples
+    which can then be turned into dictionaries before we add them to our output
+    file.
+    This function takes a list Row consisting of (key, value) pairs and a list 
+    of keys (or fields) to reset and returns the Row list without any pairs where
+    the first member (the key) is present in the list of fields to reset.
+    '''
     return [pair for pair in row if pair[0] not in fields_to_reset]
 
 
