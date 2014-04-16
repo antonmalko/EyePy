@@ -110,3 +110,15 @@ def QuestionTable(da1QFile, one, two):
     for row in qtable:
         qDict[row[0]] = row[1:6]
     return qDict
+
+
+def test_output(old_fn, new_fn, *args):
+    old_output = old_fn(args)
+    new_output = new_fn(args)
+    write_to_txt(old_output)
+    write_to_txt(new_output)
+    print old_output == new_output
+
+
+if __name__ == '__main__':
+    test_output(old_function, new_function, *args)
