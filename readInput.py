@@ -1,3 +1,5 @@
+from gum import *
+
 def readTable(filename):
 
     myFile = open(filename, "r")
@@ -11,6 +13,16 @@ def readTable(filename):
 
     myFile.close()
     return dataTable
+
+
+def read_table(filename):
+    '''Takes a file name as a string, opens it. Once that's done, takes each
+    non-empty row of the file and converts it into a list of strings.
+    Returns a list of rows (as lists of strings).
+    '''
+    with open(filename) as input_file:
+        nonewlines = [line.strip() for line in input_file]
+        return [line.split() for line in nonewlines if line]
 
 # tableTag creates a unique identifier for each line by concatenating the
 # values in column "one" and "two" in the "input" table.
@@ -113,12 +125,19 @@ def QuestionTable(da1QFile, one, two):
 
 
 def test_output(old_fn, new_fn, *args):
-    old_output = old_fn(args)
-    new_output = new_fn(args)
-    write_to_txt(old_output)
-    write_to_txt(new_output)
+    print 'Testing old stuff'
+    old_output = old_fn(*args)
+    writable_old = [' '.join(line) for line in old_output]
+    print 'Writing old stuff'
+    # print old_output
+    write_to_txt('readTable.out', writable_old, AddNewLines=True)
+    print 'Testing new stuff'
+    new_output = new_fn(*args)
+    writable_new = [' '.join(line) for line in new_output]
+    print 'Writing new stuff'
+    write_to_txt('read_table.out', writable_new, AddNewLines=True)
     print old_output == new_output
 
 
 if __name__ == '__main__':
-    test_output(old_function, new_function, *args)
+    test_output(readTable, read_table, 'gardenias.reg.txt')
