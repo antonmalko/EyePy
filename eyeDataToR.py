@@ -51,10 +51,9 @@ def ask_user_questions(question_sequence):
     return answers
 
 
-CUTOFF_PROMPT = '''The current cutoff settings are as follows.
-low: {0}
-high: {1}
-Would you like to change them?
+CUTOFF_PROMPT = '''The current cutoff settings are as follows.\n
+low: {0}\n
+high: {1}\nWould you like to change them?\n
 (type any variation on "yes" to change or anything else to proceed with current settings)\n'''
 
 
