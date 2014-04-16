@@ -1,7 +1,12 @@
 # UMD Eye-tracking script
+
+# CHANGELOG
 # Edited by: Shevaun Lewis, Ewan Dunbar & Sol Lago
 # 1. Added code for computing first pass-skips, 'fs' [01/11/13]
 # Last updated: 04/01/14
+# Major revisions by Ilia Kurenkov in 4/2014
+# For a record of activity, see this url:
+# https://github.com/UMDLinguistics/EyeTrackAnalysis.git
 
 # Concatenates data from .DA1, Eyedoctor-processed files into a format
 # suitable for R
@@ -377,82 +382,3 @@ def main(enable_user_input=True):
 if __name__ == '__main__':
     # main(enable_user_input=False)
     main()
-
-
-
-# #
-# # Main loop that processes each file in the data directory
-
-# dataOutput = []  # initialize output table
-
-# for dataFile in DataFileList:
-#     ## Make sure it's a DA1 file
-#     if is_DA1_file(dataFile):
-#         print ("This is not a DA1 file: {}\nSkipping...".format(dataFile))
-#     else:
-#         ## initialize output table for subject
-#         subjOutput = []
-#         ## Assume first three characters in filename is subject number
-#         subjNum = dataFile[0:3]
-#         ## Print file name to provide feedback to user
-#         print ("processing", dataFile)
-#         ## Read in and code data file --> dictionary with cond/item key
-#         data = FixationTable(dataDir + "/" + dataFile, 1, 2)
-#         ## if there is a question file for the subj,
-#         if subjNum in qsubj:
-#             ## lookup the file and make a dict with cond/item key
-#             qdata = QuestionTable(questionDir + "/" + qsubj[subjNum], 1, 2)
-#         else:
-#             qdata = {}
-#             print ("no question data for " + subjNum)
-
-#         ## Loop over keys in the data dictionary
-#         for dRow in data:
-#             ## if regionInfo has a row with a matching cond/item key
-#             if dRow in regionInfo:
-#                 ## 'regions' is a list of regions for that cond/item key
-#                 regions = regionInfo[dRow][3:]
-#                 # print regions
-#                 fixdata = data[dRow]
-#                 fixations = fixdata[8:]
-#                     # fixations is a list of the fixations--[X Y starttime
-#                     # endtime]
-#                 cond = fixdata[1]
-#                 item = fixdata[2]
-#                 order = fixdata[0]
-#                 if subjNum in qsubj and dRow in qdata:
-#                     ## get RT for question from qdata dictionary
-#                     questionRT = qdata[dRow][3]
-#                     # if buttonpress matches answer in qAns, then accuracy = 1,
-#                     # else 0
-#                     if qdata[dRow][4] == qAns[item][0]:
-#                         questionAcc = '1'
-#                     else:
-#                         questionAcc = '0'
-#                 else:
-#                     questionAcc = 'NA'
-#                     questionRT = 'NA'
-
-#             ## if no matching region info, provide feedback
-#             else:
-#                 print ("no region info: " + dRow)
-
-#             # loop over regions (nested lists of the form
-#             # [[Xstart,Ystart],[Xend,Yend]])
-#             for reg in regions:
-#                 ## number regions starting at "1"
-#                 regnum = str(regions.index(reg) + 1)
-#                 # start and endpoints for region, so length, line change can be
-#                 # computed later
-#                 regXstart = str(reg[0][0])
-#                 regYstart = str(reg[0][1])
-#                 regXend = str(reg[1][0])
-#                 regYend = str(reg[1][1])
-#                 for measure in measures:
-#                     outLine = [
-#                         subjNum, cond, item, value, regnum, regXstart, regXend,
-#                         regYstart, regYend, measure, order, questionRT, questionAcc]
-#                     subjOutput.append(outLine)
-
-#         ## Attach subjOutput to main dataOutput record of data
-#         dataOutput.extend(subjOutput)
