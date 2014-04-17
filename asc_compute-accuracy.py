@@ -27,6 +27,152 @@
 import re, sys, os
 
 # IK: this section is where I create my commands
+# to-do:
+# see individual fxns
+# docstrings
+# get_subj_n exceptions or prints
+# parsing exception a bit more informative?
+# testing
+
+def sanity_check(item_list):
+    return all((all(item) for item in item_list))
+
+
+ParsingException = Exception('''There were problems searching for entries.
+Please check your ASC file for corrupt entries''')
+
+
+def parse_asc_file(f_name):
+    # IK: will need to explain these regexes
+    trial_filter = 'TRIALID ([EF]\d+)I(\d+)D1\s.*' 
+    target_key = 'QUESTION_ANSWER (\d+)\s.*'
+    response_key = 'TRIAL_RESULT (\d+)\s'
+    # IK: think about var names here a bit
+    collect = trial_filter + target_key + response_key
+    # relevant_entry = 'TRIALID [EF]\w+1\s.*?QUESTION_ANSWER (\d+)\s.*?TRIAL_RESULT (\d+)\s'
+    rgx = re.compile(collect, re.DOTALL)
+    with open(f_name) as asc_file:
+        asc_file_string = asc_file.read()
+        extracted = rgx.findall(asc_file_string)
+        if sanity_check(extracted):
+            return extracted
+        else:
+            raise ParsingException 
+
+def filter_by_condition(cond_list, item_list):
+    return [item for item in item_list if item[0] in cond_list]
+
+
+def reformat_condition(item):
+    condition = item[0]
+    if condition.startswith('F'):
+        return ('99',) + item[1:]
+    else:
+        return (condition[1:],) + item[1:]
+
+
+def correctness(item):
+    # row = {}
+    # row['condition'] = reformat(item[0])
+    # row['condition'] = item[0]
+    # row['item_number'] = item[1]
+    # row['target key'] = item[2]
+    # row['response key'] = item[3]
+    # row['is correct'] = int(target_key == response_key)
+    return item + (int(target_key == response_key),)
+
+
+def not_filler(item_row):
+    if item_row[0].startswith('F'):
+        return False
+    return True
+
+
+def prep_for_writing(subj_n, item_list):
+    no_fillers = filter(not_filler, per_item_correct)
+    clean_conditions = (reformat_condition(item) for item in item_list)
+    include_subjects = [(subj_n,) + item for item in clean_conditions]
+    return include_subjects
+
+
+def create_row_dicts(fields_list, items_list):
+    return [dict(zip(fields, item)) for item in items_list]
+
+
+def subj_accuracy_stats(subj_number, item_list):
+    n_correct = sum(item['is correct'] for item in item_list)
+    n_total =  len(item_list)
+    accuracy = float(row['N correct']) / row['N total']
+    notes = '*Below 80%' if row['accuracy'] < 0.8 else ''
+    # IK: this function should return accuracy, #correct, total#, maybe more?
+    return (subj_number, n_correct, n_total, accuracy, notes)
+
+
+def empty_subj_row(subj_number):
+    # fields = ['subject', 'N correct', 'N total', 'accuracy', 'notes/flag']
+    values = [subj_number] + ['NA'] * (len(fields) - 1)
+    return dict(zip(fields, values))
+
+
+def process_subj(subj_n_file_path, out_dir):
+    subject_fields = [
+    'subject',
+    'condition',
+    'item',
+    'target key',
+    'response key'
+    'correct'
+    ]
+    subj_number, f_path = subj_n_file_path
+    subj_output_name = os.path.join(out_dir, subj_number) + '.csv'
+    try:
+        parsed_asc = parse_asc_file(f_path)
+        # this is where one can insert filtering by condition list, smthng like:
+        # filtered = filter_by_condition(conds, parsed_asc)
+        per_item_correct = [correctness(item) for item in parsed_asc]
+        formatted = prep_for_writing(subj_number, per_item_correct)
+        write_to_csv(subj_output_name,
+            create_row_dicts(subject_fields, formatted),
+            subject_fields)
+        return subj_accuracy_stats(subj_number, per_item_correct)
+    except ParsingException as e:
+        print e
+        return empty_subj_row(subj_number)
+
+
+def get_subj_num(file_name):
+    subj_n_rgx = re.compile('\d+')
+    matches = subj_n_rgx.findall(file_name)
+    if not matches:
+        # IK: revise this line
+        print "Unable to find subject number, please check this file name: " + file_name
+    elif len(matches) > 1:
+        # IK: maybe print the list of matches?
+        print "Can't seem to decide which to choose" + file_name
+    return matches[0]
+    
+
+def path_and_number(folder_name, file_name):
+    file_path = os.path.join(folder_name, file_name)
+    subj_number = get_subj_num(file_name)
+    return (subj_number, file_path)
+
+
+def parse_and_analyze(asc_dir, out_dir):
+    # IK: define list of fields or get it from user
+    asc_file_list = (f_name in os.listdir(asc_dir) if f_name.endswith('.asc'))
+    subj_list = (path_and_number(asc_dir, f_name) for f_name in )
+    accuracy_data = [process_subj(f_name, out_dir) for f_name in asc_file_list]
+    # IK: write this data to a file
+
+
+def main():
+    # IK: maybe ask user for directory input?
+    ASC = ''
+    OUTPUT = ''
+    # IK: definitely ask user for list of conditions
+    parse_and_analyze(ASC, OUTPUT)
+
 
 # IK: this sets data and output directories
 dataDir = (os.getcwd()+'/ASC-lite/')
