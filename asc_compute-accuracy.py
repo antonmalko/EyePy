@@ -28,12 +28,19 @@ import re, sys, os
 
 # IK: this section is where I create my commands
 # to-do:
-# see individual fxns
 # docstrings
 # get_subj_n exceptions or prints
 # testing
 
+
+#################################################
+## Parsing ASC files
+#################################################
+
 def sanity_check(item_list):
+    """Checks for emtpy items in a list using python's all() function, which 
+    returns True only if all elements of a list/tuple are non-empty or not False.
+    """
     return all((all(item) for item in item_list))
 
 
@@ -59,7 +66,13 @@ def parse_asc_file(f_name):
             raise ParsingException
 
 
+#################################################
+## Writing subject per-item data to files
+#################################################
+
 def not_filler(item_row):
+    """Checks whether the first element of an item contains 'F', for 'filler'.
+    """
     return not item_row[0].startswith('F')
 
 
@@ -77,6 +90,10 @@ def prep_for_writing(subj_n, item_list):
     include_subjects = [(subj_n,) + item for item in clean_conditions]
     return include_subjects
 
+
+#################################################
+## Processing each subject
+#################################################
 
 def filter_by_condition(cond_list, item_list):
     return [item for item in item_list if item[0] in cond_list]
@@ -96,6 +113,7 @@ def subj_accuracy_stats(subj_number, item_list):
 
 
 def create_row_dicts(fields_list, items_list):
+    # IK: this should go into a separate file, I think
     return [dict(zip(fields, item)) for item in items_list]
 
 
@@ -132,6 +150,9 @@ def process_subj(subj_n_file_path, out_dir, conditions):
         print(e)
         return empty_subj_row(subj_number)
 
+#################################################
+## User Input, Files and Directories
+#################################################
 
 def get_subj_num(file_name):
     subj_n_rgx = re.compile('\d+')
