@@ -31,7 +31,6 @@ import re, sys, os
 # see individual fxns
 # docstrings
 # get_subj_n exceptions or prints
-# parsing exception a bit more informative?
 # testing
 
 def sanity_check(item_list):
@@ -58,6 +57,7 @@ def parse_asc_file(f_name):
             return extracted
         else:
             raise ParsingException 
+
 
 def filter_by_condition(cond_list, item_list):
     return [item for item in item_list if item[0] in cond_list]
@@ -136,7 +136,8 @@ def process_subj(subj_n_file_path, out_dir):
             subject_fields)
         return subj_accuracy_stats(subj_number, per_item_correct)
     except ParsingException as e:
-        print e
+        print('Error parsing file: ', f_path)
+        print(e)
         return empty_subj_row(subj_number)
 
 
