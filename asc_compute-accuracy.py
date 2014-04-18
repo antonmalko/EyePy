@@ -56,11 +56,11 @@ def parse_asc_file(f_name):
         if sanity_check(extracted):
             return extracted
         else:
-            raise ParsingException 
+            raise ParsingException
 
 
-def filter_by_condition(cond_list, item_list):
-    return [item for item in item_list if item[0] in cond_list]
+def not_filler(item_row):
+    return not item_row[0].startswith('F')
 
 
 def reformat_condition(item):
@@ -71,23 +71,6 @@ def reformat_condition(item):
         return (condition[1:],) + item[1:]
 
 
-def correctness(item):
-    # row = {}
-    # row['condition'] = reformat(item[0])
-    # row['condition'] = item[0]
-    # row['item_number'] = item[1]
-    # row['target key'] = item[2]
-    # row['response key'] = item[3]
-    # row['is correct'] = int(target_key == response_key)
-    return item + (int(target_key == response_key),)
-
-
-def not_filler(item_row):
-    if item_row[0].startswith('F'):
-        return False
-    return True
-
-
 def prep_for_writing(subj_n, item_list):
     no_fillers = filter(not_filler, per_item_correct)
     clean_conditions = (reformat_condition(item) for item in item_list)
@@ -95,8 +78,12 @@ def prep_for_writing(subj_n, item_list):
     return include_subjects
 
 
-def create_row_dicts(fields_list, items_list):
-    return [dict(zip(fields, item)) for item in items_list]
+def filter_by_condition(cond_list, item_list):
+    return [item for item in item_list if item[0] in cond_list]
+
+
+def correctness(item):
+    return item + (int(target_key == response_key),)
 
 
 def subj_accuracy_stats(subj_number, item_list):
@@ -108,13 +95,17 @@ def subj_accuracy_stats(subj_number, item_list):
     return (subj_number, n_correct, n_total, accuracy, notes)
 
 
+def create_row_dicts(fields_list, items_list):
+    return [dict(zip(fields, item)) for item in items_list]
+
+
 def empty_subj_row(subj_number):
     # fields = ['subject', 'N correct', 'N total', 'accuracy', 'notes/flag']
     values = [subj_number] + ['NA'] * (len(fields) - 1)
     return dict(zip(fields, values))
 
 
-def process_subj(subj_n_file_path, out_dir):
+def process_subj(subj_n_file_path, out_dir, conditions):
     subject_fields = [
     'subject',
     'condition',
@@ -128,7 +119,8 @@ def process_subj(subj_n_file_path, out_dir):
     try:
         parsed_asc = parse_asc_file(f_path)
         # this is where one can insert filtering by condition list, smthng like:
-        # filtered = filter_by_condition(conds, parsed_asc)
+        if conditions:
+            parsed_asc = filter_by_condition(conditions, parsed_asc)
         per_item_correct = [correctness(item) for item in parsed_asc]
         formatted = prep_for_writing(subj_number, per_item_correct)
         write_to_csv(subj_output_name,
@@ -159,20 +151,31 @@ def path_and_number(folder_name, file_name):
     return (subj_number, file_path)
 
 
-def parse_and_analyze(asc_dir, out_dir):
+def parse_and_analyze(asc_dir, out_dir, conditions):
+    # IK: rename ^^ this
     # IK: define list of fields or get it from user
     asc_file_list = (f_name in os.listdir(asc_dir) if f_name.endswith('.asc'))
-    subj_list = (path_and_number(asc_dir, f_name) for f_name in )
-    accuracy_data = [process_subj(f_name, out_dir) for f_name in asc_file_list]
+    subj_list = (path_and_number(asc_dir, f_name) for f_name in asc_file_list)
+    accuracy_data = [process_subj(f_name, out_dir, conditions)
+                                    for f_name in asc_file_list]
     # IK: write this data to a file
+
+def ask_for_conditions():
+    #ask the user
+    cond_string = input('Please enter the conditions you are interested in, separated by spaces.')
+    cond_list = cond_string.strip().split()
+    if len(cond_list) == 0:
+        print("Unable to detect any conditions, will look at all trials.")
+    return cond_list
 
 
 def main():
     # IK: maybe ask user for directory input?
     ASC = ''
     OUTPUT = ''
+    relevant_conditions = ask_for_conditions()
     # IK: definitely ask user for list of conditions
-    parse_and_analyze(ASC, OUTPUT)
+    parse_and_analyze(ASC, OUTPUT, relevant_conditions)
 
 
 # IK: this sets data and output directories
