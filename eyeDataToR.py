@@ -265,7 +265,7 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'rr': rereading_time,
     'prr': prob_rereading,
     }
-    binomial_measures = ['fs', 'pr', 'rrp']
+    binomial_measures = ['fs', 'pr', 'prr']
     row_list = []
     for measure in measures:
         new_row = reset_fields(row, ['fixationtype', 'value'])
