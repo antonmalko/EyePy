@@ -158,6 +158,34 @@ def regression_path(region, fixations, lowCutoff, highCutoff):
     return regression_sum
 
 
+def regression_prob(region, fixations, lowCutoff, highCutoff):
+    '''Returns either 1 or 0 depending on whether a regression happens 
+    from current region.
+    '''
+    was_visited = False
+    regression_prob = 0
+
+    ## loop through each fixation
+    for f in fixations:
+        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
+        # only use fixation if duration is within cutoffs
+        if lowCutoff < duration < highCutoff:
+            # check where fixation was relative to region
+            fixation_position = region_check(region, f)
+            # break if region exited to the right
+            if fixation_position == 'after':
+                break
+            # if the fixation is in ROI, mark ROI as having been visited
+            elif fixation_position == 'within':
+                was_visited = True
+            # if ROI was visited and regression to preceding region happened
+            elif was_visited and fixation_position == 'before':
+                regression_prob = 1
+                break
+
+    return regression_prob
+
+
 def right_bound(region, fixations, lowCutoff, highCutoff):
     '''Sum of all fixations in a region before it is exited to the right.
     '''
@@ -202,34 +230,6 @@ def total_time(region, fixations, lowCutoff, highCutoff):
                 total_time_sum = total_time_sum + duration
 
     return total_time_sum
-
-
-def percent_regression(region, fixations, lowCutoff, highCutoff):
-    '''Returns either 1 or 0 depending on whether a regression happens 
-    from current region.
-    '''
-    was_visited = False
-    regression_prob = 0
-
-    ## loop through each fixation
-    for f in fixations:
-        duration = f[3] - f[2]  # calculate duration (endtime - starttime)
-        # only use fixation if duration is within cutoffs
-        if lowCutoff < duration < highCutoff:
-            # check where fixation was relative to region
-            fixation_position = region_check(region, f)
-            # break if region exited to the right
-            if fixation_position == 'after':
-                break
-            # if the fixation is in ROI, mark ROI as having been visited
-            elif fixation_position == 'within':
-                was_visited = True
-            # if ROI was visited and regression to preceding region happened
-            elif was_visited and fixation_position == 'before':
-                regression_prob = 1
-                break
-
-    return regression_prob
 
 
 def single_fixation_duration(region, fixations, lowCutoff, highCutoff):

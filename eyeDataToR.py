@@ -258,7 +258,7 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'fp': first_pass,
     'fs': first_skip,
     'sf': single_fixation_duration,
-    'pr': percent_regression,
+    'pr': regression_prob,
     'rp': regression_path,
     'rb': right_bound,
     'tt': total_time,
