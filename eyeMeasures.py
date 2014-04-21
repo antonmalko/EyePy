@@ -232,7 +232,7 @@ def total_time(region, fixations, lowCutoff, highCutoff):
     return total_time_sum
 
 
-def single_fixation_duration(region, fixations, lowCutoff, highCutoff):
+def single_fixation(region, fixations, lowCutoff, highCutoff):
     '''Given a region, fixation list, and low/high cutoff values, returns
     the duration of the fixation on the region if it was the only fixation.
     Otherwise returns zero.
