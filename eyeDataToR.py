@@ -258,12 +258,12 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'fp': first_pass,
     'fs': first_skip,
     'sf': single_fixation,
-    'pr': regression_prob,
+    'pr': prob_regression,
     'rp': regression_path,
     'rb': right_bound,
     'tt': total_time,
     'rr': rereading_time,
-    'rrp': rereading_probability,
+    'prr': prob_rereading,
     }
     binomial_measures = ['fs', 'pr', 'rrp']
     row_list = []

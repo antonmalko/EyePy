@@ -158,7 +158,7 @@ def regression_path(region, fixations, lowCutoff, highCutoff):
     return regression_sum
 
 
-def regression_prob(region, fixations, lowCutoff, highCutoff):
+def prob_regression(region, fixations, lowCutoff, highCutoff):
     '''Returns either 1 or 0 depending on whether a regression happens 
     from current region.
     '''
@@ -245,7 +245,7 @@ def single_fixation(region, fixations, lowCutoff, highCutoff):
         return 0
 
 
-def rereading_prob(region, fixations, lowCutoff, highCutoff):
+def prob_rereading(region, fixations, lowCutoff, highCutoff):
     '''given a region and a fixations list calculates whether the region was
     reread or not.
     Returns either 1 or 0, having converted boolean test to an integer.
