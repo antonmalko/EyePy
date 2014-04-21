@@ -180,7 +180,7 @@ def right_bound(region, fixations, lowCutoff, highCutoff):
     return right_bound_sum
 
 
-def reread_time(region, fixations, lowCutoff, highCutoff):
+def rereading_time(region, fixations, lowCutoff, highCutoff):
     '''Returns the difference between total reading time and the first pass 
     reading time for the current region.
     '''

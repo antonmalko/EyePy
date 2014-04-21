@@ -66,10 +66,11 @@ def ask_user_questions(question_sequence):
     return answers
 
 
-CUTOFF_PROMPT = '''The current cutoff settings are as follows.\n
-low: {0}\n
-high: {1}\nWould you like to change them?\n
-(type any variation on "yes" to change or anything else to proceed with current settings)\n'''
+CUTOFF_PROMPT = '''The current cutoff settings are as follows.
+low: {0}
+high: {1}
+Would you like to change them?
+N.B. Type "YES"  to change or anything else to proceed with current settings.\n'''
 
 
 # IK: think about maybe setting default values for cutoffs?
@@ -256,13 +257,15 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
     'ff': first_fixation,
     'fp': first_pass,
     'fs': first_skip,
+    'sf': single_fixation_duration,
     'pr': percent_regression,
     'rp': regression_path,
     'rb': right_bound,
     'tt': total_time,
-    'rr': reread_time,
+    'rr': rereading_time,
+    'rrp': rereading_probability,
     }
-    binomial_measures = ['fs', 'pr']
+    binomial_measures = ['fs', 'pr', 'rrp']
     row_list = []
     for measure in measures:
         new_row = reset_fields(row, ['fixationtype', 'value'])
@@ -285,7 +288,7 @@ def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
 
     default_files = {
-        'REG filename': 'gardenias.reg.txt',
+        'REG filename': 'output.reg.txt',
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
         'Question data folder': 'Gardenias-q',
@@ -355,7 +358,7 @@ def main(enable_user_input=True):
                     # IK: why do we need items 0-2 in that list anyway?
                     regions = table_of_regions[cond_item][3:]
                 except:
-                    raise 'Missing region information for this cond/item: ' + cond_item
+                    raise Exception('Missing region information for this cond/item: ' + cond_item)
 
                 # this may need to be revised, IK
                 row, item = unpack_trial_data(row, fixation_table[cond_item])
@@ -380,5 +383,5 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    # main(enable_user_input=False)
-    main()
+    main(enable_user_input=False)
+    # main()
