@@ -250,4 +250,4 @@ def prob_rereading(region, fixations, lowCutoff, highCutoff):
     reread or not.
     Returns either 1 or 0, having converted boolean test to an integer.
     '''
-    return int(reread_time(region, fixations, lowCutoff, highCutoff) > 0)
+    return int(rereading_time(region, fixations, lowCutoff, highCutoff) > 0)
