@@ -237,9 +237,9 @@ def single_fixation(region, fixations, lowCutoff, highCutoff):
     the duration of the fixation on the region if it was the only fixation.
     Otherwise returns zero.
     '''
-    first_fixation = first_fixation(region, fixations, lowCutoff, highCutoff)
+    first_fix = first_fixation(region, fixations, lowCutoff, highCutoff)
     total_fixation = total_time(region, fixations, lowCutoff, highCutoff)
-    if first_fixation == total_fixation:
+    if first_fix == total_fixation:
         return total_fixation
     else:
         return 0
