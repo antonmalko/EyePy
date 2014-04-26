@@ -248,14 +248,28 @@ def compute_accuracy(asc_dir, out_dir, accuracy_file, conditions):
 ## User input and main()
 #################################################
 
+def parse_condition(condition):
+    if '-' in condition:
+        [start, end] = condition.split('-')
+        return [str(number) for number in range(int(start), int(end) + 1)]
+    return condition
+
+
+# def flatten(conditions):
+#     output = []
+#     for cond in conditions:
+#         if is_instance(cond, list):
+            
+
 
 def ask_for_conditions():
     cond_string = input('Please enter the conditions you are interested in, separated by spaces.\n')
     cond_list = cond_string.strip().split()
     if len(cond_list) == 0:
         print("Unable to detect any conditions, will look at all trials.\n")
+    parsed_conditions = [parse_condition(cond) for cond in cond_list]
     # print(cond_list)
-    return cond_list
+    return parsed_conditions
 
 
 def ik_main():
@@ -263,8 +277,9 @@ def ik_main():
     ASC = 'asc'
     OUTPUT = 'Accuracy'
     relevant_conditions = ask_for_conditions()
-    accuracy_file = input('Please specify name of accuracy table file.\n')
-    compute_accuracy(ASC, OUTPUT, accuracy_file, relevant_conditions)
+    print(relevant_conditions)
+    # accuracy_file = input('Please specify name of accuracy table file.\n')
+    # compute_accuracy(ASC, OUTPUT, accuracy_file, relevant_conditions)
 
 if __name__ == '__main__':
     # wyc()
