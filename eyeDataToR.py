@@ -171,12 +171,15 @@ def create_subj_tables(sentence_dir, question_dir):
     '''
     sentence_paths = create_file_paths(sentence_dir)
     question_paths = create_file_paths(question_dir)
-    all_paths = [(subj, path, question_paths[subj]) 
-    for subj, path in sentence_paths.items() if subj in question_paths]
-    all_paths += [(subj, path, '') 
-    for subj, path in question_paths.items() if subj not in question_paths]
-    all_paths += [(subj, '', path) 
-    for subj, path in question_paths.items() if subj not in sentence_paths]
+    all_paths = [(subj, path, question_paths[subj])
+                    for subj, path in sentence_paths.items()
+                    if subj in question_paths]
+    all_paths += [(subj, path, '')
+                    for subj, path in question_paths.items()
+                    if subj not in question_paths]
+    all_paths += [(subj, '', path)
+                    for subj, path in question_paths.items()
+                    if subj not in sentence_paths]
     return map(files_to_tables, all_paths)
     # all_fixations [(subj, FixationTable(sent_path), QuestionTable(q_path))]
     # subj_nums = (get_subj_num(f_name) for f_name in file_list)
