@@ -160,8 +160,8 @@ def create_file_paths(directory):
 def files_to_tables(subj, fix_filename, q_filename):
     # this assumes there will at least be one file for the subject
     # is this a reasonable assumption to make?
-    fixation_table = FixationTable(fix_filename, 1, 0) if fix_filename else None
-    question_table = QuestionTable(fix_filename, 1, 0) if fix_filename else None
+    fixation_table = FixationTable(fix_filename, 1, 0) if is_DA1_file(fix_filename) else None
+    question_table = QuestionTable(fix_filename, 1, 0) if is_DA1_file(q_filename) else None
     return (subj, fixation_table, question_table)
 
 
