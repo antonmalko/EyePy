@@ -148,26 +148,41 @@ def get_subj_num(filename):
     return filename[0:3]
 
 
-def read_question_tables(question_dir):
-    '''Given a folder name returns a dictionary where subject numbers are the 
-    keys and QuestionTable lists are the values.
+def create_file_paths(directory):
+    '''Given a folder name returns a list of (subject_number, file_path tuples).
     '''
-    file_list = os.listdir(question_dir)
-    subj_nums = (get_subj_num(f_name) for f_name in file_list)
-    question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
-        for f_name in file_list)
-    return dict(zip(subj_nums, question_tables))
-
-
-def create_file_paths(sentence_dir):
-    '''Given a folder name returns a dictionary where subject numbers are keys
-    and file paths are values.
-    '''
-    file_list = os.listdir(sentence_dir)
-    subj_nums = (get_subj_num(f_name) for f_name in file_list)
     file_paths = (os.path.join(sentence_dir, f_name)
-        for f_name in file_list)
+        for f_name in os.listdir(directory))
+    subj_nums = (get_subj_num(f_name) for f_name in file_list)
     return dict(zip(subj_nums, file_paths))
+
+
+def files_to_tables(subj, fix_filename, q_filename):
+    # this assumes there will at least be one file for the subject
+    # is this a reasonable assumption to make?
+    fixation_table = FixationTable(fix_filename, 1, 0) if fix_filename else None
+    question_table = QuestionTable(fix_filename, 1, 0) if fix_filename else None
+    return (subj, fixation_table, question_table)
+
+
+def create_subj_tables(sentence_dir, question_dir):
+    '''Given folder names for sentences and questions returns .
+    IK: talk about what happens if there are non-overlapping entries.
+    '''
+    sentence_paths = create_file_paths(sentence_dir)
+    question_paths = create_file_paths(question_dir)
+    all_paths = [(subj, path, question_paths[subj]) 
+    for subj, path in sentence_paths.items() if subj in question_paths]
+    all_paths += [(subj, path, '') 
+    for subj, path in question_paths.items() if subj not in question_paths]
+    all_paths += [(subj, '', path) 
+    for subj, path in question_paths.items() if subj not in sentence_paths]
+    return map(files_to_tables, all_paths)
+    # all_fixations [(subj, FixationTable(sent_path), QuestionTable(q_path))]
+    # subj_nums = (get_subj_num(f_name) for f_name in file_list)
+    # question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
+    #     for f_name in file_list)
+    # return dict(zip(subj_nums, question_tables))
 
 
 #######################################
@@ -294,7 +309,7 @@ def collect_measures(row, region, fixations, lowCutoff, highCutoff):
 
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
-
+    # IK: the default files dictionary is there mostly for development
     default_files = {
         'REG filename': 'output.reg.txt',
         'Question key filename': 'expquestions.txt',
@@ -302,6 +317,7 @@ def main(enable_user_input=True):
         'Question data folder': 'Gardenias-q',
         'Output filename': 'testing2.csv',
     }
+    # define list of questions to be asked of user if defaults aren't used
     our_questions = [
         'REG filename',
         'Question key filename',
@@ -310,7 +326,7 @@ def main(enable_user_input=True):
         'Output filename',
     ]
 
-    # Create output header
+    # defining output header
     output_header = [
     'subj',
     'cond',
@@ -341,14 +357,13 @@ def main(enable_user_input=True):
     # print 'regions:'
     # print table_of_regions
 
-    # Read in question answer key, create dictionar.
+    # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
     answer_key = dictTable(read_table(file_names['Question key filename']))
 
     # Get file lists (contents of the data and question directories)
-    sentences_by_subj = create_file_paths(file_names['Sentence data folder'])
-    # create dictionary of question responses by subject
-    questions_by_subj = read_question_tables(file_names['Question data folder'])
+    tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
+                                            file_names['Question data folder'])
 
     dataOutput = []
 
