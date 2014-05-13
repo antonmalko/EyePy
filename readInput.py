@@ -110,18 +110,18 @@ def QuestionTable(da1QFile, one, two):
 
 
 def test_output(old_fn, new_fn, *args):
-    print 'Testing old stuff'
+    print('Testing old stuff')
     old_output = old_fn(*args)
     writable_old = [' '.join(line) for line in old_output]
-    print 'Writing old stuff'
+    print('Writing old stuff')
     # print old_output
     write_to_txt('readTable.out', writable_old, AddNewLines=True)
-    print 'Testing new stuff'
+    print('Testing new stuff')
     new_output = new_fn(*args)
     writable_new = [' '.join(line) for line in new_output]
-    print 'Writing new stuff'
+    print('Writing new stuff')
     write_to_txt('read_table.out', writable_new, AddNewLines=True)
-    print old_output == new_output
+    print(old_output == new_output)
 
 
 if __name__ == '__main__':

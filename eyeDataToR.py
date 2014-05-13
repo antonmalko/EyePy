@@ -285,11 +285,11 @@ def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
 
     default_files = {
-        'REG filename': 'gardenias.reg.txt',
+        'REG filename': 'output.reg.txt',
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
         'Question data folder': 'Gardenias-q',
-        'Output filename': 'testing2.csv',
+        'Output filename': 'gold-loops.csv',
     }
     our_questions = [
         'REG filename',
@@ -380,5 +380,5 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    # main(enable_user_input=False)
-    main()
+    main(enable_user_input=False)
+    # main()
