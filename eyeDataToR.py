@@ -138,6 +138,8 @@ def create_row_dict(fields, item):
     length_difference = len(fields) - len(item)
     error_message = 'There are more items than labels for them: {0}'
     if length_difference < 0:
+        print(fields)
+        print(item)
         raise Exception(error_message.format(length_difference))
     elif length_difference > 0:
         item = item + ('NA',) * length_difference
@@ -152,28 +154,34 @@ def is_DA1_file(filename):
     return filename.endswith('.da1') or filename.endswith('.DA1')
 
 
-def get_subj_num(filename):
-    '''Given a filename returns the subject number.
-    Currently uses convention that first 3 chars in filename are subj number.
-    Can (and should) be changed in the future to something more robust.
-    '''
-    return filename[0:3]
+def get_subj_num(file_name):
+    subj_n_rgx = re.compile('\d+')
+    extensionless = file_name.split('.')[0]
+    matches = subj_n_rgx.findall(extensionless)
+    if not matches:
+        # IK: revise this line
+        print("Unable to find subject number, please check this file name: " + file_name)
+    elif len(matches) > 1:
+        # IK: maybe print the list of matches?
+        print("Can't seem to decide which to choose " + file_name)
+    return matches[0]
 
 
 def create_file_paths(directory):
     '''Given a folder name returns a list of (subject_number, file_path tuples).
     '''
-    file_paths = (os.path.join(sentence_dir, f_name)
+    file_paths = (os.path.join(directory, f_name)
         for f_name in os.listdir(directory))
-    subj_nums = (get_subj_num(f_name) for f_name in file_list)
+    subj_nums = (get_subj_num(f_name) for f_name in file_paths)
     return dict(zip(subj_nums, file_paths))
 
 
-def files_to_tables(subj, fix_filename, q_filename):
+def files_to_tables(subj_paths):
     # this assumes there will at least be one file for the subject
     # is this a reasonable assumption to make?
-    fixation_table = FixationTable(fix_filename, 1, 0) if is_DA1_file(fix_filename) else None
-    question_table = QuestionTable(fix_filename, 1, 0) if is_DA1_file(q_filename) else None
+    subj, fix_filename, q_filename = subj_paths
+    fixation_table = FixationTable(fix_filename, 1, 2) if is_DA1_file(fix_filename) else None
+    question_table = QuestionTable(fix_filename, 1, 2) if is_DA1_file(q_filename) else None
     return (subj, fixation_table, question_table)
 
 
@@ -231,24 +239,35 @@ def reset_fields(row, fields_to_reset):
     return [pair for pair in row if pair[0] not in fields_to_reset]
 
 
-# def unpack_trial_data(trial):
-#     '''
-#     '''
-#     # new_row = reset_fields(row, ['order', 'cond', 'item'])
-#     # new_row.append(('order', trial[0]))
-#     # new_row.append(('cond', trial[1]))
-#     # new_row.append(('item', trial[2]))
-#     return trial[:3]
+def expand(field1, more_fields):
+    # print('field1' + str(field1))
+    # print(list(more_fields))
+    try:
+        return [field1 + field for field in more_fields]        
+    except Exception as e:
+        print('field1' + str(field1))
+        # print(list(more_fields))
+        raise e
+
+
+def trial_fields(trial):
+    '''
+    '''
+    # new_row = reset_fields(row, ['order', 'cond', 'item'])
+    # new_row.append(('order', trial[0]))
+    # new_row.append(('cond', trial[1]))
+    # new_row.append(('item', trial[2]))
+    return tuple(trial[:3])
 
 
 def unpack_region_data(region_index, region):
     '''.
     '''
-    return (str(region_index + 1), 
-        str(region[0][0]),
-        str(region[0][1]),
-        str(region[1][0]),
-        str(region[1][1])
+    return (str(region_index + 1),  # region number
+        str(region[0][0]),  # Xstart
+        str(region[0][1]),  # Ystart
+        str(region[1][0]),  # Xend
+        str(region[1][1])   # Yend
         )
 
 
@@ -272,9 +291,10 @@ def q_RT_acc(cond_item, item, q_table, answer_key):
     # return new_row
 
 
-def zero_to_NA(measure, value, binomial_measures):
+def zero_to_NA(item, binomial_measures):
     """
     """
+    measure, value = item
     if measure in binomial_measures and value == 0:
         return (measure, 'NA')
     return (measure, value)
@@ -303,8 +323,9 @@ def region_measures(region, fixations, cutoffs):
     # region_data = unpack_region_data(region_index, region)
     measure_data = ((measure_name, func(region, fixations, low_cutoff, high_cutoff))
                         for measure_name, func in measures)
-    measures_to_NAs = (zero_to_NA(*item, binomial_measures) 
+    measures_to_NAs = (zero_to_NA(item, binomial_measures) 
                         for item in measure_data)
+    # return list(measures_to_NAs)
     return measures_to_NAs
     # consider turning this into an iterator
     # return [region_data + measure for measure in measures_to_NAs]
@@ -323,45 +344,59 @@ def region_measures(region, fixations, cutoffs):
 
 
 def process_regions(cond_item, fixations, table_of_regions, cutoffs):
+    # print(cond_item)
     try:
         # IK: why do we need items 0-2 in that list anyway?
         regions = table_of_regions[cond_item][3:]
-    except:
-        raise Exception('Missing region information for this cond/item: ' + cond_item)
+    except KeyError:
+        print('Missing region information for this cond/item: ' + cond_item)
+        raise
 
     region_data = (unpack_region_data(i, regions[i]) for i in range(len(regions)))
+    # print(list(region_data))
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
-    return [expand(r, m) for r, m in zip(region_data, measures)]
+    # print(list(measures))
+    # test = (expand(r, m) for r, m in zip(region_data, measures))
+    # print(list(test))
+    # return chain((expand(r, m) for r, m in zip(region_data, measures)))
+    return (expand(r, m) for r, m in zip(region_data, measures))
 
 
 # def process_items(fixation_table, cutoffs):
 #     return [expand(item, regions) for item, regions in zip()]
 
 
-def process_subj(subj_data, table_of_regions, answer_key):
+def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
     subj_number, f_table, q_table = subj_data
+    # print([(key, value[:3]) for key, value in f_table.items()])
     print('Processing subject #' + subj_number)
 
     if f_table:
+        print('Found fixation data for this subject, will compute measures.')
         region_data = (process_regions(f, f_table[f][8:], table_of_regions, cutoffs)
                                                             for f in f_table)
-        trials = (f_table[cond_item][:3] for cond_item in f_table)
+        flat_regions = (chain(*reg_list) for reg_list in region_data)
+        # flat_regions = chain(region_data)
+        trials = (trial_fields(f_table[cond_item]) for cond_item in f_table)
     else:
         print('No fixation data found for this subject.')
         region_data, trials = [], []
     
     if q_table:
+        print('Found question data for subject, will compute accuracy.')
         accuracies = (q_RT_acc(cond_item, trial[2], q_table, answer_key) 
                         for cond_item, trial in zip(f_table.keys(), trials))
     else:
         print('No question data found for this subject.')
         accuracies = []
     # this step can be skipped if we don't want question accuracies computed
+    # print(list(trials))
+    # print(list(accuracies))
     add_q_info = (trial + q_info for trial, q_info in zip(trials, accuracies))
     # drop_labels = (trial[1:] for trial in add_q_info)
     item_rows = [expand(item, regions) 
-                for item, regions in zip(add_q_info, region_data)]
-    return expand(subj_number, item_rows)
+                for item, regions in zip(add_q_info, flat_regions)]
+    return expand((subj_number,), chain(*item_rows))
 
     # item_data = (proc_item(item, table_of_regions))
 #     return [(subj_number,) + row for row in item_data]
@@ -383,7 +418,7 @@ def main(enable_user_input=True):
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
         'Question data folder': 'Gardenias-q',
-        'Output filename': 'testing2.csv',
+        'Output filename': 'testing-loopless.csv',
     }
     # define list of questions to be asked of user if defaults aren't used
     our_questions = [
@@ -397,18 +432,18 @@ def main(enable_user_input=True):
     # defining output header
     output_header = [
     'subj',
+    'order',
     'cond',
     'item',
-    'value',
+    'questionRT',
+    'questionAcc',
     'region',
     'Xstart',
     'Xend',
     'Ystart',
     'Yend',
     'fixationtype',
-    'order',
-    'questionRT',
-    'questionAcc'
+    'value',
     ]
 
     if enable_user_input:
@@ -433,9 +468,10 @@ def main(enable_user_input=True):
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
     subj_rows = (process_subj(subj_data, table_of_regions,
-                                answer_key, cutoffs)) 
-                                for subj_data in tables_by_subj)
-    output = (create_row_dict(output_header, row) for row in chain(subj_rows))
+        answer_key, cutoffs)
+    for subj_data in tables_by_subj)
+    # print(list(subj_rows))
+    output = (create_row_dict(output_header, row) for row in chain(*subj_rows))
 
     # for subj_num, data_file_path in sentences_by_subj.items():
     #     row = []
