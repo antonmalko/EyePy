@@ -246,21 +246,21 @@ def unpack_region_data(region_index, region):
             str(region[0][1]), str(region[1][0]), str(region[1][1]))
 
 
-def set_question_RT_Acc(row, cond_item, subj_qs, answer):
-    '''Given a row, a condition/item tag, a list of subject responses to questions
-    as well as the correct answer, sets the RT and accuracy fields in the row.
-    Returns the row.
+def question_fields(response, answer):
     '''
-    new_row = reset_fields(row, ['questionRT', 'questionAcc'])
+    '''
+    # new_row = reset_fields(row, ['questionRT', 'questionAcc'])
     # try to look up/compute the values for the fields
     try:
-        new_row.append(('questionRT', subj_qs[cond_item][3]))
-        new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
+        return (response[3], int(response[4] == answer[0]))
+        # new_row.append(('questionRT', subj_qs[cond_item][3]))
+        # new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
     # if this fails, set all fields to NA
     except:
-        new_row.append(('questionRT', 'NA'))
-        new_row.append(('questionAcc', 'NA'))
-    return new_row
+        return ('NA', 'NA')
+        # new_row.append(('questionRT', 'NA'))
+        # new_row.append(('questionAcc', 'NA'))
+    # return new_row
 
 
 def zero_to_NA(measure, value, binomial_measures):
@@ -313,6 +313,9 @@ def region_measures(region_index, region, fixations, cutoffs):
 
 def process_subj(subj_data, table_of_regions, answer_key):
     subj_number, f_table, q_table = subj_data
+    trials = ((f,) + unpack_trial_data(f_table[f]) for f in f_table)
+    trials_with_q_info = (trial + question_fields(q_table[trial[0]], answer_key[trial[3]])
+        for trial in trials)
 
     item_data = (proc_item(item, table_of_regions))
     return [(subj_number,) + row for row in item_data]
