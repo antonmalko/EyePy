@@ -240,7 +240,7 @@ def unpack_trial_data(row, trial):
     return (new_row, trial[2])
 
 
-def unpack_region_data(row, region, region_index):
+def unpack_region_data(region_index, region):
     '''.
     '''
     return (str(region_index + 1), str(region[0][0]), 
@@ -292,8 +292,8 @@ def region_measures(region_index, region, fixations, cutoffs):
     }
     binomial_measures = ['fs', 'pr', 'prr']
     low_cutoff, high_cutoff = cutoffs
-    # row_list = []
-    measure_data = ((measure_name, func(region, fixations, lowCutoff, highCutoff))
+    region_data = unpack_region_data(region_index, region)
+    measure_data = ((measure_name, func(region, fixations, cutoffs))
                         for measure_name, func in measures)
     measures_to_NAs = (zero_to_NA(*item, binomial_measures) 
                         for item in measure_data)
