@@ -132,6 +132,16 @@ def write_to_csv(file_name, data, header, **kwargs):
         output.writerows(data)
 
 
+def create_row_dict(fields, item):
+    # IK: this should go into a separate file, I think
+    length_difference = len(fields) - len(item)
+    if length_difference < 0:
+        raise Exception('There are more items than labels for them: ' + str(length_difference))
+    elif length_difference > 0:
+        item = item + ('NA',) * length_difference
+    return dict(zip(fields, item))
+
+
 def is_DA1_file(filename):
     '''Checks if a file name has DA1 extension.
     Currently accepts both ".da1" and ".DA1" files.
@@ -231,17 +241,10 @@ def unpack_trial_data(row, trial):
 
 
 def unpack_region_data(row, region, region_index):
-    '''Takes a row and a region as arguments. Sets some of the row's fields
-    to values gotten from the region.
-    Returns the row.
+    '''.
     '''
-    new_row = reset_fields(row, ['region', 'Xstart', 'Ystart', 'Xend', 'Yend'])
-    new_row.append(('region', str(region_index + 1)))
-    new_row.append(('Xstart', str(region[0][0])))
-    new_row.append(('Ystart', str(region[0][1])))
-    new_row.append(('Xend', str(region[1][0])))
-    new_row.append(('Yend', str(region[1][1])))
-    return new_row
+    return (str(region_index + 1), str(region[0][0]), 
+            str(region[0][1]), str(region[1][0]), str(region[1][1]))
 
 
 def set_question_RT_Acc(row, cond_item, subj_qs, answer):
@@ -261,49 +264,53 @@ def set_question_RT_Acc(row, cond_item, subj_qs, answer):
     return new_row
 
 
-def zero_to_NA(value):
-    """Given any numeric value converts it to "NA" if it's zero. 
-    Returns unchanged value otherwise.
+def zero_to_NA(measure, value, binomial_measures):
     """
-    if value == 0:
-        return 'NA'
-    return value
+    """
+    if measure in binomial_measures and value == 0:
+        return (measure, 'NA')
+    return (measure, value)
 
 
-def collect_measures(row, region, fixations, lowCutoff, highCutoff):
-    '''Given a row, a region and a list of fixations collects some eye-tracking
-    measures.
-    Uses the row fields to create output rows for every measure computed.
-    Returns the resulting list of output rows.
+def region_measures(region_index, region, fixations, cutoffs):
+    '''.
     '''
     # list below should be modified as needed (consider passing an argument)
     # list below consists of "measure name": measure_function pairs
     # measure functions are normally imported from eyeMeasures
     measures = {
-    'ff': first_fixation,
-    'fp': first_pass,
-    'fs': first_skip,
-    'sf': single_fixation,
-    'pr': prob_regression,
-    'rp': regression_path,
-    'rb': right_bound,
-    'tt': total_time,
-    'rr': rereading_time,
-    'prr': prob_rereading,
+    ('ff', first_fixation),
+    ('fp', first_pass),
+    ('fs', first_skip),
+    ('sf', single_fixation),
+    ('pr', prob_regression),
+    ('rp', regression_path),
+    ('rb', right_bound),
+    ('tt', total_time),
+    ('rr', rereading_time),
+    ('prr', prob_rereading),
     }
     binomial_measures = ['fs', 'pr', 'prr']
-    row_list = []
-    for measure in measures:
-        new_row = reset_fields(row, ['fixationtype', 'value'])
-        measure_calc = measures[measure]
-        calculated = measure_calc(region, fixations, lowCutoff, highCutoff)
-        new_row.append(('fixationtype', measure))
-        if measure in binomial_measures:
-            new_row.append(('value', calculated))
-        else:
-            new_row.append(('value', zero_to_NA(calculated)))
-        row_list.append(dict(new_row))
-    return row_list
+    low_cutoff, high_cutoff = cutoffs
+    # row_list = []
+    measure_data = ((measure_name, func(region, fixations, lowCutoff, highCutoff))
+                        for measure_name, func in measures)
+    measures_to_NAs = (zero_to_NA(*item, binomial_measures) 
+                        for item in measure_data)
+    # consider turning this into an iterator
+    return [region_data + measure for measure in measures_to_NAs]
+
+    # for measure in measures:
+    #     new_row = reset_fields(row, ['fixationtype', 'value'])
+    #     measure_calc = measures[measure]
+    #     calculated = measure_calc(region, fixations, lowCutoff, highCutoff)
+    #     new_row.append(('fixationtype', measure))
+    #     if measure in binomial_measures:
+    #         new_row.append(('value', calculated))
+    #     else:
+    #         new_row.append(('value', zero_to_NA(calculated)))
+    #     row_list.append(dict(new_row))
+    # return row_list
 
 
 #######################################
@@ -351,7 +358,7 @@ def main(enable_user_input=True):
     else:
         file_names = default_files
 
-    lowCutoff, highCutoff = verify_cutoff_values(40, 1000)
+    cutoffs = verify_cutoff_values(40, 1000)
 
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
@@ -392,13 +399,15 @@ def main(enable_user_input=True):
                     cond_item, subj_questions, answer_key[item])
                 # fixations is a list of the fixations--[X Y starttime endtime]
                 fixations = fixation_table[cond_item][8:]
+                reg = [region_measures(indx, regions[indx], fixations, cutoffs)
+                for indx in range(len(regions))]
                 # loop over regions (nested lists of the form
                 # [[Xstart,Ystart],[Xend,Yend]])
-                for region in regions:
-                    row = unpack_region_data(row, region,
-                        regions.index(region))
-                    dataOutput += collect_measures(row, region,
-                        fixations, lowCutoff, highCutoff)
+                # for region in regions:
+                #     row = unpack_region_data(row, region,
+                #         regions.index(region))
+                #     dataOutput += collect_measures(row, region,
+                #         fixations, lowCutoff, highCutoff)
         else:
             print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
 
