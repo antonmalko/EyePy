@@ -229,15 +229,14 @@ def reset_fields(row, fields_to_reset):
     return [pair for pair in row if pair[0] not in fields_to_reset]
 
 
-def unpack_trial_data(row, trial):
-    '''Takes a row and a trial and sets the values for some of the fields in
-    the row to stuff extracted from the trial list.
+def unpack_trial_data(trial):
     '''
-    new_row = reset_fields(row, ['order', 'cond', 'item'])
-    new_row.append(('order', trial[0]))
-    new_row.append(('cond', trial[1]))
-    new_row.append(('item', trial[2]))
-    return (new_row, trial[2])
+    '''
+    # new_row = reset_fields(row, ['order', 'cond', 'item'])
+    # new_row.append(('order', trial[0]))
+    # new_row.append(('cond', trial[1]))
+    # new_row.append(('item', trial[2]))
+    return trial[:3]
 
 
 def unpack_region_data(region_index, region):
@@ -311,6 +310,16 @@ def region_measures(region_index, region, fixations, cutoffs):
     #         new_row.append(('value', zero_to_NA(calculated)))
     #     row_list.append(dict(new_row))
     # return row_list
+
+def process_subj(subj_data, table_of_regions, answer_key):
+    subj_number, f_table, q_table = subj_data
+
+    item_data = (proc_item(item, table_of_regions))
+    return [(subj_number,) + row for row in item_data]
+print('Processing ', os.path.basename(data_file_path))
+            fixation_table = FixationTable(data_file_path, 1, 2)
+            subj_questions = lookup_question(subj_num, questions_by_subj)
+
 
 
 #######################################
