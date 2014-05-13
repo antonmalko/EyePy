@@ -170,9 +170,9 @@ def get_subj_num(file_name):
 def create_file_paths(directory):
     '''Given a folder name returns a list of (subject_number, file_path tuples).
     '''
-    file_paths = (os.path.join(directory, f_name)
-        for f_name in os.listdir(directory))
-    subj_nums = (get_subj_num(f_name) for f_name in file_paths)
+    file_paths = [os.path.join(directory, f_name)
+        for f_name in os.listdir(directory)]
+    subj_nums = [get_subj_num(f_name) for f_name in file_paths]
     return dict(zip(subj_nums, file_paths))
 
 
@@ -200,7 +200,7 @@ def create_subj_tables(sentence_dir, question_dir):
     all_paths += [(subj, '', path)
                     for subj, path in question_paths.items()
                     if subj not in sentence_paths]
-    return map(files_to_tables, all_paths)
+    return list(map(files_to_tables, all_paths))
     # all_fixations [(subj, FixationTable(sent_path), QuestionTable(q_path))]
     # subj_nums = (get_subj_num(f_name) for f_name in file_list)
     # question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
@@ -265,8 +265,8 @@ def unpack_region_data(region_index, region):
     '''
     return (str(region_index + 1),  # region number
         str(region[0][0]),  # Xstart
-        str(region[0][1]),  # Ystart
         str(region[1][0]),  # Xend
+        str(region[0][1]),  # Ystart
         str(region[1][1])   # Yend
         )
 
@@ -321,8 +321,8 @@ def region_measures(region, fixations, cutoffs):
     binomial_measures = ['fs', 'pr', 'prr']
     low_cutoff, high_cutoff = cutoffs
     # region_data = unpack_region_data(region_index, region)
-    measure_data = ((measure_name, func(region, fixations, low_cutoff, high_cutoff))
-                        for measure_name, func in measures)
+    measure_data = [(measure_name, func(region, fixations, low_cutoff, high_cutoff))
+                        for measure_name, func in measures]
     measures_to_NAs = (zero_to_NA(item, binomial_measures) 
                         for item in measure_data)
     # return list(measures_to_NAs)
@@ -467,11 +467,12 @@ def main(enable_user_input=True):
     # Get file lists (contents of the data and question directories)
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
+    # print(len(list(tables_by_subj)))
     subj_rows = (process_subj(subj_data, table_of_regions,
         answer_key, cutoffs)
     for subj_data in tables_by_subj)
     # print(list(subj_rows))
-    output = (create_row_dict(output_header, row) for row in chain(*subj_rows))
+    output = [create_row_dict(output_header, row) for row in chain(*subj_rows)]
 
     # for subj_num, data_file_path in sentences_by_subj.items():
     #     row = []
