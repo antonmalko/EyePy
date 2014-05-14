@@ -179,12 +179,12 @@ def get_subj_num(file_name):
 
 
 def create_file_paths(directory):
-    '''Given a folder name returns a list of (subject_number, file_path tuples).
+    '''Given a folder name returns a dict of with subject numbers as keys and 
+    file lists as values.
     '''
-    file_paths = ((get_subj_num(f_name), os.path.join(directory, f_name))
-        for f_name in os.listdir(directory))
-    # subj_nums = [ for f_name in file_paths]
-    return dict(file_paths)
+    numbers_and_paths = ((get_subj_num(f_name), os.path.join(directory, f_name))
+                                        for f_name in os.listdir(directory))
+    return dict(numbers_and_paths)
 
 
 def files_to_tables(subj_paths):
