@@ -246,14 +246,10 @@ def expand(field1, more_fields, debug=False):
 
 
 def trial_fields(trial):
+    '''This function is really just a "fancy" wrapper for a very simple 
+    subsetting operation. We take the first 3 members of the trial list.
     '''
-    '''
-    # new_row = reset_fields(row, ['order', 'cond', 'item'])
-    # new_row.append(('order', trial[0]))
-    # new_row.append(('cond', trial[1]))
-    # new_row.append(('item', trial[2]))
     return tuple(trial[:3])
-    # return (trial[0], trial[1], trial[2])
 
 
 def q_RT_acc(cond_item, item, q_table, answer_key):
