@@ -278,13 +278,16 @@ def q_RT_acc(cond_item, item, q_table, answer_key):
     # return new_row
 
 
-def zero_to_NA(item, binomial_measures):
+def zero_to_NA(fixation_measure, binomial_measures):
+    """Given a fixation measure as a tuple consisting of
+    (name_of_measure, calculated_value) and a list of binomial measures,
+    sets the value to "NA" if the measure in question is binomial AND the raw
+    value is equal to zero. Otherwise returns the value unchanged.
     """
-    """
-    measure, value = item
-    if measure in binomial_measures and value == 0:
-        return (measure, 'NA')
-    return (measure, value)
+    measure_name, value = fixation_measure
+    if measure_name in binomial_measures and value == 0:
+        return (measure_name, 'NA')
+    return (measure_name, value)
 
 
 def region_measures(region, fixations, cutoffs):
