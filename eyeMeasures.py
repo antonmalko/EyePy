@@ -164,6 +164,10 @@ def prob_regression(region, fixations, lowCutoff, highCutoff):
     '''
     was_visited = False
     regression_prob = 0
+    
+    # set this value to "NA" if there were no fixations on the region at all
+    if not total_time(region, fixations, lowCutoff, highCutoff):
+        return 'NA'
 
     ## loop through each fixation
     for f in fixations:
