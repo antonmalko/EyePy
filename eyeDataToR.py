@@ -4,7 +4,7 @@
 # Edited by: Shevaun Lewis, Ewan Dunbar & Sol Lago
 # 1. Added code for computing first pass-skips, 'fs' [01/11/13]
 # Last updated: 04/01/14
-# Major revisions by Ilia Kurenkov in 4/2014
+# Major revisions by Ilia Kurenkov in Spring of 2014
 # For a record of activity, see this link:
 # https://github.com/UMDLinguistics/EyeTrackAnalysis.git
 
@@ -24,15 +24,7 @@
 
 # Revised by Ilia
 # This file is structured in the following way:
-# First we import all the necessary python modules
-# Then we define functions for printing messages to the user/getting information
-# from them.
-# Then we have one random function that finds questions based on subject number.
-# Finally, we have a bunch of functions that are used to create the output rows
-# From this it becomes apparent that if you want to understand what the program
-# does overall, you are best served by looking at the very end of this file
-# at the main() function. 
-# That's where things come together.
+# Coming soon (*as* soon as we finalize this)...
 
 # import python libraries: os for managing files
 import os
