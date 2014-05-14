@@ -178,7 +178,7 @@ def get_subj_num(file_name):
     return matches[0]
 
 
-def create_file_paths(directory):
+def subjects_filepaths(directory):
     '''Given a folder name returns a dict of with subject numbers as keys and 
     file lists as values.
     '''
@@ -188,6 +188,13 @@ def create_file_paths(directory):
 
 
 def files_to_tables(subj_paths):
+    '''Given 3-member tuple of the form:
+    (subj_n, fixation_file_path, question_file_path)
+    turns the file paths into tables.
+    If a file path is an empty string, it is converted to None.
+    This returns a 3-tuple of the form:
+    (subj_n, fixation_table, question_table)
+    '''
     # this assumes there will at least be one file for the subject
     # is this a reasonable assumption to make?
     subj, fix_filename, q_filename = subj_paths
@@ -197,27 +204,33 @@ def files_to_tables(subj_paths):
 
 
 def create_subj_tables(sentence_dir, question_dir):
-    '''Given folder names for sentences and questions returns .
-    IK: talk about what happens if there are non-overlapping entries.
+    '''Given folder names for sentences and questions returns a list of
+    (subject_number, fixation_table, question_table) tuples.
+    This is achieved by first creating two dictionaries, one for fixation files
+    and one for question files. Both are indexed by subject numbers.
+    The entries from these dictionaries are then combined into tuples
+    that contain the subject number and a string for both the corresponding
+    fixation and question file.
+    If it so happens that a subject is missing one of the files, an empty string
+    is entered in place of the file name inside the tuple.
+    Finally, the filenames in the tuples are turned into tables.
     '''
-    sentence_paths = create_file_paths(sentence_dir)
-    question_paths = create_file_paths(question_dir)
+    # dictionaries of subj_n:file_path pairings
+    fixation_paths = subjects_filepaths(sentence_dir)
+    question_paths = subjects_filepaths(question_dir)
+    # start out by listing all the subjects present in both dictionaries
     all_paths = [(subj, path, question_paths[subj])
-                    for subj, path in sentence_paths.items()
+                    for subj, path in fixation_paths.items()
                     if subj in question_paths]
+    # add to these subjects who only have fixation files for them
     all_paths += [(subj, path, '')
-                    for subj, path in question_paths.items()
+                    for subj, path in fixation_paths.items()
                     if subj not in question_paths]
+    # add also subjects who only have question files associated with them
     all_paths += [(subj, '', path)
                     for subj, path in question_paths.items()
-                    if subj not in sentence_paths]
-    # print(list(map(files_to_tables, all_paths)))
+                    if subj not in fixation_paths]
     return list(map(files_to_tables, all_paths))
-    # all_fixations [(subj, FixationTable(sent_path), QuestionTable(q_path))]
-    # subj_nums = (get_subj_num(f_name) for f_name in file_list)
-    # question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
-    #     for f_name in file_list)
-    # return dict(zip(subj_nums, question_tables))
 
 
 def expand(field1, more_fields, debug=False):
