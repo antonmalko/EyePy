@@ -245,7 +245,7 @@ def expand(field1, more_fields, debug=False):
         raise e
 
 
-def trial_fields(trial):
+def trial_info(trial):
     '''This function is really just a "fancy" wrapper for a very simple 
     subsetting operation. We take the first 3 members of the trial list.
     '''
