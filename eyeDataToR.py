@@ -233,15 +233,15 @@ def create_subj_tables(sentence_dir, question_dir):
     return list(map(files_to_tables, all_paths))
 
 
-def expand(field1, more_fields, debug=False):
-    if debug:
-        print('field1 ' + str(field1))
-        print(list(more_fields))
+def tack_on(field1, more_fields, debug=False):
+    '''Given one field and a sequence of fields "tacks on" the first field onto 
+    every element of the field sequence.
+    '''
     try:
-        return [field1 + field for field in more_fields]        
+        return (field1 + field for field in more_fields)
     except Exception as e:
         print('field1 ' + str(field1))
-        # print(list(more_fields))
+        print(list(more_fields))
         raise e
 
 
@@ -341,7 +341,7 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     # we then create a sequence of lists containing measure labels and values
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
     # finally, we combine the two sequences
-    region_rows = [expand(r, m_list) for r, m_list in zip(region_fields, measures)]
+    region_rows = [tack_on(r, m_list) for r, m_list in zip(region_fields, measures)]
     # we return a "flattened" version of this list so as to combine it with
     # item information
     return chain(*region_rows)
@@ -372,9 +372,9 @@ def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
         print('No question data found for this subject.')
         q_infos = []
     add_q_info = (trial + q_info for trial, q_info in zip(trials, q_infos))
-    item_rows = [expand(item, regions) 
+    item_rows = [tack_on(item, regions) 
                 for item, regions in zip(add_q_info, region_data)]
-    return expand((subj_number,), chain(*item_rows))
+    return tack_on((subj_number,), chain(*item_rows))
 
 
 ###########################################################
