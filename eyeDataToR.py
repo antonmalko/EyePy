@@ -379,7 +379,7 @@ def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
                                                             for f in f_table)
         # flat_regions = (chain(*reg_list) for reg_list in region_data)
         # flat_regions = chain(region_data)
-        trials = [trial_fields(f_table[cond_item]) for cond_item in f_table]
+        trials = [trial_info(f_table[cond_item]) for cond_item in f_table]
         # print(list(trials))
         # print(f_table.keys())
     else:
