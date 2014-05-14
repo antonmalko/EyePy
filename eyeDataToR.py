@@ -347,45 +347,35 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     return chain(*region_rows)
 
 
-def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
-    subj_number, f_table, q_table = subj_data
-    # print([(key, value[:3]) for key, value in f_table.items()])
+def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
+    '''This function takes a subject number with corresponding fixation and 
+    question table and constructs a list of tuples to be transformed into
+    rows of the output file.
+    '''
+    subj_number, f_table, q_table = subj_info
     print('Processing subject #' + subj_number)
 
     if f_table:
         print('Found fixation data for this subject, will compute measures.')
         region_data = (process_regions(f, f_table[f][8:], table_of_regions, cutoffs)
                                                             for f in f_table)
-        # flat_regions = (chain(*reg_list) for reg_list in region_data)
-        # flat_regions = chain(region_data)
         trials = [trial_info(f_table[cond_item]) for cond_item in f_table]
-        # print(list(trials))
-        # print(f_table.keys())
     else:
         print('No fixation data found for this subject.')
         region_data, trials = [], []
     
     if q_table:
         print('Found question data for subject, will compute accuracy.')
-        accuracies = (q_RT_acc(cond_item, trial[2], q_table, answer_key) 
+        q_infos = (q_RT_acc(cond_item, trial[2], q_table, answer_key) 
                         for cond_item, trial in zip(f_table.keys(), trials))
-        # accuracies = list(zip(f_table.keys(), trials))
-        # print(accuracies)
     else:
         print('No question data found for this subject.')
-        accuracies = []
-    # this step can be skipped if we don't want question accuracies computed
-    # print(list(trials))
-    # print(list(accuracies))
-    add_q_info = (trial + q_info for trial, q_info in zip(trials, accuracies))
-    # print(len(list(add_q_info)) == len(list(trials)))
-    # drop_labels = (trial[1:] for trial in add_q_info)
+        q_infos = []
+    add_q_info = (trial + q_info for trial, q_info in zip(trials, q_infos))
     item_rows = [expand(item, regions) 
                 for item, regions in zip(add_q_info, region_data)]
     return expand((subj_number,), chain(*item_rows))
-    # return expand((subj_number,), add_q_info)
 
-    # item_data = (proc_item(item, table_of_regions))
 
 ###########################################################
 ## This is the main function that actually puts all of the above together and 
