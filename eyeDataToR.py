@@ -282,11 +282,14 @@ def zero_to_NA(fixation_measure, binomial_measures):
 
 
 def region_measures(region, fixations, cutoffs):
-    '''.
+    '''Given a region, a list of fixations, and cutoff values
+    returns a list of (measure name, measure value) tuples for all the measures
+    currently computed at UMD.
+    Please note that all continuous measures that equal zero are set to "NA" for
+    ease of later processing with R.
     '''
-    # list below should be modified as needed (consider passing an argument)
     # list below consists of "measure name": measure_function pairs
-    # measure functions are normally imported from eyeMeasures
+    # measure functions are imported from eyeMeasures
     measures = [
     ('ff', first_fixation),
     ('fp', first_pass),
@@ -301,33 +304,11 @@ def region_measures(region, fixations, cutoffs):
     ]
     binomial_measures = ['fs', 'pr', 'prr']
     low_cutoff, high_cutoff = cutoffs
-    # region_data = unpack_region_data(region_index, region)
-    # calculations = [func
-    # for measure_name, func in measures]
-    # calculations = [func for m, func in measures]
-    # print(calculations)
     measure_data = ((measure_name, calc(region, fixations, low_cutoff, high_cutoff))
                         for measure_name, calc in measures)
-    # print(measure_data)
     measures_to_NAs = (zero_to_NA(item, binomial_measures) 
                         for item in measure_data)
-    # print(measures_to_NAs)
-    # return list(measures_to_NAs)
     return measures_to_NAs
-    # consider turning this into an iterator
-    # return [region_data + measure for measure in measures_to_NAs]
-
-    # for measure in measures:
-    #     new_row = reset_fields(row, ['fixationtype', 'value'])
-    #     measure_calc = measures[measure]
-    #     calculated = measure_calc(region, fixations, lowCutoff, highCutoff)
-    #     new_row.append(('fixationtype', measure))
-    #     if measure in binomial_measures:
-    #         new_row.append(('value', calculated))
-    #     else:
-    #         new_row.append(('value', zero_to_NA(calculated)))
-    #     row_list.append(dict(new_row))
-    # return row_list
 
 
 def region_info(region_index, region):
