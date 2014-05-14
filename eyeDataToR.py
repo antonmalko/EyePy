@@ -429,59 +429,21 @@ def main(enable_user_input=True):
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
     table_of_regions = RegionTable(file_names['REG filename'], 0, 1)
-    # print 'regions:'
-    # print table_of_regions
-
     # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
     answer_key = dictTable(read_table(file_names['Question key filename']))
-
-    # Get file lists (contents of the data and question directories)
+    # Generate table files for all subjects
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
-    # print(len(list(tables_by_subj)))
-    subj_rows = [process_subj(subj_data, table_of_regions,
-        answer_key, cutoffs)
-    for subj_data in tables_by_subj]
-    # print(list(subj_rows))
-    output = [create_row_dict(output_header, row) for row in chain(*subj_rows)]
-
-    # for subj_num, data_file_path in sentences_by_subj.items():
-    #     row = []
-    #     row.append(('subj', subj_num))
-    #     if is_DA1_file(data_file_path):
-
-    #         print('Processing ', os.path.basename(data_file_path))
-    #         fixation_table = FixationTable(data_file_path, 1, 2)
-    #         subj_questions = lookup_question(subj_num, questions_by_subj)
-
-    #         for cond_item in fixation_table:
-    #             try:
-    #                 # IK: why do we need items 0-2 in that list anyway?
-    #                 regions = table_of_regions[cond_item][3:]
-    #             except:
-    #                 raise Exception('Missing region information for this cond/item: ' + cond_item)
-
-    #             # this may need to be revised, IK
-    #             row, item = unpack_trial_data(row, fixation_table[cond_item])
-    #             row = set_question_RT_Acc(row,
-    #                 cond_item, subj_questions, answer_key[item])
-    #             # fixations is a list of the fixations--[X Y starttime endtime]
-    #             fixations = fixation_table[cond_item][8:]
-    #             reg = [region_measures(indx, regions[indx], fixations, cutoffs)
-    #             for indx in range(len(regions))]
-    #             # loop over regions (nested lists of the form
-    #             # [[Xstart,Ystart],[Xend,Yend]])
-    #             # for region in regions:
-    #             #     row = unpack_region_data(row, region,
-    #             #         regions.index(region))
-    #             #     dataOutput += collect_measures(row, region,
-    #             #         fixations, lowCutoff, highCutoff)
-    #     else:
-    #         print("This is not a DA1 file: {}\nSkipping...".format(data_file_path))
+    # process all the subject data
+    subj_rows = (process_subj(subj_data, table_of_regions, answer_key, cutoffs)
+                                        for subj_data in tables_by_subj)
+    # make data compatible with csv.DictWriter.writerows()
+    output = (create_row_dict(output_header, row) 
+                for row in chain(*list(subj_rows)))
 
     write_to_csv(file_names['Output filename'],
-        output, #IK: run "create dict rows" on this
+        output,
         output_header,
         delimiter='\t')
 
