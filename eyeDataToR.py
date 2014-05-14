@@ -55,8 +55,9 @@ from eyeMeasures import *
 from readInput import *
 
 
-#######################################
+###########################################################
 ## Interacting with the user
+###########################################################
 
 def ask_user_questions(question_sequence):
     '''Given a sequence of items (can be a list or a dictionary, anything
@@ -108,8 +109,9 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     return (low_cutoff, high_cutoff)
 
 
-#######################################
-## Dealing with files 
+###########################################################
+## Dealing with files (fxns for separate lib)
+###########################################################
 
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
@@ -155,15 +157,24 @@ def is_DA1_file(filename):
 
 
 def get_subj_num(file_name):
+    '''Given a filename string returns any substring that consists of digits.
+    If multiple such substrings are found, returns the first one.
+    If no such substrings are found, returns empty string.
+    '''
     subj_n_rgx = re.compile('\d+')
+    # we don't want to risk finding digits from file extensions
     extensionless = file_name.split('.')[0]
     matches = subj_n_rgx.findall(extensionless)
+
     if not matches:
-        # IK: revise this line
-        print("Unable to find subject number, please check this file name: " + file_name)
+        warning = "Unable to find subject number in this file name: \n{0}"
+        print(warning.format(file_name))
+        return ''
+
     elif len(matches) > 1:
-        # IK: maybe print the list of matches?
-        print("Can't seem to decide which to choose " + file_name)
+        warning = "Found several numbers in '{0}', using the first one out of: \n{1}"
+        print(warning.format(file_name, matches))
+
     return matches[0]
 
 
@@ -207,37 +218,6 @@ def create_subj_tables(sentence_dir, question_dir):
     # question_tables = (QuestionTable(os.path.join(question_dir, f_name), 1, 2)
     #     for f_name in file_list)
     # return dict(zip(subj_nums, question_tables))
-
-
-#######################################
-## Misc (and Other)
-
-# def lookup_question(number, question_tables):
-#     '''Given a subject number and the table of qutestion files for subjects
-#     returns the table relevant for this subject number.
-#     If no such table is available, alerts the user and returns an empty dict.
-#     '''
-#     try:
-#         return question_tables[number]
-#     except:
-#         print("No question data for subject " + number)
-#         return {}
-
-
-#######################################
-## Functions for creting/updating what will be a row in the output file
-
-# def reset_fields(row, fields_to_reset):
-#     '''The way Python dictionaries are set up, if we use them directly, we will
-#     simply overwrite every row's entry with the data we collect from the next row.
-#     In order to avoid this, we instead accumulate lists of (key, value) tuples
-#     which can then be turned into dictionaries before we add them to our output
-#     file.
-#     This function takes a list Row consisting of (key, value) pairs and a list 
-#     of keys (or fields) to reset and returns the Row list without any pairs where
-#     the first member (the key) is present in the list of fields to reset.
-#     '''
-#     return [pair for pair in row if pair[0] not in fields_to_reset]
 
 
 def expand(field1, more_fields, debug=False):
@@ -374,10 +354,6 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     return chain(*[expand(r, m) for r, m in zip(region_data, measures)])
 
 
-# def process_items(fixation_table, cutoffs):
-#     return [expand(item, regions) for item, regions in zip()]
-
-
 def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
     subj_number, f_table, q_table = subj_data
     # print([(key, value[:3]) for key, value in f_table.items()])
@@ -417,16 +393,11 @@ def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
     # return expand((subj_number,), add_q_info)
 
     # item_data = (proc_item(item, table_of_regions))
-#     return [(subj_number,) + row for row in item_data]
-# print('Processing ', os.path.basename(data_file_path))
-#             fixation_table = FixationTable(data_file_path, 1, 2)
-#             subj_questions = lookup_question(subj_num, questions_by_subj)
 
-
-
-#######################################
+###########################################################
 ## This is the main function that actually puts all of the above together and 
 ## does stuff...
+###########################################################
 
 def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
