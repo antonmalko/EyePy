@@ -256,17 +256,6 @@ def trial_fields(trial):
     # return (trial[0], trial[1], trial[2])
 
 
-def unpack_region_data(region_index, region):
-    '''.
-    '''
-    return (str(region_index + 1),  # region number
-        str(region[0][0]),  # Xstart
-        str(region[1][0]),  # Xend
-        str(region[0][1]),  # Ystart
-        str(region[1][1])   # Yend
-        )
-
-
 def q_RT_acc(cond_item, item, q_table, answer_key):
     '''
     '''
@@ -347,6 +336,19 @@ def region_measures(region, fixations, cutoffs):
     # return row_list
 
 
+def region_info(region_index, region):
+    '''Given a region and its index in the region list, returns the region number
+    (simply its index + 1) in a tuple with its X and Y coordinates.
+    '''
+    # IK: Consider getting rid of the "str" to improve readability
+    return (str(region_index + 1),  # region number
+        str(region[0][0]),  # Xstart
+        str(region[1][0]),  # Xend
+        str(region[0][1]),  # Ystart
+        str(region[1][1])   # Yend
+        )
+
+
 def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     # print(cond_item)
     try:
@@ -356,7 +358,7 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
         print('Missing region information for this cond/item: ' + cond_item)
         raise
 
-    region_data = (unpack_region_data(i, regions[i]) for i in range(len(regions)))
+    region_fields = (region_info(i, regions[i]) for i in range(len(regions)))
     # print(list(region_data))
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
     # print(len(list(region_data)) == len(list(measures)))
@@ -364,7 +366,7 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     # test = (expand(r, m) for r, m in zip(region_data, measures))
     # print(list(test))
     # return chain((expand(r, m) for r, m in zip(region_data, measures)))
-    return chain(*[expand(r, m) for r, m in zip(region_data, measures)])
+    return chain(*[expand(r, m) for r, m in zip(region_fields, measures)])
 
 
 def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
