@@ -5,7 +5,7 @@
 # 1. Added code for computing first pass-skips, 'fs' [01/11/13]
 # Last updated: 04/01/14
 # Major revisions by Ilia Kurenkov in 4/2014
-# For a record of activity, see this url:
+# For a record of activity, see this link:
 # https://github.com/UMDLinguistics/EyeTrackAnalysis.git
 
 # Concatenates data from .DA1, Eyedoctor-processed files into a format
@@ -138,8 +138,8 @@ def create_row_dict(fields, item):
     length_difference = len(fields) - len(item)
     error_message = 'There are more items than labels for them: {0}'
     if length_difference < 0:
-        print(fields)
-        print(item)
+        print('Here are the column labels', fields)
+        print('Here are the items', item)
         raise Exception(error_message.format(length_difference))
     elif length_difference > 0:
         item = item + ('NA',) * length_difference
@@ -170,10 +170,10 @@ def get_subj_num(file_name):
 def create_file_paths(directory):
     '''Given a folder name returns a list of (subject_number, file_path tuples).
     '''
-    file_paths = [os.path.join(directory, f_name)
-        for f_name in os.listdir(directory)]
-    subj_nums = [get_subj_num(f_name) for f_name in file_paths]
-    return dict(zip(subj_nums, file_paths))
+    file_paths = ((get_subj_num(f_name), os.path.join(directory, f_name))
+        for f_name in os.listdir(directory))
+    # subj_nums = [ for f_name in file_paths]
+    return dict(file_paths)
 
 
 def files_to_tables(subj_paths):
@@ -181,7 +181,7 @@ def files_to_tables(subj_paths):
     # is this a reasonable assumption to make?
     subj, fix_filename, q_filename = subj_paths
     fixation_table = FixationTable(fix_filename, 1, 2) if is_DA1_file(fix_filename) else None
-    question_table = QuestionTable(fix_filename, 1, 2) if is_DA1_file(q_filename) else None
+    question_table = QuestionTable(q_filename, 1, 2) if is_DA1_file(q_filename) else None
     return (subj, fixation_table, question_table)
 
 
@@ -200,6 +200,7 @@ def create_subj_tables(sentence_dir, question_dir):
     all_paths += [(subj, '', path)
                     for subj, path in question_paths.items()
                     if subj not in sentence_paths]
+    # print(list(map(files_to_tables, all_paths)))
     return list(map(files_to_tables, all_paths))
     # all_fixations [(subj, FixationTable(sent_path), QuestionTable(q_path))]
     # subj_nums = (get_subj_num(f_name) for f_name in file_list)
@@ -226,26 +227,27 @@ def create_subj_tables(sentence_dir, question_dir):
 #######################################
 ## Functions for creting/updating what will be a row in the output file
 
-def reset_fields(row, fields_to_reset):
-    '''The way Python dictionaries are set up, if we use them directly, we will
-    simply overwrite every row's entry with the data we collect from the next row.
-    In order to avoid this, we instead accumulate lists of (key, value) tuples
-    which can then be turned into dictionaries before we add them to our output
-    file.
-    This function takes a list Row consisting of (key, value) pairs and a list 
-    of keys (or fields) to reset and returns the Row list without any pairs where
-    the first member (the key) is present in the list of fields to reset.
-    '''
-    return [pair for pair in row if pair[0] not in fields_to_reset]
+# def reset_fields(row, fields_to_reset):
+#     '''The way Python dictionaries are set up, if we use them directly, we will
+#     simply overwrite every row's entry with the data we collect from the next row.
+#     In order to avoid this, we instead accumulate lists of (key, value) tuples
+#     which can then be turned into dictionaries before we add them to our output
+#     file.
+#     This function takes a list Row consisting of (key, value) pairs and a list 
+#     of keys (or fields) to reset and returns the Row list without any pairs where
+#     the first member (the key) is present in the list of fields to reset.
+#     '''
+#     return [pair for pair in row if pair[0] not in fields_to_reset]
 
 
-def expand(field1, more_fields):
-    # print('field1' + str(field1))
-    # print(list(more_fields))
+def expand(field1, more_fields, debug=False):
+    if debug:
+        print('field1 ' + str(field1))
+        print(list(more_fields))
     try:
         return [field1 + field for field in more_fields]        
     except Exception as e:
-        print('field1' + str(field1))
+        print('field1 ' + str(field1))
         # print(list(more_fields))
         raise e
 
@@ -258,6 +260,7 @@ def trial_fields(trial):
     # new_row.append(('cond', trial[1]))
     # new_row.append(('item', trial[2]))
     return tuple(trial[:3])
+    # return (trial[0], trial[1], trial[2])
 
 
 def unpack_region_data(region_index, region):
@@ -279,6 +282,8 @@ def q_RT_acc(cond_item, item, q_table, answer_key):
     # cond_item, order, cond, item = trial
     try:
         RT = q_table[cond_item][3]
+        # print(q_table[cond_item])
+        # print(answer_key[item][0])
         accuracy = int(q_table[cond_item][4] == answer_key[item][0])
         return (RT, accuracy)
         # new_row.append(('questionRT', subj_qs[cond_item][3]))
@@ -306,7 +311,7 @@ def region_measures(region, fixations, cutoffs):
     # list below should be modified as needed (consider passing an argument)
     # list below consists of "measure name": measure_function pairs
     # measure functions are normally imported from eyeMeasures
-    measures = {
+    measures = [
     ('ff', first_fixation),
     ('fp', first_pass),
     ('fs', first_skip),
@@ -317,14 +322,20 @@ def region_measures(region, fixations, cutoffs):
     ('tt', total_time),
     ('rr', rereading_time),
     ('prr', prob_rereading),
-    }
+    ]
     binomial_measures = ['fs', 'pr', 'prr']
     low_cutoff, high_cutoff = cutoffs
     # region_data = unpack_region_data(region_index, region)
-    measure_data = [(measure_name, func(region, fixations, low_cutoff, high_cutoff))
-                        for measure_name, func in measures]
+    # calculations = [func
+    # for measure_name, func in measures]
+    # calculations = [func for m, func in measures]
+    # print(calculations)
+    measure_data = ((measure_name, calc(region, fixations, low_cutoff, high_cutoff))
+                        for measure_name, calc in measures)
+    # print(measure_data)
     measures_to_NAs = (zero_to_NA(item, binomial_measures) 
                         for item in measure_data)
+    # print(measures_to_NAs)
     # return list(measures_to_NAs)
     return measures_to_NAs
     # consider turning this into an iterator
@@ -355,11 +366,12 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     region_data = (unpack_region_data(i, regions[i]) for i in range(len(regions)))
     # print(list(region_data))
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
+    # print(len(list(region_data)) == len(list(measures)))
     # print(list(measures))
     # test = (expand(r, m) for r, m in zip(region_data, measures))
     # print(list(test))
     # return chain((expand(r, m) for r, m in zip(region_data, measures)))
-    return (expand(r, m) for r, m in zip(region_data, measures))
+    return chain(*[expand(r, m) for r, m in zip(region_data, measures)])
 
 
 # def process_items(fixation_table, cutoffs):
@@ -375,9 +387,11 @@ def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
         print('Found fixation data for this subject, will compute measures.')
         region_data = (process_regions(f, f_table[f][8:], table_of_regions, cutoffs)
                                                             for f in f_table)
-        flat_regions = (chain(*reg_list) for reg_list in region_data)
+        # flat_regions = (chain(*reg_list) for reg_list in region_data)
         # flat_regions = chain(region_data)
-        trials = (trial_fields(f_table[cond_item]) for cond_item in f_table)
+        trials = [trial_fields(f_table[cond_item]) for cond_item in f_table]
+        # print(list(trials))
+        # print(f_table.keys())
     else:
         print('No fixation data found for this subject.')
         region_data, trials = [], []
@@ -386,6 +400,8 @@ def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
         print('Found question data for subject, will compute accuracy.')
         accuracies = (q_RT_acc(cond_item, trial[2], q_table, answer_key) 
                         for cond_item, trial in zip(f_table.keys(), trials))
+        # accuracies = list(zip(f_table.keys(), trials))
+        # print(accuracies)
     else:
         print('No question data found for this subject.')
         accuracies = []
@@ -393,10 +409,12 @@ def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
     # print(list(trials))
     # print(list(accuracies))
     add_q_info = (trial + q_info for trial, q_info in zip(trials, accuracies))
+    # print(len(list(add_q_info)) == len(list(trials)))
     # drop_labels = (trial[1:] for trial in add_q_info)
     item_rows = [expand(item, regions) 
-                for item, regions in zip(add_q_info, flat_regions)]
+                for item, regions in zip(add_q_info, region_data)]
     return expand((subj_number,), chain(*item_rows))
+    # return expand((subj_number,), add_q_info)
 
     # item_data = (proc_item(item, table_of_regions))
 #     return [(subj_number,) + row for row in item_data]
@@ -431,19 +449,19 @@ def main(enable_user_input=True):
 
     # defining output header
     output_header = [
-    'subj',
-    'order',
-    'cond',
-    'item',
-    'questionRT',
-    'questionAcc',
-    'region',
-    'Xstart',
-    'Xend',
-    'Ystart',
-    'Yend',
-    'fixationtype',
-    'value',
+        'subj',
+        'order',
+        'cond',
+        'item',
+        'questionRT',
+        'questionAcc',
+        'region',
+        'Xstart',
+        'Xend',
+        'Ystart',
+        'Yend',
+        'fixationtype',
+        'value',
     ]
 
     if enable_user_input:
@@ -468,9 +486,9 @@ def main(enable_user_input=True):
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
     # print(len(list(tables_by_subj)))
-    subj_rows = (process_subj(subj_data, table_of_regions,
+    subj_rows = [process_subj(subj_data, table_of_regions,
         answer_key, cutoffs)
-    for subj_data in tables_by_subj)
+    for subj_data in tables_by_subj]
     # print(list(subj_rows))
     output = [create_row_dict(output_header, row) for row in chain(*subj_rows)]
 
