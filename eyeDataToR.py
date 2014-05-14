@@ -341,10 +341,10 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     # we then create a sequence of lists containing measure labels and values
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
     # finally, we combine the two sequences
-    region_rows = [tack_on(r, m_list) for r, m_list in zip(region_fields, measures)]
+    region_rows = (tack_on(r, m_list) for r, m_list in zip(region_fields, measures))
     # we return a "flattened" version of this list so as to combine it with
     # item information
-    return chain(*region_rows)
+    return chain(*list(region_rows))
 
 
 def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
@@ -372,9 +372,9 @@ def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
         print('No question data found for this subject.')
         q_infos = []
     add_q_info = (trial + q_info for trial, q_info in zip(trials, q_infos))
-    item_rows = [tack_on(item, regions) 
-                for item, regions in zip(add_q_info, region_data)]
-    return tack_on((subj_number,), chain(*item_rows))
+    item_rows = (tack_on(item, regions) 
+                for item, regions in zip(add_q_info, region_data))
+    return tack_on((subj_number,), chain(*list(item_rows)))
 
 
 ###########################################################
