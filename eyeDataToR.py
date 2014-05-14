@@ -110,7 +110,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 
 
 ###########################################################
-## Dealing with files (fxns for separate lib)
+## General functions and dealing with files
 ###########################################################
 
 def write_to_csv(file_name, data, header, **kwargs):
@@ -245,29 +245,9 @@ def tack_on(field1, more_fields, debug=False):
         raise e
 
 
-def trial_info(trial):
-    '''This function is really just a "fancy" wrapper for a very simple 
-    subsetting operation. We take the first 3 members of the trial list.
-    '''
-    return tuple(trial[:3])
-
-
-def q_RT_acc(cond_item, item, q_table, answer_key):
-    '''Arguments: cond/item code, item number, question table, answer key.
-    This function attempts to look up the answer provided by the subject for 
-    the given cond/item code. The answer's RT is recorded as well as an integer
-    [1 or 0] value for whether it matched the correct answer for that item, which
-    is looked up in the answer_key dictionary.
-    '''
-    # IK: This is kind of redundant, should be revised at some point
-    try:
-        RT = q_table[cond_item][3]
-        accuracy = int(q_table[cond_item][4] == answer_key[item][0])
-        return (RT, accuracy)
-    # if this fails, set both fields to NA
-    except:
-        return ('NA', 'NA')
-
+###########################################################
+## Per/Region operations
+###########################################################
 
 def zero_to_NA(fixation_measure, binomial_measures):
     """Given a fixation measure as a tuple consisting of
@@ -324,6 +304,38 @@ def region_info(region_index, region):
         )
 
 
+###########################################################
+## Per/Trial operations
+###########################################################
+
+def trial_info(trial):
+    '''This function is really just a "fancy" wrapper for a very simple 
+    subsetting operation. We take the first 3 members of the trial list.
+    '''
+    return tuple(trial[:3])
+
+
+def q_RT_acc(cond_item, item, q_table, answer_key):
+    '''Arguments: cond/item code, item number, question table, answer key.
+    This function attempts to look up the answer provided by the subject for 
+    the given cond/item code. The answer's RT is recorded as well as an integer
+    [1 or 0] value for whether it matched the correct answer for that item, which
+    is looked up in the answer_key dictionary.
+    '''
+    # IK: This is kind of redundant, should be revised at some point
+    try:
+        RT = q_table[cond_item][3]
+        accuracy = int(q_table[cond_item][4] == answer_key[item][0])
+        return (RT, accuracy)
+    # if this fails, set both fields to NA
+    except:
+        return ('NA', 'NA')
+
+
+###########################################################
+## Per/Subject operations
+###########################################################
+
 def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     '''Given a cond/item code, a list of fixations, a table of regions, and
     cutoff values returns a list of tuples containing information about each
@@ -378,8 +390,7 @@ def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
 
 
 ###########################################################
-## This is the main function that actually puts all of the above together and 
-## does stuff...
+## Putting it all together...
 ###########################################################
 
 def main(enable_user_input=True):
