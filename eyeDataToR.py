@@ -49,6 +49,7 @@ else:
 import re
 # import csv writing functionality
 from csv import DictWriter
+# import function for flattening lists
 from itertools import chain
 # Import required files; these should be in the same directory
 from eyeMeasures import *
