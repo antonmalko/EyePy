@@ -253,25 +253,20 @@ def trial_info(trial):
 
 
 def q_RT_acc(cond_item, item, q_table, answer_key):
+    '''Arguments: cond/item code, item number, question table, answer key.
+    This function attempts to look up the answer provided by the subject for 
+    the given cond/item code. The answer's RT is recorded as well as an integer
+    [1 or 0] value for whether it matched the correct answer for that item, which
+    is looked up in the answer_key dictionary.
     '''
-    '''
-    # new_row = reset_fields(row, ['questionRT', 'questionAcc'])
-    # try to look up/compute the values for the fields
-    # cond_item, order, cond, item = trial
+    # IK: This is kind of redundant, should be revised at some point
     try:
         RT = q_table[cond_item][3]
-        # print(q_table[cond_item])
-        # print(answer_key[item][0])
         accuracy = int(q_table[cond_item][4] == answer_key[item][0])
         return (RT, accuracy)
-        # new_row.append(('questionRT', subj_qs[cond_item][3]))
-        # new_row.append(('questionAcc', int(subj_qs[cond_item][4] == answer[0])))
-    # if this fails, set all fields to NA
+    # if this fails, set both fields to NA
     except:
         return ('NA', 'NA')
-        # new_row.append(('questionRT', 'NA'))
-        # new_row.append(('questionAcc', 'NA'))
-    # return new_row
 
 
 def zero_to_NA(fixation_measure, binomial_measures):
