@@ -325,23 +325,26 @@ def region_info(region_index, region):
 
 
 def process_regions(cond_item, fixations, table_of_regions, cutoffs):
-    # print(cond_item)
+    '''Given a cond/item code, a list of fixations, a table of regions, and
+    cutoff values returns a list of tuples containing information about each
+    region and eye-tracking measures in it for the relevant item.
+    '''
     try:
         # IK: why do we need items 0-2 in that list anyway?
         regions = table_of_regions[cond_item][3:]
     except KeyError:
         print('Missing region information for this cond/item: ' + cond_item)
         raise
-
+    # if we were able to retrieve regions for cond/item, we create a sequence of
+    # tuples containing info for each region
     region_fields = (region_info(i, regions[i]) for i in range(len(regions)))
-    # print(list(region_data))
+    # we then create a sequence of lists containing measure labels and values
     measures = (region_measures(region, fixations, cutoffs) for region in regions)
-    # print(len(list(region_data)) == len(list(measures)))
-    # print(list(measures))
-    # test = (expand(r, m) for r, m in zip(region_data, measures))
-    # print(list(test))
-    # return chain((expand(r, m) for r, m in zip(region_data, measures)))
-    return chain(*[expand(r, m) for r, m in zip(region_fields, measures)])
+    # finally, we combine the two sequences
+    region_rows = [expand(r, m_list) for r, m_list in zip(region_fields, measures)]
+    # we return a "flattened" version of this list so as to combine it with
+    # item information
+    return chain(*region_rows)
 
 
 def process_subj(subj_data, table_of_regions, answer_key, cutoffs):
