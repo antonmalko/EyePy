@@ -1,3 +1,12 @@
+# import readline and set tab-completion based on what OS we are in
+import readline
+# MACOS uses "libedit" for readline functionality and has a different command
+# for enabling tab completion
+if 'libedit' in readline.__doc__:
+    readline.parse_and_bind("bind ^I rl_complete")
+# whereas Unix (and maybe Windows) have the same command
+else:
+    readline.parse_and_bind("tab: complete")
 # library for shared functions
 import re
 from csv import DictWriter
