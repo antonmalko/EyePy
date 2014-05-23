@@ -12,7 +12,7 @@ import re
 from csv import DictWriter
 
 
-def ask_user_questions(question_sequence):
+def ask_user_questions(question_sequence, use_template=True, return_list=False):
     '''Given a sequence of items (can be a list or a dictionary, anything
     that supports iteration), prints prompts for every item in the shell
     so that the user can input a value for every item.
@@ -20,12 +20,15 @@ def ask_user_questions(question_sequence):
     '''
     # define question prompt template and return variable
     q_template = 'Please enter the {} below:\n'
-    answers = {}
 
-    for question in question_sequence:
-        answers[question] = input(q_template.format(question))
-    
-    return answers
+    if use_template:
+        question_sequence = (q_template.format(q) for q in question_sequence)
+
+    answers = (input(question) for question in question_sequence)
+    if return_list:
+        return list(answers)
+    return dict(zip(question_sequence, answers))
+
 
 # define regular expression that checks for "yes" answers
 YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
