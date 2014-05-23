@@ -166,7 +166,7 @@ def zero_to_NA(fixation_measure, binomial_measures):
     value is equal to zero. Otherwise returns the value unchanged.
     """
     measure_name, value = fixation_measure
-    if measure_name in binomial_measures and value == 0:
+    if measure_name not in binomial_measures and value == 0:
         return (measure_name, 'NA')
     return (measure_name, value)
 
