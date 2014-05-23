@@ -66,9 +66,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     returns passed cutoffs unchanged.
     '''
     decision = input(prompt.format(low_cutoff, high_cutoff))
-    # define regular expression that checks for "yes" answers
-    yes_rgx = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
-    if bool(yes_rgx.match(decision)):
+    if is_yes(decision):
         # if user says something matching yes_rgx, ask them to input their own cutoffs
         user_cutoffs = ask_user_questions(['low cutoff', 'high cutoff'])
         # return their responses converted to integers
