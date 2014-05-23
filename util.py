@@ -29,6 +29,12 @@ def ask_user_questions(question_sequence):
     
     return answers
 
+# define regular expression that checks for "yes" answers
+YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
+
+def is_yes(user_input):
+    return bool(YES_RGX.match(user_input))
+
 
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
