@@ -18,8 +18,6 @@ def ask_user_questions(question_sequence):
     so that the user can input a value for every item.
     Returns a dictionary of (item_name : user_input) pairings.
     '''
-    # set tab auto-completion, but only for current folder
-    readline.parse_and_bind("tab: complete")
     # define question prompt template and return variable
     q_template = 'Please enter the {} below:\n'
     answers = {}
