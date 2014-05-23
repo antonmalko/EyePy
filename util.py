@@ -43,6 +43,14 @@ def is_yes(user_input):
     return bool(YES_RGX.match(user_input))
 
 
+def is_DA1_file(filename):
+    '''Checks if a file name has DA1 extension.
+    Currently accepts both ".da1" and ".DA1" files.
+    Retunrs a boolean (True or False).
+    '''
+    return filename.endswith('.da1') or filename.endswith('.DA1')
+
+
 def write_to_csv(file_name, data, header, **kwargs):
     '''Writes data to file specified by filename.
 

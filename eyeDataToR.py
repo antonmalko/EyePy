@@ -80,14 +80,6 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 ###########################################################
 
 
-def is_DA1_file(filename):
-    '''Checks if a file name has DA1 extension.
-    Currently accepts both ".da1" and ".DA1" files.
-    Retunrs a boolean (True or False).
-    '''
-    return filename.endswith('.da1') or filename.endswith('.DA1')
-
-
 def subjects_filepaths(directory):
     '''Given a folder name returns a dict of with subject numbers as keys and 
     file lists as values.
