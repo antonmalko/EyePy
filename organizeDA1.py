@@ -22,9 +22,16 @@ def classify_line(line):
 
 
 def parse_da1_file(file_name):
+    '''Given a file name extracts the subject number from it as well as all the 
+    sentence, question and rejected items for this subject.
+    Returns a tuple of the form:
+    (subject_number, sentence_list, question_list, rejected_list)
+    '''
     subj_number = get_subj_num(file_name)
     with open(file_name) as da1file:
+        # we start by filtering out all empty lines
         non_empty = [line for line in da1file if line]
+        # we then collect the sentence, question and rejected lists
         sentences = [line for line in non_empty if classify_line(line) is 's']
         questions = [line for line in non_empty if classify_line(line) is 'q']
         rejects = [line for line in non_empty if classify_line(line) is 'reject']
