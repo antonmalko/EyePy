@@ -129,3 +129,11 @@ def get_subj_num(file_path):
         print(warning.format(file_name, matches))
 
     return matches[0]
+
+
+def gen_file_paths(dir_name, filter_func=None):
+    if filter_func:
+        return (os.path.join(dir_name, file_name) 
+            for file_name in os.listdir(dir_name)
+            if filter_func(file_name))
+    return (os.path.join(dir_name, file_name) for file_name in os.listdir(dir_name))
