@@ -7,14 +7,17 @@
 from util import *
 
 def classify_line(line):
+    '''Given a line (as a string), determines what type of trial this line is:
+    whether it is a question, a sentence or a rejected trial.
+    '''
     trial_types = {
     '2' : 's',
     '6' : 'q',
     '7' : 'q',
     }
-    thing = line.split()[4]
-    if thing in trial_types:
-        return trial_types[thing]
+    item_type = line.split()[4]
+    if item_type in trial_types:
+        return trial_types[item_type]
     return 'reject'
 
 
