@@ -74,7 +74,7 @@ def write_to_csv(file_name, data, header, **kwargs):
         output.writerows(data)
 
 
-def write_to_txt(file_name, data, mode='w', AddNewLines=False, **kwargs):
+def write_to_txt(file_name, data, mode='w', **kwargs):
     '''Writes data to a text file.
 
     :type fName: string
@@ -87,8 +87,6 @@ def write_to_txt(file_name, data, mode='w', AddNewLines=False, **kwargs):
     :type kwargs: dict
     :param kwargs: key word args to be passed to list_to_plain_text, if needed
     '''
-    if AddNewLines:
-        data = add_newlines(data, **kwargs)
     with open(file_name, mode=mode) as f:
         f.writelines(data)
 
