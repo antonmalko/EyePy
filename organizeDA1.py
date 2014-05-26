@@ -39,8 +39,13 @@ def parse_da1_file(file_name):
 
 
 def sort_da1_data(data_dir):
+    '''Sorts a folder with DA1 files.
+    Given a folder name, loops over all DA1 files in it and for each file
+    creates a tuple with the subject number tied to the corresponding sentence, 
+    question and rejected trials.
+    '''
     file_list = gen_file_paths(data_dir, filter_func=is_DA1_file)
-    return [parse_da1_file(f_name) for f_name in file_list]
+    return [parse_da1_file(file_name) for file_name in file_list]
 
 
 def create_folder(root_path, study_exp_name, suffix, data):
@@ -50,7 +55,6 @@ def create_folder(root_path, study_exp_name, suffix, data):
     for subj_n, sents in existing_data:
         subj_file_name = subj_n + '-' + study_exp_name + suffix + '.da1'
         file_path = os.path.join(out_root, subj_file_name)
-        # write_to_txt(file_path, sents, AddNewLines=True)
         write_to_txt(file_path, sents)
 
 
@@ -104,28 +108,31 @@ def condition_filter(ranges):
     return [str(n) for n in range(start, start + total)]
 
 
-def by_condition(item, cond_range):
+def get_exp_items(item, cond_range):
     s_number, sents, questions, rejects = item
     exp_sents = [s for s in sents if s.split()[1] in cond_range]
     exp_qs =  [q for q in questions if q.split()[1] in cond_range]
     exp_rej =  [r for r in rejects if r.split()[1] in cond_range]
     return (s_number, exp_sents, exp_qs, exp_rej)
 
-gen_q = '''
+
+
+###############################################################################
+## Now we can run the code
+
+SPLIT_WHOLE_STUDY = '''
 Do you need to split the DA1s into -s, -q, and -reject files?
-(Answer "no" if you already have the data split)
+(Answer *no* if you already have the data split.)
 '''
-by_exp_question = '''
+START_EXP_SPLIT = '''
 Do you want to split the data by experiment?
 '''
-by_exp_question2 = '''
+MORE_EXP_SPLIT = '''
 Do you want to split the data by more experiments?
 '''
 
 def main():
-    split_study = ask_unique_question(gen_q)
-    # data_dir = ask the user for it
-    # same for study name
+    split_study = ask_single_question(SPLIT_WHOLE_STUDY)
     if is_yes(split_study):
         questions = [
         'folder with unsorted DA1 files',
@@ -135,27 +142,25 @@ def main():
         sorted_da1s = sort_da1_data(da1_folder)
         write_da1(study_name, sorted_da1s)
     else:
-        da1_folder = ask_unique_question('Enter sorted files folder:\n')
+        da1_folder = ask_single_question('Enter sorted files folder:\n')
         sorted_da1s = load_sorted_da1(da1_folder)
-        study_name = da1_folder
 
     experiment_meta_qs = [
-    'Experiment name',
-    'First condition number',
-    'Total number of conditions'
+    'experiment name',
+    'first condition number',
+    'total number of conditions'
     ]
 
-    experiment_decision = ask_unique_question(by_exp_question)
-    splitting_by_experiment = is_yes(experiment_decision)
+    experiment_split_decision = ask_single_question(START_EXP_SPLIT)
+    splitting_by_experiment = is_yes(experiment_split_decision)
 
     while splitting_by_experiment:
         exp_meta_data = ask_user_questions(experiment_meta_qs, return_list=True)
         exp_filter = condition_filter(exp_meta_data[1:])
-        exp_data = (by_condition(item, exp_filter) for item in sorted_da1s)
-        # exp_path = os.path.join(study_name, exp_meta_data[0])
+        exp_data = (get_exp_items(item, exp_filter) for item in sorted_da1s)
         exp_path = exp_meta_data[0]
         write_da1(exp_path, exp_data, nest_under=da1_folder)
-        continue_decision = ask_unique_question(by_exp_question2)
+        continue_decision = ask_single_question(MORE_EXP_SPLIT)
         splitting_by_experiment = is_yes(continue_decision)
 
 
