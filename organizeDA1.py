@@ -6,6 +6,10 @@
 # import functionality from utility module
 from util import *
 
+
+###############################################################################
+## processing unsorted DA1 files
+
 def classify_line(line):
     '''Given a line (as a string), determines what type of trial this line is:
     whether it is a question, a sentence or a rejected trial.
@@ -47,6 +51,8 @@ def sort_da1_data(data_dir):
     file_list = gen_file_paths(data_dir, filter_func=is_DA1_file)
     return [parse_da1_file(file_name) for file_name in file_list]
 
+###############################################################################
+## writing sorted DA1s to folders
 
 def create_folder(root_path, study_exp_name, suffix, data):
     out_root = os.path.join(root_path, study_exp_name + suffix)
@@ -72,6 +78,8 @@ def write_da1(study_exp_name, data, nest_under=None):
         relevant = ((item[0], item[index]) for item in data)
         create_folder(root_path, study_exp_name, suff, relevant)
 
+###############################################################################
+## loading sorted DA1s
 
 def get_study_name(dir_name):
     normed_dir = os.path.normpath(dir_name)
@@ -103,6 +111,9 @@ def load_sorted_da1(sorted_dir):
     return sorted_da1
 
 
+###############################################################################
+## Selecting items for only one experiment
+
 def condition_filter(ranges):
     start, total = int(ranges[0]), int(ranges[1])
     return [str(n) for n in range(start, start + total)]
@@ -118,7 +129,7 @@ def get_exp_items(item, cond_range):
 
 
 ###############################################################################
-## Now we can run the code
+## Running the code
 
 SPLIT_WHOLE_STUDY = '''
 Do you need to split the DA1s into -s, -q, and -reject files?
