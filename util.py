@@ -1,3 +1,4 @@
+import os
 # import readline and set tab-completion based on what OS we are in
 import readline
 # MACOS uses "libedit" for readline functionality and has a different command
@@ -106,12 +107,14 @@ def create_row_dict(fields, item):
     return dict(zip(fields, item))
 
 
-def get_subj_num(file_name):
+def get_subj_num(file_path):
     '''Given a filename string returns any substring that consists of digits.
     If multiple such substrings are found, returns the first one.
-    If no such substrings are found, returns empty string.
+    If no such substrings are found, returns empty string and warns the user.
     '''
     subj_n_rgx = re.compile('\d+')
+    # first we make sure we're dealing with file's name, not full path to it
+    file_name = os.path.basename(file_path)
     # we don't want to risk finding digits from file extensions
     extensionless = file_name.split('.')[0]
     matches = subj_n_rgx.findall(extensionless)
