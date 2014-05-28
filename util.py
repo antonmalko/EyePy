@@ -10,8 +10,11 @@ else:
     readline.parse_and_bind("tab: complete")
 # library for shared functions
 import re
-from csv import DictWriter
+import csv
 
+###############################################################################
+## Functions for interacting with users
+###############################################################################
 
 def ask_user_questions(question_sequence, use_template=True, return_list=False):
     '''Given a sequence of items (can be a list or a dictionary, anything
@@ -23,11 +26,12 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     q_template = 'Please enter the {} below:\n'
 
     if use_template:
-        question_sequence = (q_template.format(q) for q in question_sequence)
-
-    answers = (input(question) for question in question_sequence)
+        question_strings = [q_template.format(q) for q in question_sequence]
+        answers = [input(question) for question in question_strings]
+    else:
+        answers = [input(question) for question in question_sequence]
     if return_list:
-        return list(answers)
+        return answers
     return dict(zip(question_sequence, answers))
 
 
@@ -43,6 +47,9 @@ YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
 def is_yes(user_input):
     return bool(YES_RGX.match(user_input))
 
+###############################################################################
+## Functions for dealing with file names/paths
+###############################################################################
 
 def is_DA1_file(filename):
     '''Checks if a file name has DA1 extension.
@@ -50,59 +57,6 @@ def is_DA1_file(filename):
     Retunrs a boolean (True or False).
     '''
     return filename.endswith('.da1') or filename.endswith('.DA1')
-
-
-def write_to_csv(file_name, data, header, **kwargs):
-    '''Writes data to file specified by filename.
-
-    :type file_name: string
-    :param file_name: name of the file to be created
-    :type data: iterable
-    :param data: some iterable of dictionaries each of which
-    must not contain keys absent in the 'header' argument
-    :type header: list
-    :param header: list of columns to appear in the output
-    :type **kwargs: dict
-    :param **kwargs: parameters to be passed to DictWriter.
-    For instance, restvals specifies what to set empty cells to by default or
-    'dialect' loads a whole host of parameters associated with a certain csv
-    dialect (eg. "excel").
-    '''
-    with open(file_name, 'w') as f:
-        output = DictWriter(f, header, **kwargs)
-        output.writeheader()
-        output.writerows(data)
-
-
-def write_to_txt(file_name, data, mode='w', **kwargs):
-    '''Writes data to a text file.
-
-    :type fName: string
-    :param fName: name of the file to be created
-    :type data: iterable
-    :param data: some iterable of strings or lists of strings (not a string)
-    :type addNewLines: bool
-    :param addNewLines: determines if it's necessary to add newline chars to
-    members of list
-    :type kwargs: dict
-    :param kwargs: key word args to be passed to list_to_plain_text, if needed
-    '''
-    with open(file_name, mode=mode) as f:
-        f.writelines(data)
-
-
-def create_row_dict(fields, item):
-    # IK: this should go into a separate file, I think
-    length_difference = len(fields) - len(item)
-    error_message = 'There are more items than labels for them: {0}'
-    if length_difference < 0:
-        print('Here are the column labels', fields)
-        print('Here are the items', item)
-        raise Exception(error_message.format(length_difference))
-    elif length_difference > 0:
-        item = item + ('NA',) * length_difference
-
-    return dict(zip(fields, item))
 
 
 def get_subj_num(file_path):
@@ -134,4 +88,48 @@ def gen_file_paths(dir_name, filter_func=None):
         return (os.path.join(dir_name, file_name) 
             for file_name in os.listdir(dir_name)
             if filter_func(file_name))
+    
     return (os.path.join(dir_name, file_name) for file_name in os.listdir(dir_name))
+
+
+###############################################################################
+## Functions for writing to files
+###############################################################################
+
+def create_row_dict(fields, item, fill_val='NA'):
+    length_difference = len(fields) - len(item)
+    error_message = 'There are more items than labels for them: {0}'
+    if length_difference < 0:
+        print('Here are the column labels', fields)
+        print('Here are the items', item)
+        raise Exception(error_message.format(length_difference))
+    elif length_difference > 0:
+        item = item + (fill_val,) * length_difference
+
+    return dict(zip(fields, item))
+
+
+def write_to_table(file_name, data, header=None, **kwargs):
+    '''Writes data to file specified by filename.
+
+    :type file_name: string
+    :param file_name: name of the file to be created
+    :type data: iterable
+    :param data: some iterable of dictionaries each of which
+    must not contain keys absent in the 'header' argument
+    :type header: list
+    :param header: list of columns to appear in the output
+    :type **kwargs: dict
+    :param **kwargs: parameters to be passed to DictWriter.
+    For instance, restvals specifies what to set empty cells to by default or
+    'dialect' loads a whole host of parameters associated with a certain csv
+    dialect (eg. "excel").
+    '''
+    with open(file_name, 'w') as f:
+        if header:
+            output = csv.DictWriter(f, header, **kwargs)
+            output.writeheader()
+            data = (create_row_dict(row) for row in data)
+        else:
+            output = csv.writer(f)
+        output.writerows(data)
