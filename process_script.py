@@ -11,25 +11,17 @@ def check_cond_item(entry, cond_range, item_range):
 	return int(cond) in cond_range and int(item) in item_range
 
 
-def tuples_to_str(seq, sep='\t'):
-	'''Turns every member tuple of seq into a string where subparts of the tuple
-	are separated from each other by "sep" and each row ends in a newline.
-	'''
-	return (sep.join(member) + '\n' for member in seq)
-
-
 def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	'''Writes all the data collected to two files:
 	One with all the data and one with only a subset thereof that fits in the 
 	condition and item ranges specified by the user.
 	'''
 	all_file = '_'.join(['all', input_type, '.txt'])
-	with open(all_file, 'w') as f:
-		f.writelines(tuples_to_str(data))
+	write_to_table(all_file, data, delimiter='\t')
+
 	filtered_data = (d for d in data if check_cond_item(d, cond_nums, item_nums))
 	exp_file = '_'.join([exp_name, input_type, '.txt'])
-	with open(exp_file, 'w') as f:
-		f.writelines(tuples_to_str(filtered_data))
+	write_to_table(exp_file, filtered_data, delimiter='\t')
 
 
 def trigger_to_code(question_item):
@@ -103,8 +95,11 @@ def main():
 	question_rgx = re.compile('trial E(\d+)I(\d+)D1.*?button =\s.*?(\w*?)\n', re.DOTALL)
 	questions = question_rgx.findall(script_string)
 	questions_with_codes = [trigger_to_code(q) for q in questions]
-	write_out(user_answers['name of your experiment'], 'questions', 
-		item_range, cond_range, questions_with_codes)
+	write_out(user_answers['name of your experiment'], 
+		'questions', 
+		item_range, 
+		cond_range, 
+		questions_with_codes)
 
 if __name__ == '__main__':
 	main()

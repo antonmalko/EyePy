@@ -184,10 +184,8 @@ def get_region_table(file_name):
         return RegionTable(file_name, 0, 1)
     elif '.del' in file_name:
         region_data = make_regions(file_name)
-        writable = (' '.join(row) + '\n' for row in region_data)
         reg_file_name = file_name.split('.del')[0] + '.reg'
-        write_to_txt(reg_file_name,
-            writable)
+        write_to_table(reg_file_name, region_data, delimiter=' ')
         return RegionTable(reg_file_name, 0, 1)
 
 
@@ -396,12 +394,11 @@ def main(enable_user_input=True):
     subj_rows = (process_subj(subj_data, table_of_regions, answer_key, cutoffs)
                                         for subj_data in tables_by_subj)
     # make data compatible with csv.DictWriter.writerows()
-    output = (create_row_dict(output_header, row) 
-                for row in chain(*list(subj_rows)))
+    flattened_subj_rows = chain(*list(subj_rows))
 
-    write_to_csv(file_names['Output filename'],
-        output,
-        output_header,
+    write_to_table(file_names['Output filename'],
+        flattened_subj_rows,
+        header=output_header,
         delimiter='\t')
 
 

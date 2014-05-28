@@ -131,5 +131,5 @@ def write_to_table(file_name, data, header=None, **kwargs):
             output.writeheader()
             data = (create_row_dict(row) for row in data)
         else:
-            output = csv.writer(f)
+            output = csv.writer(f, **kwargs)
         output.writerows(data)

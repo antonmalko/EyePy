@@ -61,7 +61,7 @@ def create_folder(root_path, study_exp_name, suffix, data):
     for subj_n, sents in existing_data:
         subj_file_name = subj_n + '-' + study_exp_name + suffix + '.da1'
         file_path = os.path.join(out_root, subj_file_name)
-        write_to_txt(file_path, sents)
+        write_to_table(file_path, sents)
 
 
 def write_da1(study_exp_name, data, nest_under=None):

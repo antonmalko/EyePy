@@ -24,10 +24,7 @@
 
 #######################################################
 '''
-import re, sys, os
-
-# import csv writing functionality
-from csv import DictWriter
+from util import *
 
 # IK: this section is where I create my commands
 # to-do:
@@ -75,44 +72,6 @@ def parse_asc_file(f_name):
         else:
             raise ParsingException
 
-#################################################
-## Writing ouput to file (better in a separate file)
-#################################################
-
-def write_to_csv(file_name, data, header, **kwargs):
-    '''Writes data to file specified by filename.
-
-    :type file_name: string
-    :param file_name: name of the file to be created
-    :type data: iterable
-    :param data: some iterable of dictionaries each of which
-    must not contain keys absent in the 'header' argument
-    :type header: list
-    :param header: list of columns to appear in the output
-    :type **kwargs: dict
-    :param **kwargs: parameters to be passed to DictWriter.
-    For instance, restvals specifies what to set empty cells to by default or
-    'dialect' loads a whole host of parameters associated with a certain csv
-    dialect (eg. "excel").
-    '''
-    with open(file_name, 'w') as f:
-        output = DictWriter(f, header, **kwargs)
-        output.writeheader()
-        output.writerows(data)
-
-
-def create_row_dict(fields, item):
-    # IK: this should go into a separate file, I think
-    # print('the item', item)
-    # print('the fields', fields)
-    length_difference = len(fields) - len(item)
-    # print(length_difference)
-    if length_difference < 0:
-        raise Exception('There are more items than labels for them: ' + str(length_difference))
-    elif length_difference > 0:
-        item = item + ('NA',) * length_difference
-    return dict(zip(fields, item))
-
 
 #################################################
 ## Writing subject per-item data to files
@@ -151,9 +110,9 @@ def generate_item_table(subj_n, subj_output_name, item_list):
     # print('No fillers:\n', no_fillers)
     clean_conditions = [reformat_condition(item) for item in no_fillers]
     include_subject_ns = [(subj_n,) + item for item in clean_conditions]
-    row_dicts = [create_row_dict(subject_fields, row) 
-        for row in include_subject_ns]
-    write_to_csv(subj_output_name, row_dicts, subject_fields)
+    write_to_table(subj_output_name, 
+        include_subject_ns, 
+        header=subject_fields)
     # return include_subjects
 
 
@@ -237,11 +196,9 @@ def compute_accuracy(asc_dir, out_dir, accuracy_file, conditions):
     # print('got this far')
     accuracy_data = [process_subj(subj, out_dir, conditions)
                                     for subj in subj_list]
-    accuracy_data_dicts = [create_row_dict(accuracy_fields, subj_line) 
-                                    for subj_line in accuracy_data]
     # IK: write this data to a file
     output_file = os.path.join(out_dir, accuracy_file)
-    write_to_csv(output_file, accuracy_data_dicts, accuracy_fields)
+    write_to_table(output_file, accuracy_data, header=accuracy_fields)
 
 
 #################################################
