@@ -26,18 +26,15 @@
 # This file is structured in the following way:
 # Coming soon (*as* soon as we finalize this)...
 
-# import python libraries: os for managing files
-import os
-# import regular expressions
-import re
-# import csv writing functionality
-from csv import DictWriter
-# import iteration functions
+# import iteration functions such as chain, repeat, cycle
+# c.f. https://docs.python.org/2/library/itertools.html
 from itertools import *
-# Import required files; these should be in the same directory
+# import everything from the utilities module
+from util import *
+
+# Import other required files; these should be in the same directory
 from eyeMeasures import *
 from readInput import *
-from util import *
 
 
 ###########################################################
