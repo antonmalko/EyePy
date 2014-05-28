@@ -1,4 +1,14 @@
-import os
+# IK: This file is intended to house some common functions and modules
+# used by all of the eye-tracking data processing scripts
+# this way we ensure that recurring tasks (like writing to files) aren't
+# duplicated in several files but instead stored and defined in just one.
+
+# import module for OS interaction
+import os, re, csv
+# import regular expressions
+import re
+# import table file writing module
+import csv
 # import readline and set tab-completion based on what OS we are in
 import readline
 # MACOS uses "libedit" for readline functionality and has a different command
@@ -8,9 +18,6 @@ if 'libedit' in readline.__doc__:
 # whereas Unix (and maybe Windows) have the same command
 else:
     readline.parse_and_bind("tab: complete")
-# library for shared functions
-import re
-import csv
 
 ###############################################################################
 ## Functions for interacting with users
@@ -42,10 +49,10 @@ def ask_single_question(question):
 
 
 # define regular expression that checks for "yes" answers
-YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
+_YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
 
 def is_yes(user_input):
-    return bool(YES_RGX.match(user_input))
+    return bool(_YES_RGX.match(user_input))
 
 ###############################################################################
 ## Functions for dealing with file names/paths
@@ -59,17 +66,19 @@ def is_DA1_file(filename):
     return filename.endswith('.da1') or filename.endswith('.DA1')
 
 
+_SUBJ_N_RGX = re.compile('\d+')
+
+
 def get_subj_num(file_path):
     '''Given a filename string returns any substring that consists of digits.
     If multiple such substrings are found, returns the first one.
     If no such substrings are found, returns empty string and warns the user.
     '''
-    subj_n_rgx = re.compile('\d+')
     # first we make sure we're dealing with file's name, not full path to it
     file_name = os.path.basename(file_path)
     # we don't want to risk finding digits from file extensions
     extensionless = file_name.split('.')[0]
-    matches = subj_n_rgx.findall(extensionless)
+    matches = _SUBJ_N_RGX.findall(extensionless)
 
     if not matches:
         warning = "Unable to find subject number in this file name: \n{0}"
