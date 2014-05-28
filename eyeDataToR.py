@@ -32,8 +32,8 @@ import os
 import re
 # import csv writing functionality
 from csv import DictWriter
-# import function for flattening lists
-from itertools import chain
+# import iteration functions
+from itertools import *
 # Import required files; these should be in the same directory
 from eyeMeasures import *
 from readInput import *
@@ -145,6 +145,50 @@ def tack_on(field1, more_fields, debug=False):
         print('field1 ' + str(field1))
         print(list(more_fields))
         raise e
+
+
+
+###########################################################
+## Making a .reg file
+###########################################################
+
+SLASH_RGX = re.compile('/')
+
+def get_region_indices(sentences): 
+    all_indeces = iter([])
+    for sent, index in zip(sentences, count()):
+        sent_indeces = (match.start() for match in SLASH_RGX.finditer(sent))
+        normalized = (indx - normalizer 
+            for indx, norm in zip(sent_indeces, count()))
+        x_y_sequence = chain(*zip(normalized, repeat(index)))
+        all_indeces = chain(all_indeces, x_y_sequence)
+
+    string_indices = (str(index) for index in all_indeces)
+
+    return tuple(string_indices)
+                                                                                                                                                                                                                            
+
+def make_regions(del_file_name):
+    with open(del_file_name) as del_file:
+        split_lines = [line.split(' ') for line in del_file]
+
+    item_info = ((str(item[0]), str(item[1])) for item in split_lines)
+    sentence_items = (' '.join(item[2:]).split('\\n') for item in split_lines)
+    reg_indeces = map(get_region_indices, sentence_items)
+    return (item + indices for item, indices in zip(item_info, reg_indeces))
+
+
+def get_region_table(file_name):
+    # IK: include some print statements in this function
+    if '.reg' in file_name:
+        return RegionTable(file_name, 0, 1)
+    elif '.del' in file_name:
+        region_data = make_regions(file_name)
+        writable = (' '.join(row) + '\n' for row in region_data)
+        reg_file_name = file_name.split('.del')[0] + '.reg'
+        write_to_txt(reg_file_name,
+            writable)
+        return RegionTable(reg_file_name, 0, 1)
 
 
 ###########################################################
@@ -341,7 +385,7 @@ def main(enable_user_input=True):
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
-    table_of_regions = RegionTable(file_names['REG filename'], 0, 1)
+    table_of_regions = get_region_table(file_names['REG filename'])
     # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
     answer_key = dictTable(read_table(file_names['Question key filename']))
