@@ -11,10 +11,11 @@ from util import *
 
 ###############################################################################
 ## processing unsorted DA1 files
+###############################################################################
 
 def classify_line(line):
-    '''Given a line (as a string), determines what type of trial this line is:
-    whether it is a question, a sentence or a rejected trial.
+    '''Given a line (as a list of strings), determines what type of trial 
+    this line is: whether it is a question, a sentence or a rejected trial.
     '''
     trial_types = {
     '2' : 's',
@@ -33,6 +34,7 @@ def parse_da1_file(file_name):
     Returns a tuple of the form:
     (subject_number, sentence_list, question_list, rejected_list)
     '''
+    # using function imported from util module
     subj_number = get_subj_num(file_name)
     with open(file_name) as da1file:
         # we start by filtering out all empty lines
@@ -50,38 +52,63 @@ def sort_da1_data(data_dir):
     creates a tuple with the subject number tied to the corresponding sentence, 
     question and rejected trials.
     '''
+    # generate the paths to files using function from util module
     file_list = gen_file_paths(data_dir, filter_func=is_DA1_file)
-    return [parse_da1_file(file_name) for file_name in file_list]
+    # we then run parse_da1_file function on every member of file_list
+    return list(map(parse_da1_file, file_list))
+
 
 ###############################################################################
 ## writing sorted DA1s to folders
+###############################################################################
 
 def create_folder(root_path, study_exp_name, suffix, data):
-    out_root = os.path.join(root_path, study_exp_name + suffix)
-    os.makedirs(out_root, exist_ok=True)
+    '''Given a root path as well as a study or experiment name, a suffix 
+    (e.g. -s or -q) and data to write, creates an output folder under the root_path
+    directory with the passed suffix.
+    Then creates files for all the subjects that have non-empty data for 
+    this folder.
+    '''
+    # we start by setting up the output folder
+    output_root = os.path.join(root_path, study_exp_name + suffix)
+    os.makedirs(output_root, exist_ok=True)
+    # we then make sure we're not writing empty lists to files
     existing_data = (item for item in data if len(item[1]) > 0)
-    for subj_n, sents in existing_data:
+    # for all subjects that have data associated with them...
+    for subj_n, trials in existing_data:
+        # create the name for the subject's file and turn it into a path
         subj_file_name = subj_n + '-' + study_exp_name + suffix + '.da1'
-        file_path = os.path.join(out_root, subj_file_name)
-        write_to_table(file_path, sents, delimiter=' ')
+        subj_file_path = os.path.join(output_root, subj_file_name)
+        write_to_table(subj_file_path, trials, delimiter=' ')
 
 
-def write_da1(study_exp_name, data, nest_under=None):
+def write_da1(study_exp_name, data, nest_under=''):
+    '''Given a study or experiment name as well as the data for writing,
+    creates a folder corresponding to the experiment/study name and writes
+    data to subfolders inside it, one for every suffix in the "suffixes" list.
+    The suffixes stand for be basic trial types: sentences, questions, rejections.
+    The optional nest_under argument can specify that the whole output folder
+    should be created inside the folder passed as "nest_under".
+    '''
     suffixes = [
     ('-s', 1),
     ('-q', 2),
     ('-reject', 3)
     ]
+    # set the root path to different things based on whether nest_under is provided
     if nest_under:
         root_path = os.path.join(nest_under, study_exp_name + '-sorted')
     else:
         root_path = study_exp_name + '-sorted'
     for suff, index in suffixes:
+        # use the index variable to select only data relevant for this suffix
         relevant = [(item[0], item[index]) for item in data]
         create_folder(root_path, study_exp_name, suff, relevant)
 
+
 ###############################################################################
 ## loading sorted DA1s
+###############################################################################
 
 def get_study_name(dir_name):
     normed_dir = os.path.normpath(dir_name)
@@ -115,6 +142,7 @@ def load_sorted_da1(sorted_dir):
 
 ###############################################################################
 ## Selecting items for only one experiment
+###############################################################################
 
 def condition_filter(ranges):
     start, total = int(ranges[0]), int(ranges[1])
@@ -133,6 +161,7 @@ def get_exp_items(item, cond_range):
 
 ###############################################################################
 ## Running the code
+###############################################################################
 
 SPLIT_WHOLE_STUDY = '''
 Do you need to split the DA1s into -s, -q, and -reject files?
