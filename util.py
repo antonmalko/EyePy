@@ -118,6 +118,14 @@ def create_row_dict(fields, item, fill_val='NA'):
     return dict(zip(fields, item))
 
 
+def rows_to_dicts(header, data, **kwargs):
+    if 'fill_val' in kwargs:
+        return (create_row_dict(header, row, fill_val=kwargs['fill_val']
+            for row in data)
+    else:
+        return (create_row_dict(header, row) for row in data)
+
+
 def write_to_table(file_name, data, header=None, **kwargs):
     '''Writes data to file specified by filename.
 
@@ -138,7 +146,7 @@ def write_to_table(file_name, data, header=None, **kwargs):
         if header:
             output = csv.DictWriter(f, header, **kwargs)
             output.writeheader()
-            data = (create_row_dict(row) for row in data)
+            data = rows_to_dicts(header, row, **kwargs)
         else:
             output = csv.writer(f, **kwargs)
         output.writerows(data)
