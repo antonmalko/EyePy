@@ -155,14 +155,15 @@ def get_region_indices(sentences):
     all_indeces = iter([])
     for sent, index in zip(sentences, count()):
         sent_indeces = (match.start() for match in SLASH_RGX.finditer(sent))
-        normalized = (indx - normalizer 
-            for indx, norm in zip(sent_indeces, count()))
+        normalized = [indx - normalizer 
+            for indx, normalizer in zip(sent_indeces, count())]
+        number_of_regions = str(len(normalized))
         x_y_sequence = chain(*zip(normalized, repeat(index)))
         all_indeces = chain(all_indeces, x_y_sequence)
 
     string_indices = (str(index) for index in all_indeces)
 
-    return tuple(string_indices)
+    return tuple(number_of_regions) + tuple(string_indices)
                                                                                                                                                                                                                             
 
 def make_regions(del_file_name):
@@ -400,5 +401,5 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    main(enable_user_input=False)
-    # main()
+    # main(enable_user_input=False)
+    main()
