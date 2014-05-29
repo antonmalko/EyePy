@@ -160,17 +160,29 @@ def load_sorted_da1(sorted_dir):
 ## Selecting items for only one experiment
 ###############################################################################
 
-def condition_filter(ranges):
-    start, total = int(ranges[0]), int(ranges[1])
-    return [str(n) for n in range(start, start + total)]
+def condition_filter(start, total):
+    '''Given a start and an end value returns the integer range spanned by these
+    numbers.
+    The integers are converted to strings so as to make comparing them with
+    strings obtained from files easier.
+    Assumes that user will give inputs > 0 for the total argument.
+    '''
+    start_int, total_int = int(start), int(total)
+    return list(map(str, range(start_int, start_int + total_int)))
 
 
 def get_exp_items(item, cond_range):
-    # print(item)
+    '''Given a (subject#, sents, questions, rejects) tuple as well as a range of
+    conditions selects only those sentence/question/reject items whose second element
+    (the condition code) is found in the range of permissible conditions.
+    '''
+    # unpack the item tuple
     s_number, sents, questions, rejects = item
+    # subset sentences, questions, rejections
     exp_sents = [s for s in sents if s[1] in cond_range]
     exp_qs =  [q for q in questions if q[1] in cond_range]
     exp_rej =  [r for r in rejects if r[1] in cond_range]
+    # put things back together and return
     return (s_number, exp_sents, exp_qs, exp_rej)
 
 
@@ -217,7 +229,7 @@ def main():
 
     while splitting_by_experiment:
         exp_meta_data = ask_user_questions(experiment_meta_qs, return_list=True)
-        exp_filter = condition_filter(exp_meta_data[1:])
+        exp_filter = condition_filter(*exp_meta_data[1:])
         exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
         exp_name = exp_meta_data[0]
         write_da1(exp_name, exp_data, nest_under=study_root)
