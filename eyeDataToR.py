@@ -153,17 +153,18 @@ SLASH_RGX = re.compile('/')
 
 def get_region_indices(sentences): 
     all_indeces = iter([])
+    number_of_regions = 0
     for sent, index in zip(sentences, count()):
         sent_indeces = (match.start() for match in SLASH_RGX.finditer(sent))
         normalized = [indx - normalizer 
             for indx, normalizer in zip(sent_indeces, count())]
-        number_of_regions = str(len(normalized))
+        number_of_regions += len(normalized)
         x_y_sequence = chain(*zip(normalized, repeat(index)))
         all_indeces = chain(all_indeces, x_y_sequence)
 
     string_indices = (str(index) for index in all_indeces)
 
-    return tuple(number_of_regions) + tuple(string_indices)
+    return (str(number_of_regions),) + tuple(string_indices)
                                                                                                                                                                                                                             
 
 def make_regions(del_file_name):
@@ -179,11 +180,15 @@ def make_regions(del_file_name):
 def get_region_table(file_name):
     # IK: include some print statements in this function
     if '.reg' in file_name:
+        print('This looks like a region file. I can load it directly')
         return RegionTable(file_name, 0, 1)
     elif '.del' in file_name:
+        print('This looks like a .del file. I will turn it into a region file.')
         region_data = make_regions(file_name)
+        print('Successfully generated region data from DEL file.')
         reg_file_name = file_name.split('.del')[0] + '.reg'
         write_to_table(reg_file_name, region_data, delimiter=' ')
+        print('Saved region data to "{0}"'.format(reg_file_name))
         return RegionTable(reg_file_name, 0, 1)
 
 
@@ -286,6 +291,7 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     try:
         # IK: why do we need items 0-2 in that list anyway?
         regions = table_of_regions[cond_item][3:]
+        print(regions)
     except KeyError:
         print('Missing region information for this cond/item: ' + cond_item)
         raise
@@ -339,7 +345,7 @@ def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
     # IK: the default files dictionary is there mostly for development
     default_files = {
-        'REG filename': 'output.reg.txt',
+        'REG (or DEL) filename': 'output.reg.txt',
         'Question key filename': 'expquestions.txt',
         'Sentence data folder': 'Gardenias-s',
         'Question data folder': 'Gardenias-q',
@@ -347,7 +353,7 @@ def main(enable_user_input=True):
     }
     # define list of questions to be asked of user if defaults aren't used
     our_questions = [
-        'REG filename',
+        'REG (or DEL) filename',
         'Question key filename',
         'Sentence data folder',
         'Question data folder',
@@ -381,7 +387,7 @@ def main(enable_user_input=True):
     # Read in region key, create dictionary.
     # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
     # yStart],[xEnd, yEnd]], ...]
-    table_of_regions = get_region_table(file_names['REG filename'])
+    table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
     # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
     answer_key = dictTable(read_table(file_names['Question key filename']))
