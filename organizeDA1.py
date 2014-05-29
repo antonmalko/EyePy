@@ -52,6 +52,7 @@ def sort_da1_data(data_dir):
     creates a tuple with the subject number tied to the corresponding sentence, 
     question and rejected trials.
     '''
+    print('Sorting DA1 files from {0}'.format(data_dir))
     # generate the paths to files using function from util module
     file_list = gen_file_paths(data_dir, filter_func=is_DA1_file)
     # we then run parse_da1_file function on every member of file_list
@@ -88,23 +89,25 @@ def load_da1_file(file_path, index):
     return tuple(subj_frame)
 
 
-def load_sorted_da1(sorted_dir):
+def load_sorted_da1(sorted_dir_path):
     '''Given path to a folder with the sorted DA1 files, reads in said files
     and returns the same data structure as sort_da1_data, namely a list of
     tuples where subject numbers are bound to lists of sentence, question, rejected
     items.
     '''
+    print('Loading sorted DA1s from {0}'.format(sorted_dir_path))
     suffixes = [
     ('-s', 1),
     ('-q', 2),
     ('-reject', 3)
     ]
-    study_name = get_study_name(sorted_dir)
+    study_name = get_study_name(sorted_dir_path)
     sorted_da1 = []
     for suffix, index in suffixes:
-        type_root = os.path.join(sorted_dir, study_name + suffix)
+        type_root = os.path.join(sorted_dir_path, study_name + suffix)
         subj_files = gen_file_paths(type_root)
         sorted_da1 += [load_da1_file(f, index) for f in subj_files]
+    print('Loaded successfully.')
     return sorted_da1
 
 
@@ -180,6 +183,7 @@ def write_da1(study_exp_name, data, nest_under=''):
         root_path = os.path.join(nest_under, study_exp_name + '-sorted')
     else:
         root_path = study_exp_name + '-sorted'
+    print('Writing sorted DA1s to {0}'.format(root_path))
     for suff, index in suffixes:
         # use the index variable to select only data relevant for this suffix
         relevant = [(item[0], item[index]) for item in data]
@@ -213,28 +217,33 @@ def main():
         write_da1(study_name, sorted_da1s)
         study_root = study_name + '-sorted'
     else:
-        sorted_folder = ask_single_question('Enter sorted files folder:\n')
+        sorted_folder = ask_single_question('Enter the sorted files folder:\n')
         sorted_da1s = load_sorted_da1(sorted_folder)
         study_root = sorted_folder
 
     experiment_meta_qs = [
-    'experiment name',
-    'first condition number',
-    'total number of conditions'
+    'name of your experiment',
+    'first condition for this experiment',
+    'total number of conditions for this experiment'
     ]
 
     experiment_split_decision = ask_single_question(START_EXP_SPLIT)
     splitting_by_experiment = is_yes(experiment_split_decision)
 
     while splitting_by_experiment:
-        exp_meta_data = ask_user_questions(experiment_meta_qs, return_list=True)
-        exp_filter = condition_filter(*exp_meta_data[1:])
+        # ask some questions about the experiment
+        exp_meta = ask_user_questions(experiment_meta_qs, return_list=True)
+        # unpack users answers into variables
+        [exp_name, first_cond, cond_total] = exp_meta
+        exp_filter = condition_filter(first_cond, cond_total)
+        print('Subsetting DA1 data.')
         exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
-        exp_name = exp_meta_data[0]
         write_da1(exp_name, exp_data, nest_under=study_root)
+        print('Done writing data for this experiment!')
         continue_decision = ask_single_question(MORE_EXP_SPLIT)
         splitting_by_experiment = is_yes(continue_decision)
 
+    print('Ok, bye!')
 
 if __name__ == '__main__':
     main()
