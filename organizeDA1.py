@@ -3,6 +3,8 @@
 ##updated by: Shayne Sloggett
 ## revised 5/2014 by Ilia Kurenkov
 
+# IK: for now importing repeat fxn from itertools, may want to revise this
+from itertools import repeat
 # import functionality from utility module
 from util import *
 
@@ -75,7 +77,7 @@ def write_da1(study_exp_name, data, nest_under=None):
     else:
         root_path = study_exp_name + '-sorted'
     for suff, index in suffixes:
-        relevant = ((item[0], item[index]) for item in data)
+        relevant = [(item[0], item[index]) for item in data]
         create_folder(root_path, study_exp_name, suff, relevant)
 
 ###############################################################################
@@ -90,7 +92,7 @@ def load_da1_file(file_path, index):
     subj_number = get_subj_num(file_path)
     starter = (subj_number, [], [], [])
     with open(file_path) as da1file:
-        subj_items = [line for line in da1file]
+        subj_items = [line.strip().split() for line in da1file]
     return starter[:index] + (subj_items,) + starter[index + 1:]
 
 
@@ -120,6 +122,7 @@ def condition_filter(ranges):
 
 
 def get_exp_items(item, cond_range):
+    # print(item)
     s_number, sents, questions, rejects = item
     exp_sents = [s for s in sents if s[1] in cond_range]
     exp_qs =  [q for q in questions if q[1] in cond_range]
@@ -170,7 +173,7 @@ def main():
     while splitting_by_experiment:
         exp_meta_data = ask_user_questions(experiment_meta_qs, return_list=True)
         exp_filter = condition_filter(exp_meta_data[1:])
-        exp_data = (get_exp_items(item, exp_filter) for item in sorted_da1s)
+        exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
         exp_name = exp_meta_data[0]
         write_da1(exp_name, exp_data, nest_under=study_root)
         continue_decision = ask_single_question(MORE_EXP_SPLIT)
