@@ -19,7 +19,7 @@ def classify_line(line):
     '6' : 'q',
     '7' : 'q',
     }
-    item_type = line.split()[4]
+    item_type = line[4]
     if item_type in trial_types:
         return trial_types[item_type]
     return 'reject'
@@ -34,7 +34,7 @@ def parse_da1_file(file_name):
     subj_number = get_subj_num(file_name)
     with open(file_name) as da1file:
         # we start by filtering out all empty lines
-        non_empty = [line for line in da1file if line]
+        non_empty = [line.strip().split() for line in da1file if line]
         # we then collect the sentence, question and rejected lists
         sentences = [line for line in non_empty if classify_line(line) is 's']
         questions = [line for line in non_empty if classify_line(line) is 'q']
@@ -61,7 +61,7 @@ def create_folder(root_path, study_exp_name, suffix, data):
     for subj_n, sents in existing_data:
         subj_file_name = subj_n + '-' + study_exp_name + suffix + '.da1'
         file_path = os.path.join(out_root, subj_file_name)
-        write_to_table(file_path, sents)
+        write_to_table(file_path, sents, delimiter=' ')
 
 
 def write_da1(study_exp_name, data, nest_under=None):
@@ -121,9 +121,9 @@ def condition_filter(ranges):
 
 def get_exp_items(item, cond_range):
     s_number, sents, questions, rejects = item
-    exp_sents = [s for s in sents if s.split()[1] in cond_range]
-    exp_qs =  [q for q in questions if q.split()[1] in cond_range]
-    exp_rej =  [r for r in rejects if r.split()[1] in cond_range]
+    exp_sents = [s for s in sents if s[1] in cond_range]
+    exp_qs =  [q for q in questions if q[1] in cond_range]
+    exp_rej =  [r for r in rejects if r[1] in cond_range]
     return (s_number, exp_sents, exp_qs, exp_rej)
 
 
@@ -152,9 +152,11 @@ def main():
         [da1_folder, study_name] = ask_user_questions(questions, return_list=True)
         sorted_da1s = sort_da1_data(da1_folder)
         write_da1(study_name, sorted_da1s)
+        study_root = study_name + '-sorted'
     else:
-        da1_folder = ask_single_question('Enter sorted files folder:\n')
-        sorted_da1s = load_sorted_da1(da1_folder)
+        sorted_folder = ask_single_question('Enter sorted files folder:\n')
+        sorted_da1s = load_sorted_da1(sorted_folder)
+        study_root = sorted_folder
 
     experiment_meta_qs = [
     'experiment name',
@@ -169,8 +171,8 @@ def main():
         exp_meta_data = ask_user_questions(experiment_meta_qs, return_list=True)
         exp_filter = condition_filter(exp_meta_data[1:])
         exp_data = (get_exp_items(item, exp_filter) for item in sorted_da1s)
-        exp_path = exp_meta_data[0]
-        write_da1(exp_path, exp_data, nest_under=da1_folder)
+        exp_name = exp_meta_data[0]
+        write_da1(exp_name, exp_data, nest_under=study_root)
         continue_decision = ask_single_question(MORE_EXP_SPLIT)
         splitting_by_experiment = is_yes(continue_decision)
 
