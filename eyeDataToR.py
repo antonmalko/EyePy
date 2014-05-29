@@ -291,7 +291,6 @@ def process_regions(cond_item, fixations, table_of_regions, cutoffs):
     try:
         # IK: why do we need items 0-2 in that list anyway?
         regions = table_of_regions[cond_item][3:]
-        print(regions)
     except KeyError:
         print('Missing region information for this cond/item: ' + cond_item)
         raise
