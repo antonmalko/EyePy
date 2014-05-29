@@ -111,31 +111,47 @@ def write_da1(study_exp_name, data, nest_under=''):
 ###############################################################################
 
 def get_study_name(dir_name):
+    '''Given a folder name extracts the study name from it, assuming the following 
+    folder name format:
+    STUDY_NAME-sorted
+    '''
     normed_dir = os.path.normpath(dir_name)
     return os.path.basename(normed_dir).split('-')[0]
 
 
 def load_da1_file(file_path, index):
+    '''This function loads only sentence or question or rejection items
+    for a subject from a da1 file and returns them in the same format as if we 
+    read in an unsorted da1 file:
+    (subject#, sentences, questions, rejects)
+    However, in this case two of the lists will be empty, as we are loading a
+    sorted file.
+    The "index" argument deterimines which one of the three lists gets populated
+    with the items extracted from the file.
+    '''
     subj_number = get_subj_num(file_path)
-    starter = (subj_number, [], [], [])
+    subj_frame = [subj_number, [], [], []]
     with open(file_path) as da1file:
-        subj_items = [line.strip().split() for line in da1file]
-    return starter[:index] + (subj_items,) + starter[index + 1:]
+        subj_frame[index] = [line.strip().split() for line in da1file]
+    return tuple(subj_frame)
 
 
 def load_sorted_da1(sorted_dir):
-    # consider passing this around as an argument to change program's overall behavior
+    '''Given path to a folder with the sorted DA1 files, reads in said files
+    and returns the same data structure as sort_da1_data, namely a list of
+    tuples where subject numbers are bound to lists of sentence, question, rejected
+    items.
+    '''
     suffixes = [
     ('-s', 1),
     ('-q', 2),
     ('-reject', 3)
     ]
-    # think about making following line a bit simpler or clearer as to its purpose
     study_name = get_study_name(sorted_dir)
     sorted_da1 = []
     for suffix, index in suffixes:
-        suff_root = os.path.join(sorted_dir, study_name + suffix)
-        subj_files = gen_file_paths(suff_root)
+        type_root = os.path.join(sorted_dir, study_name + suffix)
+        subj_files = gen_file_paths(type_root)
         sorted_da1 += [load_da1_file(f, index) for f in subj_files]
     return sorted_da1
 
