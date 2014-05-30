@@ -21,7 +21,7 @@ def tagged_table(table_lines, one, two):
 
 # dictTable creates a dictionary from a tagged table, where the key is the tag
 # and the value is a list with the rest of the columns.
-def dictTable(table, paired=True):
+def dict_from_table(table, paired=True):
     if paired:
         return dict(table)
     return dict((item[0], item[1:]) for item in table)
@@ -82,7 +82,7 @@ def region_table(regFile, one, two):
     read_in = read_table(regFile)
     tagged = tagged_table(list(read_in), one, two)
     regioned = region_coordinates(tagged)
-    return dictTable(regioned)
+    return dict_from_table(regioned)
 
 # fixGroups restructures a table from a DA1 file, assuming that it contains 9 id
 # columns (tag, order, cond, item, totaltime, buttonpress, [unknown], [unknown],
@@ -115,7 +115,7 @@ def fixGroups(taggedTable):
 # FixationTable converts a DA1 file into a dictionary where the key is the tag and
 # the value is a list of lists of [X Y starttime endtime] for each fixation.
 def FixationTable(da1File, one, two):
-    return dictTable(fixGroups(tableTag(read_table(da1File),one,two)))
+    return dict_from_table(fixGroups(tableTag(read_table(da1File),one,two)))
 
 # QuestionTable converts a DA1 file into a dictionary, where the key is the tag and the value
 # is a list with the following fields: order, cond, item, rt, buttonpress
