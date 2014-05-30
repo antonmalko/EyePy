@@ -7,15 +7,13 @@ def read_table(filename):
     '''
     with open(filename) as input_file:
         nonewlines = (line.strip() for line in input_file)
-        return (line.split() for line in nonewlines if line)
+        return (tuple(line.split()) for line in nonewlines if line)
 
 # tableTag creates a unique identifier for each line by concatenating the
 # values in column "one" and "two" in the "input" table.
-def tableTag(table,one,two):
-    for line in table:
-        tag = line[one]+line[two]
-        line.insert(0,tag)
-    return table
+def tableTag(table_lines,one,two):
+    tags = ((line[one], line[two]) for line in table_lines)
+    return zip(tags, table_lines)
 
 # dictTable creates a dictionary from a tagged table, where the key is the tag
 # and the value is a list with the rest of the columns.
@@ -28,6 +26,20 @@ def dictTable(table):
 # regStarts restructures a table ("taggedTable") assuming that it contains 4
 # identifying columns (tag, cond, item, nregions), followed by a series of
 # X Y pairs marking the beginning of each region.
+
+def region_coordinates(tagged_table):
+
+    for tagged_line in tagged_table:
+        tag, line = tagged_line
+        Xes = line[4::2]
+        Ys = line[5::2]
+        coordinates = zip(Xes, Ys)
+        starts = coordinates[:-1]
+        ends = coordinates[1:]
+        pairs = zip(starts, ends)
+        yield (tag, pairs)
+
+
 def regStarts(taggedTable):
     regTable = []
     for line in taggedTable:
