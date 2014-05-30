@@ -16,11 +16,11 @@ def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	One with all the data and one with only a subset thereof that fits in the 
 	condition and item ranges specified by the user.
 	'''
-	all_file = '_'.join(['all', input_type, '.txt'])
+	all_file = '_'.join(['all', input_type]) + '.txt'
 	write_to_table(all_file, data, delimiter='\t')
 
 	filtered_data = (d for d in data if check_cond_item(d, cond_nums, item_nums))
-	exp_file = '_'.join([exp_name, input_type, '.txt'])
+	exp_file = '_'.join([exp_name, input_type]) + '.txt'
 	write_to_table(exp_file, filtered_data, delimiter='\t')
 
 
