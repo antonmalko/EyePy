@@ -6,8 +6,8 @@ def read_table(filename):
     Returns a list of rows (as lists of strings).
     '''
     with open(filename) as input_file:
-        nonewlines = [line.strip() for line in input_file]
-        return [line.split() for line in nonewlines if line]
+        nonewlines = (line.strip() for line in input_file)
+        return (line.split() for line in nonewlines if line)
 
 # tableTag creates a unique identifier for each line by concatenating the
 # values in column "one" and "two" in the "input" table.
