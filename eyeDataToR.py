@@ -279,6 +279,20 @@ def q_RT_acc(cond_item, item, q_table, answer_key):
         return ('NA', 'NA')
 
 
+def compute_accuracy(item_table, question_table, answer):
+    ''' A generator for subject accuracy per item. '''
+    for cond_item in item_table:
+        item = cond_item[1]
+        try:
+            RT = question_table[cond_item][3]
+            accuracy = int(question_table[cond_item][4] == answer_key[item][0])
+            yield (RT, accuracy)
+        # if this fails, set both fields to NA
+        except:
+            yield ('NA', 'NA')
+
+
+
 ###########################################################
 ## Per/Subject operations
 ###########################################################
