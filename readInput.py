@@ -11,21 +11,21 @@ def read_table(filename):
 
 # tableTag creates a unique identifier for each line by concatenating the
 # values in column "one" and "two" in the "input" table.
-def tableTag(table_lines,one,two):
+def tagged_table(table_lines, one, two):
+    '''Given a table iterable for every line of said iterable creates a "tag"
+    for the line by combining the elements of the line indexed by "one" and "two"
+    into a tuple and pairing that up with the rest of the line.
+    '''
     tags = ((line[one], line[two]) for line in table_lines)
     return zip(tags, table_lines)
 
 # dictTable creates a dictionary from a tagged table, where the key is the tag
 # and the value is a list with the rest of the columns.
-def dictTable(table):
-    dtable = {}
-    for line in table:
-        dtable[line[0]] = line[1:]
-    return dtable
+def dictTable(table, paired=True):
+    if paired:
+        return dict(table)
+    return dict((item[0], item[1:]) for item in table)
 
-# regStarts restructures a table ("taggedTable") assuming that it contains 4
-# identifying columns (tag, cond, item, nregions), followed by a series of
-# X Y pairs marking the beginning of each region.
 
 def region_coordinates(tagged_table):
 
@@ -40,43 +40,49 @@ def region_coordinates(tagged_table):
         yield (tag, pairs)
 
 
-def regStarts(taggedTable):
-    regTable = []
-    for line in taggedTable:
-        idcols = line[0:4]
-        p = 'x'         #p keeps track of whether the current value is an X or a Y
-        regstarts = [] 
-        for pos in line[4:]:
-            if p=='x':
-                regstarts.append(int(pos))
-                p = 'y'
-            else:
-                x = regstarts[len(regstarts)-1]
-                regstarts[len(regstarts)-1] = [x,int(pos)]
-                p = 'x'
-        idcols.extend(regstarts)
-        regTable.append(idcols)
-    return regTable
+# # regStarts restructures a table ("taggedTable") assuming that it contains 4
+# # identifying columns (tag, cond, item, nregions), followed by a series of
+# # X Y pairs marking the beginning of each region.
+# def regStarts(taggedTable):
+#     regTable = []
+#     for line in taggedTable:
+#         idcols = line[0:4]
+#         p = 'x'         #p keeps track of whether the current value is an X or a Y
+#         regstarts = [] 
+#         for pos in line[4:]:
+#             if p=='x':
+#                 regstarts.append(int(pos))
+#                 p = 'y'
+#             else:
+#                 x = regstarts[len(regstarts)-1]
+#                 regstarts[len(regstarts)-1] = [x,int(pos)]
+#                 p = 'x'
+#         idcols.extend(regstarts)
+#         regTable.append(idcols)
+#     return regTable
 
-# regPairs appends the end delimiters to each pair of start delimiters for a region,
-# resulting in the a series of nested lists: [[Xstart, Ystart], [Xend, Yend]].
-def regPairs(regStartsTable):
-    regTable = []
-    for line in regStartsTable:
-        idcols = line[0:4]
-        starts = line[4:len(line)-1]
-        ends = line[5:]
-        regPairs = []
-        for i in range(0,len(starts)):
-            regPairs.append([starts[i], ends[i]])
-        idcols.extend(regPairs)
-        regTable.append(idcols)
-    return regTable
+# # regPairs appends the end delimiters to each pair of start delimiters for a region,
+# # resulting in the a series of nested lists: [[Xstart, Ystart], [Xend, Yend]].
+# def regPairs(regStartsTable):
+#     regTable = []
+#     for line in regStartsTable:
+#         idcols = line[0:4]
+#         starts = line[4:len(line)-1]
+#         ends = line[5:]
+#         regPairs = []
+#         for i in range(0,len(starts)):
+#             regPairs.append([starts[i], ends[i]])
+#         idcols.extend(regPairs)
+#         regTable.append(idcols)
+#     return regTable
 
 # RegionTable converts a REG file into a dictionary where the key is the tag, and
 # the value is the list of start/end coordinate pairs for each region.
-def RegionTable(regFile, one, two):
-    return dictTable(regPairs(regStarts(tableTag(read_table(regFile),one,two))))
+def region_table(regFile, one, two):
+    read_in = read_table(regFile)
+    tagged = tagged_table(list(read_in), one, two)
+    regioned = region_coordinates(tagged)
+    return dictTable(regioned)
 
 # fixGroups restructures a table from a DA1 file, assuming that it contains 9 id
 # columns (tag, order, cond, item, totaltime, buttonpress, [unknown], [unknown],
