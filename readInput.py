@@ -7,7 +7,7 @@ def read_table(filename):
     '''
     with open(filename) as input_file:
         nonewlines = (line.strip() for line in input_file)
-        return (tuple(line.split()) for line in nonewlines if line)
+        return tuple(tuple(line.split()) for line in nonewlines if line)
 
 # tableTag creates a unique identifier for each line by concatenating the
 # values in column "one" and "two" in the "input" table.
@@ -28,15 +28,14 @@ def dict_from_table(table, paired=True):
 
 
 def region_coordinates(tagged_table):
-
     for tagged_line in tagged_table:
         tag, line = tagged_line
-        Xes = line[4::2]
-        Ys = line[5::2]
+        Xes = map(int, line[3::2])
+        Ys = map(int, line[4::2])
         coordinates = zip(Xes, Ys)
         starts = coordinates[:-1]
         ends = coordinates[1:]
-        pairs = zip(starts, ends)
+        pairs = tuple(zip(starts, ends))
         yield (tag, pairs)
 
 
@@ -80,51 +79,66 @@ def region_coordinates(tagged_table):
 # the value is the list of start/end coordinate pairs for each region.
 def region_table(regFile, one, two):
     read_in = read_table(regFile)
-    tagged = tagged_table(list(read_in), one, two)
+    tagged = tagged_table(read_in, one, two)
     regioned = region_coordinates(tagged)
     return dict_from_table(regioned)
+
+
+def fixation_data(tagged_table):
+# don't forget to turn these into ints
+    for tagged_line in tagged_table:
+        tag, line = tagged_line
+        Xes = map(int, line[8::4])
+        Ys = map(int, line[9::4])
+        fixation_starts = map(int, line[10::4])
+        fixation_ends = map(int, line[11::4])
+        fixations = ((x, y, end - start) 
+            for x, y, start, end 
+            in zip(Xes, Ys, fixation_starts, fixation_ends))
+        yield (tag, tuple(fixations))
 
 # fixGroups restructures a table from a DA1 file, assuming that it contains 9 id
 # columns (tag, order, cond, item, totaltime, buttonpress, [unknown], [unknown],
 # totalfixations), followed by a series of [X Y start end] groups. It outputs a
 # dictionary, where the key is the tag and the value is the list with the rest of
 # the columns
-def fixGroups(taggedTable):
-    fixTable = []
-    for line in taggedTable:
-        idcols=line[0:9]
-        p = 'x'
-        fixgroups = []
-        for pos in line[9:]:
-            if p=='x':
-                x = int(pos)
-                p = 'y'
-            elif p=='y':
-                y = int(pos)
-                p = 'start'
-            elif p=='start':
-                start = int(pos)
-                p = 'end'
-            elif p=='end':
-                fixgroups.append([x,y,start,int(pos)])
-                p = 'x'
-        idcols.extend(fixgroups)
-        fixTable.append(idcols)
-    return fixTable
+# def fixGroups(taggedTable):
+#     fixTable = []
+#     for line in taggedTable:
+#         idcols=line[0:9]
+#         p = 'x'
+#         fixgroups = []
+#         for pos in line[9:]:
+#             if p=='x':
+#                 x = int(pos)
+#                 p = 'y'
+#             elif p=='y':
+#                 y = int(pos)
+#                 p = 'start'
+#             elif p=='start':
+#                 start = int(pos)
+#                 p = 'end'
+#             elif p=='end':
+#                 fixgroups.append([x,y,start,int(pos)])
+#                 p = 'x'
+#         idcols.extend(fixgroups)
+#         fixTable.append(idcols)
+#     return fixTable
 
 # FixationTable converts a DA1 file into a dictionary where the key is the tag and
 # the value is a list of lists of [X Y starttime endtime] for each fixation.
-def FixationTable(da1File, one, two):
-    return dict_from_table(fixGroups(tableTag(read_table(da1File),one,two)))
+def fixation_table(da1File, one, two):
+    tagged = tagged_table(read_table(da1File),one,two)
+    fixations = fixation_data(tagged)
+    return dict_from_table(fixations)
 
 # QuestionTable converts a DA1 file into a dictionary, where the key is the tag and the value
 # is a list with the following fields: order, cond, item, rt, buttonpress
-def QuestionTable(da1QFile, one, two):
-    qtable = tableTag(read_table(da1QFile), one, two)
-    qDict = {}
-    for row in qtable:
-        qDict[row[0]] = row[1:6]
-    return qDict
+def question_table(da1QFile, one, two):
+    ''' Returns dict of (tag : (RT, buttonpress)) entries. '''
+    tagged = tagged_table(read_table(da1QFile), one, two)
+    RT_button_press = ((tag, line[3:5]) for tag, line in tagged)
+    return dict_from_table(RT_button_press)
 
 
 def test_output(old_fn, new_fn, *args):
