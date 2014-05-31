@@ -150,3 +150,77 @@ def write_to_table(file_name, data, header=None, **kwargs):
         else:
             output = csv.writer(f, **kwargs)
         output.writerows(data)
+
+
+
+###############################################################################
+## Functions for writing to files
+###############################################################################
+
+def read_table(filename):
+    '''Takes a file name as a string, opens it. Once that's done, takes each
+    non-empty row of the file and converts it into a list of strings.
+    Returns a list of rows (as lists of strings).
+    '''
+    with open(filename) as input_file:
+        nonewlines = (line.strip() for line in input_file)
+        return tuple(tuple(line.split()) for line in nonewlines if line)
+
+def tagged_table(table_lines, one, two):
+    '''Given a table iterable for every line of said iterable creates a "tag"
+    for the line by combining the elements of the line indexed by "one" and "two"
+    into a tuple and pairing that up with the rest of the line.
+    '''
+    tags = ((line[one], line[two]) for line in table_lines)
+    return zip(tags, table_lines)
+
+
+def dict_from_table(table, paired=True):
+    if paired:
+        return dict(table)
+    return dict((item[0], item[1:]) for item in table)
+
+
+def region_coordinates(tagged_table):
+    for tagged_line in tagged_table:
+        tag, line = tagged_line
+        Xes = map(int, line[3::2])
+        Ys = map(int, line[4::2])
+        coordinates = zip(Xes, Ys)
+        starts = coordinates[:-1]
+        ends = coordinates[1:]
+        pairs = tuple(zip(starts, ends))
+        yield (tag, pairs)
+
+
+def region_table(regFile, one, two):
+    read_in = read_table(regFile)
+    tagged = tagged_table(read_in, one, two)
+    regioned = region_coordinates(tagged)
+    return dict_from_table(regioned)
+
+
+def fixation_data(tagged_table):
+    ''' A generator of fiation data for a tagged table. '''
+    for tagged_line in tagged_table:
+        tag, line = tagged_line
+        Xes = map(int, line[8::4])
+        Ys = map(int, line[9::4])
+        fixation_starts = map(int, line[10::4])
+        fixation_ends = map(int, line[11::4])
+        fixations = ((x, y, end - start) 
+            for x, y, start, end 
+            in zip(Xes, Ys, fixation_starts, fixation_ends))
+        yield (tag, tuple(fixations))
+
+def fixation_table(da1File, one, two):
+    tagged = tagged_table(read_table(da1File),one,two)
+    fixations = fixation_data(tagged)
+    return dict_from_table(fixations)
+
+
+def question_table(da1QFile, one, two):
+    ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries. '''
+    tagged = tagged_table(read_table(da1QFile), one, two)
+    RT_button_press = ((tag, line[3:5]) for tag, line in tagged)
+    return dict_from_table(RT_button_press)
