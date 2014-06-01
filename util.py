@@ -109,25 +109,26 @@ def gen_file_paths(dir_name, filter_func=None):
 ## Functions for writing to files
 ###############################################################################
 
-def create_row_dict(fields, item, fill_val='NA'):
-    length_difference = len(fields) - len(item)
-    error_message = 'There are more items than labels for them: {0}'
-    if length_difference < 0:
-        print('Here are the column labels', fields)
-        print('Here are the items', item)
-        raise Exception(error_message.format(length_difference))
-    elif length_difference > 0:
-        item = item + (fill_val,) * length_difference
-
-    return dict(zip(fields, item))
-
-
-def rows_to_dicts(header, data, **kwargs):
-    if 'fill_val' in kwargs:
-        return (create_row_dict(header, row, fill_val=kwargs['fill_val'])
-            for row in data)
-    else:
-        return (create_row_dict(header, row) for row in data)
+def create_row_dicts(fields, data, fill_val='NA'):
+    '''Helper generator function for the write_to_table(). Collecting data
+    is often much more efficient and clear when this data is stored in tuples
+    or lists, not dictionaries.
+    Python's csv DictWriter class requires that it be passed a sequence of 
+    dictionaries, however.
+    This function takes a header list of column names as well as some data in
+    the form of a sequence of rows (which can be tuples or lists) and converts
+    every row in the data to a dictionary usable by DictWriter.
+    '''
+    for row in data:
+        length_difference = len(fields) - len(row)
+        error_message = 'There are more rows than labels for them: {0}'
+        if length_difference < 0:
+            print('Here are the column labels', fields)
+            print('Here are the rows', row)
+            raise Exception(error_message.format(length_difference))
+        elif length_difference > 0:
+            row = row + (fill_val,) * length_difference
+        yield dict(zip(fields, row))
 
 
 def write_to_table(file_name, data, header=None, **kwargs):
@@ -150,7 +151,10 @@ def write_to_table(file_name, data, header=None, **kwargs):
         if header:
             output = csv.DictWriter(f, header, **kwargs)
             output.writeheader()
-            data = rows_to_dicts(header, data, **kwargs)
+            if 'fill_val' in kwargs:
+                data = create_row_dicts(header, data, kwargs['fill_val'])
+            else:                
+                data = create_row_dicts(header, data)
         else:
             output = csv.writer(f, **kwargs)
         output.writerows(data)
