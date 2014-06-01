@@ -75,30 +75,27 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 ## General functions and dealing with files
 ###########################################################
 
-
-def subjects_filepaths(directory):
-    '''Given a folder name returns a dict of with subject numbers as keys and 
-    file lists as values.
+def load_subj_tables(directory, table_type):
+    '''Takes a directory and a string description of which table type to
+    load.
+    Creates a sequence of file paths for all DA1 files in the directory.
+    Extracts subject numbers from the paths, then converts the file paths
+    to corresponding tables. Whether fixation or question tables are loaded
+    is determined by the "table_type" argument.
+    Pairs up the subject numbers with the file names, then turns these pairings
+    into a dictionary which is returned.
     '''
-    numbers_and_paths = ((get_subj_num(f_name), os.path.join(directory, f_name))
-                                        for f_name in os.listdir(directory))
-    return dict(numbers_and_paths)
-
-
-def files_to_tables(subj_paths):
-    '''Given 3-member tuple of the form:
-    (subj_n, fixation_file_path, question_file_path)
-    turns the file paths into tables.
-    If a file path is an empty string, it is converted to None.
-    This returns a 3-tuple of the form:
-    (subj_n, fixation_table, question_table)
-    '''
-    # this assumes there will at least be one file for the subject
-    # is this a reasonable assumption to make?
-    subj, fix_filename, q_filename = subj_paths
-    fixation_table = read_fixation_table(fix_filename) if is_DA1_file(fix_filename) else None
-    question_table = read_question_table(q_filename) if is_DA1_file(q_filename) else None
-    return (subj, fixation_table, question_table)
+    file_paths = tuple(gen_file_paths(directory, filter_func=is_DA1_file))
+    subj_numbers = map(get_subj_num, file_paths)
+    if table_type is 'fixations':
+        tables = map(read_fixation_table, file_paths)
+    elif table_type is 'questions':
+        tables = map(read_question_table, file_paths)
+    else:
+        # if the table type is unrecognizable, inform user and stop the program
+        error = 'Not sure what to do with this table type: {0}\nCheck your code!'
+        raise Exception(error.format(table_type))
+    return dict(zip(subj_numbers, tables))
 
 
 def create_subj_tables(sentence_dir, question_dir):
@@ -106,29 +103,23 @@ def create_subj_tables(sentence_dir, question_dir):
     (subject_number, fixation_table, question_table) tuples.
     This is achieved by first creating two dictionaries, one for fixation files
     and one for question files. Both are indexed by subject numbers.
-    The entries from these dictionaries are then combined into tuples
-    that contain the subject number and a string for both the corresponding
-    fixation and question file.
-    If it so happens that a subject is missing one of the files, an empty string
-    is entered in place of the file name inside the tuple.
-    Finally, the filenames in the tuples are turned into tables.
     '''
-    # dictionaries of subj_n:file_path pairings
-    fixation_paths = subjects_filepaths(sentence_dir)
-    question_paths = subjects_filepaths(question_dir)
+    # dictionaries of subj_n: table pairings
+    fixation_paths = load_subj_tables(sentence_dir, 'fixations')
+    question_paths = load_subj_tables(question_dir, 'questions')
     # start out by listing all the subjects present in both dictionaries
-    all_paths = [(subj, path, question_paths[subj])
-                    for subj, path in fixation_paths.items()
+    all_data = [(subj, f_table, question_paths[subj])
+                    for subj, f_table in fixation_paths.items()
                     if subj in question_paths]
     # add to these subjects who only have fixation files for them
-    all_paths += [(subj, path, '')
-                    for subj, path in fixation_paths.items()
+    all_data += [(subj, f_table, None)
+                    for subj, f_table in fixation_paths.items()
                     if subj not in question_paths]
     # add also subjects who only have question files associated with them
-    all_paths += [(subj, '', path)
-                    for subj, path in question_paths.items()
+    all_data += [(subj, None, q_table)
+                    for subj, q_table in question_paths.items()
                     if subj not in fixation_paths]
-    return list(map(files_to_tables, all_paths))
+    return all_data
 
 
 def tack_on(field1, more_fields, debug=False):
