@@ -230,7 +230,7 @@ def region_coordinates(tagged_table):
         yield (tag, pairs)
 
 
-def region_table(regFile, one, two):
+def read_region_table(regFile, one, two):
     '''Given a region file turns it into a region table where the keys are
     (condition, item) tuples and values are sequences of regions as described
     in region_coordinates().
@@ -267,20 +267,20 @@ def fixation_data(tagged_table):
         yield (tag, tuple(fixations))
 
 
-def fixation_table(da1File, one, two):
+def read_fixation_table(da1File):
     '''As input takes a DA1 sentence file and returns a dictionary of
     (condition, item) : ((X1, Y1, duration1), (X2, Y2, duration2), ...)
     '''
-    tagged = tagged_table(read_table(da1File),one,two)
+    tagged = tagged_table(read_table(da1File), 1, 2)
     fixations = fixation_data(tagged)
     return dict_from_table(fixations)
 
 
-def question_table(da1QFile, one, two):
+def read_question_table(da1QFile):
     ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries. 
     As input assumes a DA1 question file where every line is a list of fields:
     order, cond, item, rt, buttonpress
     '''
-    tagged = tagged_table(read_table(da1QFile), one, two)
+    tagged = tagged_table(read_table(da1QFile), 1, 2)
     RT_button_press = ((tag, line[3:5]) for tag, line in tagged)
     return dict_from_table(RT_button_press)

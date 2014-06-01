@@ -34,7 +34,6 @@ from util import *
 
 # Import other required files; these should be in the same directory
 from eyeMeasures import *
-from readInput import *
 
 
 ###########################################################
@@ -97,8 +96,8 @@ def files_to_tables(subj_paths):
     # this assumes there will at least be one file for the subject
     # is this a reasonable assumption to make?
     subj, fix_filename, q_filename = subj_paths
-    fixation_table = FixationTable(fix_filename, 1, 2) if is_DA1_file(fix_filename) else None
-    question_table = QuestionTable(q_filename, 1, 2) if is_DA1_file(q_filename) else None
+    fixation_table = read_fixation_table(fix_filename) if is_DA1_file(fix_filename) else None
+    question_table = read_question_table(q_filename) if is_DA1_file(q_filename) else None
     return (subj, fixation_table, question_table)
 
 
@@ -262,17 +261,18 @@ def trial_info(trial):
     return tuple(trial[:3])
 
 
-def q_RT_acc(cond_item, item, q_table, answer_key):
+def q_RT_acc(cond_item, q_table, answer_key):
     '''Arguments: cond/item code, item number, question table, answer key.
     This function attempts to look up the answer provided by the subject for 
     the given cond/item code. The answer's RT is recorded as well as an integer
     [1 or 0] value for whether it matched the correct answer for that item, which
     is looked up in the answer_key dictionary.
     '''
-    # IK: This is kind of redundant, should be revised at some point
+    item = cond_item[1]
     try:
-        RT = q_table[cond_item][3]
-        accuracy = int(q_table[cond_item][4] == answer_key[item][0])
+        RT, button = q_table[cond_item]
+        correct_button = answer_key[item][0]
+        accuracy = int(button == correct_button)
         return (RT, accuracy)
     # if this fails, set both fields to NA
     except:
@@ -284,8 +284,9 @@ def compute_accuracy(item_table, question_table, answer):
     for cond_item in item_table:
         item = cond_item[1]
         try:
-            RT = question_table[cond_item][3]
-            accuracy = int(question_table[cond_item][4] == answer_key[item][0])
+            RT, button = q_table[cond_item]
+            correct_button = answer_key[item][0]
+            accuracy = int(button == correct_button)
             yield (RT, accuracy)
         # if this fails, set both fields to NA
         except:
