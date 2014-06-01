@@ -44,7 +44,7 @@ CUTOFF_PROMPT = '''The current cutoff settings are as follows.
 low: {0}
 high: {1}
 Would you like to change them?
-N.B. Type "YES"  to change or anything else to proceed with current settings.\n'''
+N.B. Type yes (or any of its variations) to change or anything else to proceed with current settings.\n'''
 
 
 # IK: think about maybe setting default values for cutoffs?
