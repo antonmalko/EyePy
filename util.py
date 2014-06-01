@@ -3,6 +3,10 @@
 # this way we ensure that recurring tasks (like writing to files) aren't
 # duplicated in several files but instead stored and defined in just one.
 
+# This module uses some generator functions. In case you are not familiar with
+# these, please feel free to read up on them here:
+# https://docs.python.org/3.1/reference/simple_stmts.html#yield
+
 # import module for OS interaction
 import os, re, csv
 # import regular expressions
@@ -152,48 +156,81 @@ def write_to_table(file_name, data, header=None, **kwargs):
         output.writerows(data)
 
 
-
 ###############################################################################
-## Functions for writing to files
+## Functions for reading in (table) files
 ###############################################################################
 
 def read_table(filename):
     '''Takes a file name as a string, opens it. Once that's done, takes each
-    non-empty row of the file and converts it into a list of strings.
-    Returns a list of rows (as lists of strings).
+    non-empty row of the file and converts it into a tuple of strings.
+    Returns a list of rows (as tuples of strings).
     '''
     with open(filename) as input_file:
         nonewlines = (line.strip() for line in input_file)
         return tuple(tuple(line.split()) for line in nonewlines if line)
 
+
 def tagged_table(table_lines, one, two):
     '''Given a table iterable for every line of said iterable creates a "tag"
-    for the line by combining the elements of the line indexed by "one" and "two"
-    into a tuple and pairing that up with the rest of the line.
+    by combining the elements of the line indexed by "one" and "two" into 
+    a tuple and pairing that up with the rest of the line.
     '''
     tags = ((line[one], line[two]) for line in table_lines)
     return zip(tags, table_lines)
 
 
 def dict_from_table(table, paired=True):
+    '''Takes a table and turns it into a dictionary. By default expects the table
+    to be already tagged and consist of (tag, item) pairs. This is why the "paired"
+    argument is set to True by default.
+    If the table being passed isn't tagged, but just a sequence of lines, it is
+    necessary to set "paired" to False when calling this function and then
+    it will use the first element of each line as the key and the rest of the line
+    as the value.
+    '''
     if paired:
         return dict(table)
     return dict((item[0], item[1:]) for item in table)
 
 
 def region_coordinates(tagged_table):
-    for tagged_line in tagged_table:
-        tag, line = tagged_line
+    '''Expects as input a table where every line is a pairing of a 
+    (condition, item) tuple with a line of the form:
+    condition, item, #_of_regions, X1, Y1, X2, Y2, ...
+    where X and Y are coordinates for one region.
+    Assuming such a table was passed, this function converts all the coordinates
+    from strings to integers so that they can be used during processing to 
+    establish whether a fixation is inside a region or not.
+    Once converted, the Xs and Ys are paired up as coordinates using the zip()
+    function. After that every coordinate pair is combined with the following
+    pair so as to indicate not just the start but also the end of a region.
+    The result is sequence of the following form:
+    ((X1start, Y1start), (X1end, Y1end)), ((X2start, Y2start), (X2end, Y2end)), ...
+    This sequence is turned into a tuple and paired up with the (condition, item)
+    tag.
+    Please note that this is a generator function, which means it does not
+    directly return a sequence of items described above, but instead defines
+    how to loop through the input table and what to do with every item therein.
+    '''
+    for tag, line in tagged_table:
+        # take every second member of the line starting with the 4th, convert to int
         Xes = map(int, line[3::2])
+        # take every second member of the line starting with the 5th, convert to int
         Ys = map(int, line[4::2])
         coordinates = zip(Xes, Ys)
+        # as starts take all coordinate pairs till the last one
         starts = coordinates[:-1]
+        # as ends take all coordinate pairs except the first one
         ends = coordinates[1:]
         pairs = tuple(zip(starts, ends))
         yield (tag, pairs)
 
 
 def region_table(regFile, one, two):
+    '''Given a region file turns it into a region table where the keys are
+    (condition, item) tuples and values are sequences of regions as described
+    in region_coordinates().
+    '''
     read_in = read_table(regFile)
     tagged = tagged_table(read_in, one, two)
     regioned = region_coordinates(tagged)
@@ -201,26 +238,45 @@ def region_table(regFile, one, two):
 
 
 def fixation_data(tagged_table):
-    ''' A generator of fiation data for a tagged table. '''
-    for tagged_line in tagged_table:
-        tag, line = tagged_line
+    ''' A generator of fixation data for a tagged table, every line of which
+    consists of a (condition, item#) tag paired up with a sequence of 
+    the following fields:
+    (order, cond, item, totaltime, buttonpress, 
+        [unknown], [unknown], totalfixations, 
+        series of [X Y fixation_start fixation_end] groups)
+    Of these fields, only the fixations are of interest to us, so the function
+    condenses the sequence of fields to a sequence of (X, Y, fixation_duration)
+    items.
+    '''
+    for tag, line in tagged_table:
+        # extract X, Y coordinates, convert them to integers
         Xes = map(int, line[8::4])
         Ys = map(int, line[9::4])
+        # get starts and ends of fixations, convert them to integers
         fixation_starts = map(int, line[10::4])
         fixation_ends = map(int, line[11::4])
-        fixations = ((x, y, end - start) 
-            for x, y, start, end 
-            in zip(Xes, Ys, fixation_starts, fixation_ends))
+        # compute durations by subtracting start times from end times
+        fixation_durations = (end - start 
+            for end, start in zip(fixation_ends, fixation_starts))
+        # combine into a sequence of (X, Y, duration) tuples
+        fixations = zip(Xes, Ys, fixation_durations)
         yield (tag, tuple(fixations))
 
+
 def fixation_table(da1File, one, two):
+    '''As input takes a DA1 sentence file and returns a dictionary of
+    (condition, item) : ((X1, Y1, duration1), (X2, Y2, duration2), ...)
+    '''
     tagged = tagged_table(read_table(da1File),one,two)
     fixations = fixation_data(tagged)
     return dict_from_table(fixations)
 
 
 def question_table(da1QFile, one, two):
-    ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries. '''
+    ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries. 
+    As input assumes a DA1 question file where every line is a list of fields:
+    order, cond, item, rt, buttonpress
+    '''
     tagged = tagged_table(read_table(da1QFile), one, two)
     RT_button_press = ((tag, line[3:5]) for tag, line in tagged)
     return dict_from_table(RT_button_press)
