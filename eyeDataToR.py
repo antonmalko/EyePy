@@ -355,7 +355,8 @@ def main(enable_user_input=True):
     table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
     # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
-    answer_key = dictTable(read_table(file_names['Question key filename']))
+    answer_key = dict_from_table(read_table(file_names['Question key filename'])
+        paired=False)
     # Generate table files for all subjects
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
