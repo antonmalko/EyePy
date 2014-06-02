@@ -167,7 +167,7 @@ def get_region_table(file_name):
         reg_file_name = file_name.split('.del')[0] + '.reg'
         write_to_table(reg_file_name, region_data, delimiter=' ')
         print('Saved region data to "{0}"'.format(reg_file_name))
-        return RegionTable(reg_file_name, 0, 1)
+        return read_region_table(reg_file_name, 0, 1)
 
 
 ###########################################################
