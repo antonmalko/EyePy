@@ -226,18 +226,18 @@ def region_measures(region, fixations):
         yield (m_name, measure_to_NA)
 
 
-def big_loop(subj, trial_fields, q_fields, regions, fixations):
+def measures_per_trial(subj, t_fields, q_fields, region_list, fixations):
     '''This function is really just a "fancy" wrapper for a very simple 
     subsetting operation. We take the first 3 members of the trial list.
     '''
     subj_number = tuple(subj)
-    for t, q, reg, fix in zip(trial_fields, q_fields, regions, fixations):
+    for t, q, regions, fix in zip(t_fields, q_fields, region_list, fixations):
         # fil = filter_fixations(cutoffs, fixations)
         # enumerated = load_subj_regions(table_of_regions, cond_item)
         fields = t + q
-        for (index, r), fix in zip(reg, fil):
-            reg_fields = r + tuple(index + 1)
-            measures = region_measures(r, fixations)
+        for (index, reg), fix in zip(regions, fil):
+            reg_fields = reg + tuple(index + 1)
+            measures = region_measures(reg, fixations)
             for measure in measures:
                 yield subj_number + fields + reg_fields + measure
 
@@ -304,11 +304,8 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             trials, fixations = split_trials_from_fixations(f_table)
             filtered_fixations = filter_fixations(cutoffs, fixations)
             q_infos = question_info(f_table, q_table, answer_key)
-            subj_data = big_loop(subj_number,
-                trials,
-                q_infos,
-                regions,
-                filtered_fixations)
+            subj_data = measures_per_trial(subj_number, trials, q_infos,
+                regions, filtered_fixations)
             subj_excl_rate = calc_exclusion_rate(filtered_fixations, fixations)
             yield (subj_data, subj_excl_rate)
         else:
@@ -373,10 +370,12 @@ def main(enable_user_input=True):
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
     # process all the subject data
-    subj_rows = (process_subj(subj_data, table_of_regions, answer_key, cutoffs)
-                                        for subj_data in tables_by_subj)
+    subj_rows = process_subj(tables_by_subj, 
+        table_of_regions, 
+        answer_key, 
+        cutoffs)
     # make data compatible with csv.DictWriter.writerows()
-    flattened_subj_rows = chain(*list(subj_rows))
+    flattened_subj_rows = chain(*subj_rows)
 
     write_to_table(file_names['Output filename'],
         flattened_subj_rows,
