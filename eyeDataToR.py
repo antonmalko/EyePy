@@ -244,102 +244,87 @@ def region_info(region_index, region):
 ###########################################################
 ## Per/Trial operations
 ###########################################################
-
-def trial_info(trial):
-    '''This function is really just a "fancy" wrapper for a very simple 
-    subsetting operation. We take the first 3 members of the trial list.
-    '''
-    return tuple(trial[:3])
-
-
-def q_RT_acc(cond_item, q_table, answer_key):
-    '''Arguments: cond/item code, item number, question table, answer key.
-    This function attempts to look up the answer provided by the subject for 
-    the given cond/item code. The answer's RT is recorded as well as an integer
-    [1 or 0] value for whether it matched the correct answer for that item, which
-    is looked up in the answer_key dictionary.
-    '''
-    item = cond_item[1]
-    try:
-        RT, button = q_table[cond_item]
-        correct_button = answer_key[item][0]
-        accuracy = int(button == correct_button)
-        return (RT, accuracy)
-    # if this fails, set both fields to NA
-    except:
-        return ('NA', 'NA')
-
-
-def compute_accuracy(item_table, question_table, answer):
-    ''' A generator for subject accuracy per item. '''
-    for cond_item in item_table:
-        item = cond_item[1]
-        try:
-            RT, button = q_table[cond_item]
-            correct_button = answer_key[item][0]
-            accuracy = int(button == correct_button)
-            yield (RT, accuracy)
-        # if this fails, set both fields to NA
-        except:
-            yield ('NA', 'NA')
-
-
-
 ###########################################################
 ## Per/Subject operations
 ###########################################################
 
-def process_regions(cond_item, fixations, table_of_regions, cutoffs):
-    '''Given a cond/item code, a list of fixations, a table of regions, and
-    cutoff values returns a list of tuples containing information about each
-    region and eye-tracking measures in it for the relevant item.
+def big_loop(subj, trial_fields, q_fields, regions, fixations):
+    '''This function is really just a "fancy" wrapper for a very simple 
+    subsetting operation. We take the first 3 members of the trial list.
     '''
+    subj_number = tuple(subj)
+    for t, q, reg, fix in zip(trial_fields, q_fields, regions, fixations):
+        # fil = filter_fixations(cutoffs, fixations)
+        # enumerated = load_subj_regions(table_of_regions, cond_item)
+        fields = t + q
+        for (index, r), fix in zip(reg, fil):
+            reg_number = tuple(index + 1)
+            measures = region_measures(r, fixations)
+            for measure in measures:
+                yield subj_number + fields + reg_number + measure
+
+
+def question_info(item_table, question_table, answer_key):
+    ''' A generator for subject accuracy per item. '''
+    if question_table:
+        for cond_item in item_table:
+            item = cond_item[1]
+            try:
+                RT, button = q_table[cond_item]
+                correct_button = answer_key[item][0]
+                accuracy = int(button == correct_button)
+                yield (RT, accuracy)
+            # if this fails, set both fields to NA
+            except:
+                yield ('NA', 'NA')
+    else:
+        while True:
+            yield ('NA', 'NA')
+
+
+def compute_exclusion_rate(excluded, all_fixations):
+    number_excluded = sum(map(len, excluded))
+    number_all = sum(map(len, all_fixations))
+    return 100 * number_excluded / number_all
+
+
+def filter_fixations(cutoffs, fixations):
+    low_cutoff, high_cutoff = cutoffs
+    for fix in fixations:
+        if low_cutoff < fix < high_cutoff:
+            yield fix
+
+
+def load_subj_regions(table_of_reg, f_table):
     try:
-        # IK: why do we need items 0-2 in that list anyway?
-        regions = table_of_regions[cond_item][3:]
-    except KeyError:
+        region_list = (table_of_regions[cond_item] for cond_item in f_table)
+    except KeyError as e:
+        # IK: pass problematic key to print statement
         print('Missing region information for this cond/item: ' + cond_item)
         raise
-    # if we were able to retrieve regions for cond/item, we create a sequence of
-    # tuples containing info for each region
-    region_fields = (region_info(i, regions[i]) for i in range(len(regions)))
-    # we then create a sequence of lists containing measure labels and values
-    measures = (region_measures(region, fixations, cutoffs) for region in regions)
-    # finally, we combine the two sequences
-    region_rows = (tack_on(r, m_list) for r, m_list in zip(region_fields, measures))
-    # we return a "flattened" version of this list so as to combine it with
-    # item information
-    return chain(*list(region_rows))
+    return (enumerate(regions) for regions in region_list)
 
 
-def process_subj(subj_info, table_of_regions, answer_key, cutoffs):
+def process_subj(subjects, table_of_regions, answer_key, cutoffs):
     '''This function takes a subject number with corresponding fixation and 
     question table and constructs a list of tuples to be transformed into
     rows of the output file.
     '''
-    subj_number, f_table, q_table = subj_info
-    print('Processing subject #' + subj_number)
-
-    if f_table:
-        print('Found fixation data for this subject, will compute measures.')
-        region_data = (process_regions(f, f_table[f][8:], table_of_regions, cutoffs)
-                                                            for f in f_table)
-        trials = [trial_info(f_table[cond_item]) for cond_item in f_table]
-    else:
-        print('No fixation data found for this subject.')
-        region_data, trials = [], []
-    
-    if q_table:
-        print('Found question data for subject, will compute accuracy.')
-        q_infos = (q_RT_acc(cond_item, trial[2], q_table, answer_key) 
-                        for cond_item, trial in zip(f_table.keys(), trials))
-    else:
-        print('No question data found for this subject.')
-        q_infos = []
-    add_q_info = (trial + q_info for trial, q_info in zip(trials, q_infos))
-    item_rows = (tack_on(item, regions) 
-                for item, regions in zip(add_q_info, region_data))
-    return tack_on((subj_number,), chain(*list(item_rows)))
+    for subj_number, f_table, q_table in subjects:
+        print('Processing subject #' + subj_number)
+        if f_table:
+            print('Found fixation data for this subject, will compute measures.')
+            regions = load_subj_regions(table_of_regions, f_table)
+            trials, fixations = trial_info(f_table)
+            filtered_fixes = filter_fixations(cutoffs, fixations)
+            q_infos = question_info(f_table, q_table, answer_key)
+            subj_data = big_loop(subj_number,
+                trials,
+                q_infos,
+                regions,
+                filtered_fixes)
+            subj_excl_rate = compute_exclusion_rate(filtered_fixes, fixations)
+        yield (subj_data, subj_excl_rate)
 
 
 ###########################################################
