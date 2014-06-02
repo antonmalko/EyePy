@@ -174,10 +174,10 @@ def get_region_table(file_name):
 ## Per/Region operations
 ###########################################################
 
-def calc_exclusion_rate(excluded, all_fixations):
-    number_excluded = sum(map(len, excluded))
-    number_all = sum(map(len, all_fixations))
-    return 100 * number_excluded / number_all
+def count_exclusions(subj, excluded, all_fixations):
+    excluded_count = sum(map(len, excluded))
+    all_count = sum(map(len, all_fixations))
+    return (subj, excluded_count, all_count)
 
 
 def zero_to_NA(fixation_measure, binomial_measures):
@@ -294,8 +294,10 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             q_infos = question_info(f_table, q_table, answer_key)
             subj_data = measures_per_trial(subj_number, trials, q_infos,
                 regions, filtered_fixations)
-            subj_excl_rate = calc_exclusion_rate(filtered_fixations, fixations)
-            yield (subj_data, subj_excl_rate)
+            exclusions = count_exclusions(subj_number, 
+                filtered_fixations, 
+                fixations)
+            yield (subj_data, exclusions)
         else:
             print('Found no fixation data for subject. Skipping.')
 
@@ -358,11 +360,11 @@ def main(enable_user_input=True):
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
     # process all the subject data
-    subj_all_data = tuple(process_subj(tables_by_subj, 
+    all_subj_data = tuple(process_subj(tables_by_subj, 
             table_of_regions, 
             answer_key, 
             cutoffs))
-    subj_rows = (rows for rows, exclusion_rate in subj_all_data)
+    subj_rows = (rows for rows, exclusions in all_subj_data)
     # make data compatible with csv.DictWriter.writerows()
     flattened_subj_rows = chain(*subj_rows)
 
@@ -371,7 +373,16 @@ def main(enable_user_input=True):
         header=output_header,
         delimiter='\t')
 
-    subj_exclusions = (exclusion_rate for rows, exclusion_rate in subj_all_data)
+    exclusion_header = [
+    'Subject',
+    'Excluded',
+    'Total'
+    ]
+    subj_exclusions = (exclusions for rows, exclusions in all_subj_data)
+    write_to_table('excluded_fixation_counts.csv',
+        subj_exclusions,
+        header=exclusion_header
+        )
 
 
 if __name__ == '__main__':
