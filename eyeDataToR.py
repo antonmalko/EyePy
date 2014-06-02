@@ -159,7 +159,7 @@ def get_region_table(file_name):
     # IK: include some print statements in this function
     if '.reg' in file_name:
         print('This looks like a region file. I can load it directly')
-        return RegionTable(file_name, 0, 1)
+        return read_region_table(file_name, 0, 1)
     elif '.del' in file_name:
         print('This looks like a .del file. I will turn it into a region file.')
         region_data = make_regions(file_name)
