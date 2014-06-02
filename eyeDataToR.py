@@ -358,10 +358,11 @@ def main(enable_user_input=True):
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
     # process all the subject data
-    subj_rows = process_subj(tables_by_subj, 
-        table_of_regions, 
-        answer_key, 
-        cutoffs)
+    subj_all_data = tuple(process_subj(tables_by_subj, 
+            table_of_regions, 
+            answer_key, 
+            cutoffs))
+    subj_rows = (rows for rows, exclusion_rate in subj_all_data)
     # make data compatible with csv.DictWriter.writerows()
     flattened_subj_rows = chain(*subj_rows)
 
@@ -369,6 +370,8 @@ def main(enable_user_input=True):
         flattened_subj_rows,
         header=output_header,
         delimiter='\t')
+
+    subj_exclusions = (exclusion_rate for rows, exclusion_rate in subj_all_data)
 
 
 if __name__ == '__main__':
