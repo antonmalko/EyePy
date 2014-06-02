@@ -195,7 +195,7 @@ def region_measures(region, fixations):
     '''
     # list below consists of "measure name": measure_function pairs
     # measure functions are imported from eyeMeasures
-    measures = [
+    measures = (
     ('ff', first_fixation),
     ('fp', first_pass),
     ('fs', first_skip),
@@ -206,8 +206,8 @@ def region_measures(region, fixations):
     ('tt', total_time),
     ('rr', rereading_time),
     ('prr', prob_rereading),
-    ]
-    binomial_measures = ['fs', 'pr', 'prr']
+    )
+    binomial_measures = ('fs', 'pr', 'prr')
     for m_name, m_calculator in measures:
         raw_measure = m_calculator(region, fixations)
         measure_to_NA = zero_to_NA(raw_measure, binomial_measures)
