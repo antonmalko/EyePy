@@ -151,10 +151,7 @@ def write_to_table(file_name, data, header=None, **kwargs):
         if header:
             output = csv.DictWriter(f, header, **kwargs)
             output.writeheader()
-            if 'fill_val' in kwargs:
-                data = create_row_dicts(header, data, kwargs['fill_val'])
-            else:                
-                data = create_row_dicts(header, data)
+            data = create_row_dicts(header, data, fill_val=output.restval)
         else:
             output = csv.writer(f, **kwargs)
         output.writerows(data)
