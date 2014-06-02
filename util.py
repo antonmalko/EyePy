@@ -171,7 +171,7 @@ def read_table(filename):
         return tuple(tuple(line.split()) for line in nonewlines if line)
 
 
-def tagged_table(table_lines, one, two):
+def tag_table(table_lines, one, two):
     '''Given a table iterable for every line of said iterable creates a "tag"
     by combining the elements of the line indexed by "one" and "two" into 
     a tuple and pairing that up with the rest of the line.
@@ -233,7 +233,7 @@ def read_region_table(regFile, one, two):
     in region_coordinates().
     '''
     read_in = read_table(regFile)
-    tagged = tagged_table(read_in, one, two)
+    tagged = tag_table(read_in, one, two)
     regioned = region_coordinates(tagged)
     return dict_from_table(regioned)
 
@@ -261,14 +261,15 @@ def fixation_data(tagged_table):
             for end, start in zip(fixation_ends, fixation_starts))
         # combine into a sequence of (X, Y, duration) tuples
         fixations = zip(Xes, Ys, fixation_durations)
-        yield (tag, tuple(fixations))
+        # yield the tag paired up with a tuple of (order, cond, item) with (fixations)
+        yield (tag, (line[:4], tuple(fixations)))
 
 
 def read_fixation_table(da1File):
     '''As input takes a DA1 sentence file and returns a dictionary of
     (condition, item) : ((X1, Y1, duration1), (X2, Y2, duration2), ...)
     '''
-    tagged = tagged_table(read_table(da1File), 1, 2)
+    tagged = tag_table(read_table(da1File), 1, 2)
     fixations = fixation_data(tagged)
     return dict_from_table(fixations)
 
@@ -278,6 +279,6 @@ def read_question_table(da1QFile):
     As input assumes a DA1 question file where every line is a list of fields:
     order, cond, item, rt, buttonpress
     '''
-    tagged = tagged_table(read_table(da1QFile), 1, 2)
+    tagged = tag_table(read_table(da1QFile), 1, 2)
     RT_button_press = ((tag, line[3:5]) for tag, line in tagged)
     return dict_from_table(RT_button_press)
