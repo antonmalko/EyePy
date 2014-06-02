@@ -218,7 +218,7 @@ def region_coordinates(tagged_table):
         Xes = map(int, line[3::2])
         # take every second member of the line starting with the 5th, convert to int
         Ys = map(int, line[4::2])
-        coordinates = zip(Xes, Ys)
+        coordinates = tuple(zip(Xes, Ys))
         # as starts take all coordinate pairs till the last one
         starts = coordinates[:-1]
         # as ends take all coordinate pairs except the first one
