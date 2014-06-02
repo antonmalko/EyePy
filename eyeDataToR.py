@@ -228,26 +228,6 @@ def region_measures(region, fixations, cutoffs):
     return measures_to_NAs
 
 
-def region_info(region_index, region):
-    '''Given a region and its index in the region list, returns the region number
-    (simply its index + 1) in a tuple with its X and Y coordinates.
-    '''
-    # IK: Consider getting rid of the "str" to improve readability
-    return (str(region_index + 1),  # region number
-        str(region[0][0]),  # Xstart
-        str(region[1][0]),  # Xend
-        str(region[0][1]),  # Ystart
-        str(region[1][1])   # Yend
-        )
-
-
-###########################################################
-## Per/Trial operations
-###########################################################
-###########################################################
-## Per/Subject operations
-###########################################################
-
 def big_loop(subj, trial_fields, q_fields, regions, fixations):
     '''This function is really just a "fancy" wrapper for a very simple 
     subsetting operation. We take the first 3 members of the trial list.
@@ -258,10 +238,10 @@ def big_loop(subj, trial_fields, q_fields, regions, fixations):
         # enumerated = load_subj_regions(table_of_regions, cond_item)
         fields = t + q
         for (index, r), fix in zip(reg, fil):
-            reg_number = tuple(index + 1)
+            reg_fields = r + tuple(index + 1)
             measures = region_measures(r, fixations)
             for measure in measures:
-                yield subj_number + fields + reg_number + measure
+                yield subj_number + fields + reg_fields + measure
 
 
 def question_info(item_table, question_table, answer_key):
