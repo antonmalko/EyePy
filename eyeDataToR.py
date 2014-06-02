@@ -254,24 +254,28 @@ def question_info(sentence_table, question_table, answer_key):
             yield ('NA', 'NA')
 
 
-def filter_fixations(cutoffs, fixations):
+def filter_fixations(cutoffs, trials):
+    # print(fixations)
     low_cutoff, high_cutoff = cutoffs
-    for fix in fixations:
-        if low_cutoff < fix < high_cutoff:
-            yield fix
+    for trial_fixations in trials:
+        new_trial_fix = tuple()
+        for X, Y, duration in trial_fixations:
+            if low_cutoff < duration < high_cutoff:
+                new_trial_fix = new_trial_fix + (X, Y, duration)
+        yield new_trial_fix
 
 
 def split_trials_from_fixations(fixation_table):
     trial_fields = (order_etc 
-        for cond_item, (order_etc, fixations) in fixation_table)
+        for cond_item, (order_etc, fixations) in fixation_table.items())
     fixations = (fixations 
-        for cond_item, (order_etc, fixations) in fixation_table)
+        for cond_item, (order_etc, fixations) in fixation_table.items())
     return (trial_fields, tuple(fixations))
 
 
 def load_subj_regions(table_of_reg, f_table):
     try:
-        region_list = (table_of_regions[cond_item] for cond_item in f_table)
+        region_list = (table_of_reg[cond_item] for cond_item in f_table)
     except KeyError as e:
         # IK: pass problematic key to print statement
         print('Missing region information for this cond/item: ' + cond_item)
@@ -355,7 +359,7 @@ def main(enable_user_input=True):
     table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
     # Read in question answer key, create dictionary.
     # Key = item number; value = [correctButton, LorR]
-    answer_key = dict_from_table(read_table(file_names['Question key filename'])
+    answer_key = dict_from_table(read_table(file_names['Question key filename']),
         paired=False)
     # Generate table files for all subjects
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
