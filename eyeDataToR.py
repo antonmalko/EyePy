@@ -174,6 +174,12 @@ def get_region_table(file_name):
 ## Per/Region operations
 ###########################################################
 
+def calc_exclusion_rate(excluded, all_fixations):
+    number_excluded = sum(map(len, excluded))
+    number_all = sum(map(len, all_fixations))
+    return 100 * number_excluded / number_all
+
+
 def zero_to_NA(fixation_measure, binomial_measures):
     """Given a fixation measure as a tuple consisting of
     (name_of_measure, calculated_value) and a list of binomial measures,
@@ -246,12 +252,6 @@ def question_info(sentence_table, question_table, answer_key):
     else:
         while True:
             yield ('NA', 'NA')
-
-
-def calc_exclusion_rate(excluded, all_fixations):
-    number_excluded = sum(map(len, excluded))
-    number_all = sum(map(len, all_fixations))
-    return 100 * number_excluded / number_all
 
 
 def filter_fixations(cutoffs, fixations):
