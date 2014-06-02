@@ -122,18 +122,6 @@ def create_subj_tables(sentence_dir, question_dir):
     return all_data
 
 
-def tack_on(field1, more_fields, debug=False):
-    '''Given one field and a sequence of fields "tacks on" the first field onto 
-    every element of the field sequence.
-    '''
-    try:
-        return (field1 + field for field in more_fields)
-    except Exception as e:
-        print('field1 ' + str(field1))
-        print(list(more_fields))
-        raise e
-
-
 
 ###########################################################
 ## Making a .reg file
