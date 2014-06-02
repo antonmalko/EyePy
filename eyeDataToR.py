@@ -198,7 +198,7 @@ def zero_to_NA(fixation_measure, binomial_measures):
     return (measure_name, value)
 
 
-def region_measures(region, fixations, cutoffs):
+def region_measures(region, fixations):
     '''Given a region, a list of fixations, and cutoff values
     returns a list of (measure name, measure value) tuples for all the measures
     currently computed at UMD.
@@ -220,12 +220,10 @@ def region_measures(region, fixations, cutoffs):
     ('prr', prob_rereading),
     ]
     binomial_measures = ['fs', 'pr', 'prr']
-    low_cutoff, high_cutoff = cutoffs
-    measure_data = ((measure_name, calc(region, fixations, low_cutoff, high_cutoff))
-                        for measure_name, calc in measures)
-    measures_to_NAs = (zero_to_NA(item, binomial_measures) 
-                        for item in measure_data)
-    return measures_to_NAs
+    for m_name, m_calculator in measures:
+        raw_measure = m_calculator(region, fixations)
+        measure_to_NA = zero_to_NA(raw_measure, binomial_measures)
+        yield (m_name, measure_to_NA)
 
 
 def big_loop(subj, trial_fields, q_fields, regions, fixations):
