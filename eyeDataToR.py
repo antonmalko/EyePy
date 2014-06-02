@@ -260,7 +260,7 @@ def question_info(item_table, question_table, answer_key):
             yield ('NA', 'NA')
 
 
-def compute_exclusion_rate(excluded, all_fixations):
+def calc_exclusion_rate(excluded, all_fixations):
     number_excluded = sum(map(len, excluded))
     number_all = sum(map(len, all_fixations))
     return 100 * number_excluded / number_all
@@ -271,6 +271,14 @@ def filter_fixations(cutoffs, fixations):
     for fix in fixations:
         if low_cutoff < fix < high_cutoff:
             yield fix
+
+
+def split_trials_from_fixations(fixation_table):
+    trial_fields = (order_etc 
+        for cond_item, (order_etc, fixations) in fixation_table)
+    fixations = (fixations 
+        for cond_item, (order_etc, fixations) in fixation_table)
+    return (trial_fields, tuple(fixations))
 
 
 def load_subj_regions(table_of_reg, f_table):
@@ -293,16 +301,18 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
         if f_table:
             print('Found fixation data for this subject, will compute measures.')
             regions = load_subj_regions(table_of_regions, f_table)
-            trials, fixations = trial_info(f_table)
-            filtered_fixes = filter_fixations(cutoffs, fixations)
+            trials, fixations = split_trials_from_fixations(f_table)
+            filtered_fixations = filter_fixations(cutoffs, fixations)
             q_infos = question_info(f_table, q_table, answer_key)
             subj_data = big_loop(subj_number,
                 trials,
                 q_infos,
                 regions,
-                filtered_fixes)
-            subj_excl_rate = compute_exclusion_rate(filtered_fixes, fixations)
-        yield (subj_data, subj_excl_rate)
+                filtered_fixations)
+            subj_excl_rate = calc_exclusion_rate(filtered_fixations, fixations)
+            yield (subj_data, subj_excl_rate)
+        else:
+            print('Found no fixation data for subject. Skipping.')
 
 
 ###########################################################
