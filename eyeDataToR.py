@@ -242,10 +242,10 @@ def big_loop(subj, trial_fields, q_fields, regions, fixations):
                 yield subj_number + fields + reg_fields + measure
 
 
-def question_info(item_table, question_table, answer_key):
+def question_info(sentence_table, question_table, answer_key):
     ''' A generator for subject accuracy per item. '''
     if question_table:
-        for cond_item in item_table:
+        for cond_item in sentence_table:
             item = cond_item[1]
             try:
                 RT, button = q_table[cond_item]
