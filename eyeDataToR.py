@@ -391,5 +391,5 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    main(enable_user_input=False)
-    # main()
+    # main(enable_user_input=False)
+    main()
