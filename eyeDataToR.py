@@ -175,8 +175,9 @@ def get_region_table(file_name):
 ###########################################################
 
 def count_exclusions(subj, excluded, all_fixations):
-    excluded_count = sum(map(len, excluded))
+    filtered_count = sum(map(len, excluded))
     all_count = sum(map(len, all_fixations))
+    excluded_count = all_count - filtered_count
     return (subj, excluded_count, all_count)
 
 
@@ -366,7 +367,9 @@ def main(enable_user_input=True):
             table_of_regions, 
             answer_key, 
             cutoffs))
-    subj_rows = tuple(rows for rows, exclusions in all_subj_data)
+    print('Done processing. Created data for {0} subjects.'.format(len(all_subj_data)))
+
+    subj_rows = (rows for rows, exclusions in all_subj_data)
     # make data compatible with csv.DictWriter.writerows()
     flattened_subj_rows = chain(*subj_rows)
 
@@ -383,8 +386,7 @@ def main(enable_user_input=True):
     subj_exclusions = (exclusions for rows, exclusions in all_subj_data)
     write_to_table('excluded_fixation_counts.csv',
         subj_exclusions,
-        header=exclusion_header
-        )
+        header=exclusion_header)
 
 
 if __name__ == '__main__':
