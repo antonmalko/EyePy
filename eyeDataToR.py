@@ -132,15 +132,15 @@ SLASH_RGX = re.compile('/')
 def get_region_indices(sentences): 
     all_indeces = iter([])
     number_of_regions = 0
-    for sent, index in zip(sentences, count()):
+    for sent, line_index in zip(sentences, count()):
         sent_indeces = (match.start() for match in SLASH_RGX.finditer(sent))
-        normalized = [indx - normalizer 
-            for indx, normalizer in zip(sent_indeces, count())]
+        normalized = tuple(region_index - normalizer
+                    for normalizer, region_index in enumerate(sent_indeces))
         number_of_regions += len(normalized)
-        x_y_sequence = chain(*zip(normalized, repeat(index)))
+        x_y_sequence = chain(*zip(normalized, repeat(line_index)))
         all_indeces = chain(all_indeces, x_y_sequence)
 
-    string_indices = (str(index) for index in all_indeces)
+    string_indices = map(str, all_indeces)
 
     return (str(number_of_regions),) + tuple(string_indices)
                                                                                                                                                                                                                             
@@ -148,11 +148,11 @@ def get_region_indices(sentences):
 def make_regions(del_file_name):
     with open(del_file_name) as del_file:
         split_lines = [line.split(' ') for line in del_file]
-
-    item_info = ((str(item[0]), str(item[1])) for item in split_lines)
-    sentence_items = (' '.join(item[2:]).split('\\n') for item in split_lines)
-    reg_indeces = map(get_region_indices, sentence_items)
-    return (item + indices for item, indices in zip(item_info, reg_indeces))
+    for line in split_lines:
+        item_info = (str(item[0]), str(item[1]))
+        sentence_items = ' '.join(item[2:]).split('\\n')
+        reg_indeces = map(get_region_indices, sentence_items)
+        yield item_info + reg_indeces
 
 
 def get_region_table(file_name):
