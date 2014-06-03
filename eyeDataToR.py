@@ -180,16 +180,15 @@ def count_exclusions(subj, excluded, all_fixations):
     return (subj, excluded_count, all_count)
 
 
-def zero_to_NA(fixation_measure, binomial_measures):
+def zero_to_NA(measure_name, measure_value, binomial_measures):
     """Given a fixation measure as a tuple consisting of
     (name_of_measure, calculated_value) and a list of binomial measures,
     sets the value to "NA" if the measure in question is binomial AND the raw
     value is equal to zero. Otherwise returns the value unchanged.
     """
-    measure_name, value = fixation_measure
-    if measure_name not in binomial_measures and value == 0:
+    if measure_name not in binomial_measures and measure_value == 0:
         return (measure_name, 'NA')
-    return (measure_name, value)
+    return (measure_name, measure_value)
 
 
 def region_measures(region, fixations):
@@ -216,21 +215,18 @@ def region_measures(region, fixations):
     binomial_measures = ('fs', 'pr', 'prr')
     for m_name, m_calculator in measures:
         raw_measure = m_calculator(region, fixations)
-        measure_to_NA = zero_to_NA(raw_measure, binomial_measures)
-        yield (m_name, measure_to_NA)
+        measure_to_NA = zero_to_NA(m_name, raw_measure, binomial_measures)
+        yield measure_to_NA
 
 
-def measures_per_trial(subj, t_fields, q_fields, region_list, fixations):
+def measures_per_trial(subj, trial_fields, region_list, trial_fixations):
     '''This function is really just a "fancy" wrapper for a very simple 
     subsetting operation. We take the first 3 members of the trial list.
     '''
-    subj_number = tuple(subj)
-    for t, q, regions, fix in zip(t_fields, q_fields, region_list, fixations):
-        # fil = filter_fixations(cutoffs, fixations)
-        # enumerated = load_subj_regions(table_of_regions, cond_item)
-        fields = t + q
-        for (index, reg), fix in zip(regions, fil):
-            reg_fields = reg + tuple(index + 1)
+    subj_number = (subj,)
+    for fields, regions, fixations in zip(trial_fields, region_list, trial_fixations):
+        for index, reg in enumerate(regions):
+            reg_fields = (index + 1, reg[0][0], reg[1][0], reg[0][1], reg[1][1])
             measures = region_measures(reg, fixations)
             for measure in measures:
                 yield subj_number + fields + reg_fields + measure
@@ -242,12 +238,13 @@ def question_info(sentence_table, question_table, answer_key):
         for cond_item in sentence_table:
             item = cond_item[1]
             try:
-                RT, button = q_table[cond_item]
+                RT, button = question_table[cond_item]
                 correct_button = answer_key[item][0]
                 accuracy = int(button == correct_button)
                 yield (RT, accuracy)
             # if this fails, set both fields to NA
-            except:
+            except KeyError as e:
+                print(e.message)
                 yield ('NA', 'NA')
     else:
         while True:
@@ -255,7 +252,6 @@ def question_info(sentence_table, question_table, answer_key):
 
 
 def filter_fixations(cutoffs, trials):
-    # print(fixations)
     low_cutoff, high_cutoff = cutoffs
     for trial_fixations in trials:
         filtered = tuple((X, Y, duration)
@@ -279,7 +275,8 @@ def load_subj_regions(table_of_reg, f_table):
         # IK: pass problematic key to print statement
         print('Missing region information for this cond/item: ' + cond_item)
         raise
-    return (enumerate(regions) for regions in region_list)
+    # return (enumerate(regions) for regions in region_list)
+    return region_list
 
 
 def process_subj(subjects, table_of_regions, answer_key, cutoffs):
@@ -293,9 +290,10 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             print('Found fixation data for this subject, will compute measures.')
             regions = load_subj_regions(table_of_regions, f_table)
             trials, fixations = split_trials_from_fixations(f_table)
-            filtered_fixations = filter_fixations(cutoffs, fixations)
             q_infos = question_info(f_table, q_table, answer_key)
-            subj_data = measures_per_trial(subj_number, trials, q_infos,
+            all_trial_fields = (t + q for t, q in zip(trials, q_infos))
+            filtered_fixations = tuple(filter_fixations(cutoffs, fixations))
+            subj_data = measures_per_trial(subj_number, all_trial_fields,
                 regions, filtered_fixations)
             exclusions = count_exclusions(subj_number, 
                 filtered_fixations, 
@@ -313,11 +311,11 @@ def main(enable_user_input=True):
     # IK: think about generalizing using experiment names?
     # IK: the default files dictionary is there mostly for development
     default_files = {
-        'REG (or DEL) filename': 'output.reg.txt',
+        'REG (or DEL) filename': 'gardenias_prolong2.reg',
         'Question key filename': 'expquestions.txt',
-        'Sentence data folder': 'Gardenias-s',
-        'Question data folder': 'Gardenias-q',
-        'Output filename': 'testing-loopless.csv',
+        'Sentence data folder': 'gardenias-s',
+        'Question data folder': 'gardenias-q',
+        'Output filename': 'generators.csv',
     }
     # define list of questions to be asked of user if defaults aren't used
     our_questions = [
@@ -368,7 +366,7 @@ def main(enable_user_input=True):
             table_of_regions, 
             answer_key, 
             cutoffs))
-    subj_rows = (rows for rows, exclusions in all_subj_data)
+    subj_rows = tuple(rows for rows, exclusions in all_subj_data)
     # make data compatible with csv.DictWriter.writerows()
     flattened_subj_rows = chain(*subj_rows)
 
@@ -390,5 +388,5 @@ def main(enable_user_input=True):
 
 
 if __name__ == '__main__':
-    # main(enable_user_input=False)
-    main()
+    main(enable_user_input=False)
+    # main()
