@@ -258,11 +258,10 @@ def filter_fixations(cutoffs, trials):
     # print(fixations)
     low_cutoff, high_cutoff = cutoffs
     for trial_fixations in trials:
-        new_trial_fix = tuple()
-        for X, Y, duration in trial_fixations:
-            if low_cutoff < duration < high_cutoff:
-                new_trial_fix = new_trial_fix + (X, Y, duration)
-        yield new_trial_fix
+        filtered = tuple((X, Y, duration)
+            for X, Y, duration in trial_fixations
+            if low_cutoff < duration < high_cutoff)
+        yield filtered
 
 
 def split_trials_from_fixations(fixation_table):
