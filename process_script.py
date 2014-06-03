@@ -18,10 +18,12 @@ def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	'''
 	all_file = '_'.join(['all', input_type]) + '.txt'
 	write_to_table(all_file, data, delimiter='\t')
+	print('Wrote {0} {1} to *{2}*'.format('all', input_type, exp_file))
 
 	filtered_data = (d for d in data if check_cond_item(d, cond_nums, item_nums))
 	exp_file = '_'.join([exp_name, input_type]) + '.txt'
 	write_to_table(exp_file, filtered_data, delimiter='\t')
+	print('Wrote {0} {1} to *{2}*'.format(exp_name, input_type, exp_file))
 
 
 def trigger_to_code(question_item):
