@@ -96,7 +96,7 @@ def main():
 
 	question_rgx = re.compile('trial E(\d+)I(\d+)D1.*?button =\s.*?(\w*?)\n', re.DOTALL)
 	questions = question_rgx.findall(script_string)
-	questions_with_codes = [trigger_to_code(q) for q in questions]
+	questions_with_codes = map(trigger_to_code, questions)
 	write_out(user_answers['name of your experiment'], 
 		'questions', 
 		item_range, 
