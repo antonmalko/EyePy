@@ -376,7 +376,8 @@ def main(enable_user_input=True):
     write_to_table(file_names['Output filename'],
         flattened_subj_rows,
         header=output_header,
-        delimiter='\t')
+        delimiter='\t',
+        restval=' ')
 
     exclusion_header = [
     'Subject',
