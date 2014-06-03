@@ -262,7 +262,7 @@ def fixation_data(tagged_table):
         # combine into a sequence of (X, Y, duration) tuples
         fixations = zip(Xes, Ys, fixation_durations)
         # yield the tag paired up with a tuple of (order, cond, item) with (fixations)
-        yield (tag, (line[:4], tuple(fixations)))
+        yield (tag, (line[:3], tuple(fixations)))
 
 
 def read_fixation_table(da1File):
