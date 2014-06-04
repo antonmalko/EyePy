@@ -33,7 +33,7 @@ from itertools import *
 from util import *
 
 # Import other required files; these should be in the same directory
-from eyeMeasures import *
+from eye_measures import *
 
 
 ###########################################################
