@@ -10,6 +10,62 @@ from util import *
 
 
 ###############################################################################
+## Running the code
+###############################################################################
+
+SPLIT_WHOLE_STUDY = '''
+Do you need to split the DA1s into -s, -q, and -reject files?
+(Answer *no* if you already have the data split.)
+'''
+START_EXP_SPLIT = '''
+Do you want to split the data by experiment?
+'''
+MORE_EXP_SPLIT = '''
+Do you want to split the data by more experiments?
+'''
+
+def main():
+    split_study = ask_single_question(SPLIT_WHOLE_STUDY)
+    if is_yes(split_study):
+        questions = [
+        'folder with unsorted DA1 files',
+        'name of your study',
+        ]
+        [da1_folder, study_name] = ask_user_questions(questions, return_list=True)
+        sorted_da1s = sort_da1_data(da1_folder)
+        write_da1(study_name, sorted_da1s)
+        study_root = study_name + '-sorted'
+    else:
+        sorted_folder = ask_single_question('Enter the sorted files folder:\n')
+        sorted_da1s = load_sorted_da1(sorted_folder)
+        study_root = sorted_folder
+
+    experiment_meta_qs = [
+    'name of your experiment',
+    'first condition for this experiment',
+    'total number of conditions for this experiment'
+    ]
+
+    experiment_split_decision = ask_single_question(START_EXP_SPLIT)
+    splitting_by_experiment = is_yes(experiment_split_decision)
+
+    while splitting_by_experiment:
+        # ask some questions about the experiment
+        exp_meta = ask_user_questions(experiment_meta_qs, return_list=True)
+        # unpack users answers into variables
+        [exp_name, first_cond, cond_total] = exp_meta
+        exp_filter = condition_filter(first_cond, cond_total)
+        print('Subsetting DA1 data.')
+        exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
+        write_da1(exp_name, exp_data, nest_under=study_root)
+        print('Done writing data for this experiment!')
+        continue_decision = ask_single_question(MORE_EXP_SPLIT)
+        splitting_by_experiment = is_yes(continue_decision)
+
+    print('Ok, bye!')
+
+
+###############################################################################
 ## processing unsorted DA1 files
 ###############################################################################
 
@@ -189,61 +245,6 @@ def write_da1(study_exp_name, data, nest_under=''):
         relevant = [(item[0], item[index]) for item in data]
         create_folder(root_path, study_exp_name, suff, relevant)
 
-
-###############################################################################
-## Running the code
-###############################################################################
-
-SPLIT_WHOLE_STUDY = '''
-Do you need to split the DA1s into -s, -q, and -reject files?
-(Answer *no* if you already have the data split.)
-'''
-START_EXP_SPLIT = '''
-Do you want to split the data by experiment?
-'''
-MORE_EXP_SPLIT = '''
-Do you want to split the data by more experiments?
-'''
-
-def main():
-    split_study = ask_single_question(SPLIT_WHOLE_STUDY)
-    if is_yes(split_study):
-        questions = [
-        'folder with unsorted DA1 files',
-        'name of your study',
-        ]
-        [da1_folder, study_name] = ask_user_questions(questions, return_list=True)
-        sorted_da1s = sort_da1_data(da1_folder)
-        write_da1(study_name, sorted_da1s)
-        study_root = study_name + '-sorted'
-    else:
-        sorted_folder = ask_single_question('Enter the sorted files folder:\n')
-        sorted_da1s = load_sorted_da1(sorted_folder)
-        study_root = sorted_folder
-
-    experiment_meta_qs = [
-    'name of your experiment',
-    'first condition for this experiment',
-    'total number of conditions for this experiment'
-    ]
-
-    experiment_split_decision = ask_single_question(START_EXP_SPLIT)
-    splitting_by_experiment = is_yes(experiment_split_decision)
-
-    while splitting_by_experiment:
-        # ask some questions about the experiment
-        exp_meta = ask_user_questions(experiment_meta_qs, return_list=True)
-        # unpack users answers into variables
-        [exp_name, first_cond, cond_total] = exp_meta
-        exp_filter = condition_filter(first_cond, cond_total)
-        print('Subsetting DA1 data.')
-        exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
-        write_da1(exp_name, exp_data, nest_under=study_root)
-        print('Done writing data for this experiment!')
-        continue_decision = ask_single_question(MORE_EXP_SPLIT)
-        splitting_by_experiment = is_yes(continue_decision)
-
-    print('Ok, bye!')
 
 if __name__ == '__main__':
     main()

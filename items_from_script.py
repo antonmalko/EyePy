@@ -3,6 +3,46 @@
 from util import *
 
 
+def main():
+	'''Bringing it all together:
+	- ask user to provide the variables listed below
+	- create permissible item and condition number ranges
+	- read in the .script file as one big string
+	- extract the sentences from this string and write them to files
+	- extract questions from this string and write them to files
+	'''
+	things_to_ask = [
+	'name of your script file',
+	'number of the first item',
+	'total number of items',
+	'number of the first condition',
+	'total number of conditions',
+	'name of your experiment',
+	]
+	user_answers = ask_user_questions(things_to_ask)
+
+	item_range = generate_range(user_answers['number of the first item'], 
+		user_answers['total number of items'])
+	cond_range = generate_range(user_answers['number of the first condition'],
+		user_answers['total number of conditions'])
+
+	script_string = read_script_file(user_answers['name of your script file'])
+
+	sent_rgx = re.compile('trial E(\d+)I(\d+)D0.*?inline =\s.*?\|(.*?)\n', re.DOTALL)
+	sentences = sent_rgx.findall(script_string)
+	write_out(user_answers['name of your experiment'], 'sentences', 
+		item_range, cond_range, sentences)
+
+	question_rgx = re.compile('trial E(\d+)I(\d+)D1.*?button =\s.*?(\w*?)\n', re.DOTALL)
+	questions = question_rgx.findall(script_string)
+	questions_with_codes = map(trigger_to_code, questions)
+	write_out(user_answers['name of your experiment'], 
+		'questions', 
+		item_range, 
+		cond_range, 
+		questions_with_codes)
+	
+
 def check_cond_item(entry, cond_range, item_range):
 	'''Checks if the condition and item members of the "entry" tuple are within
 	their respective permissible ranges.
@@ -63,45 +103,6 @@ def generate_range(start, total):
 	end_int = start_int + int(total)
 	return list(range(start_int, end_int))
 
-
-def main():
-	'''Bringing it all together:
-	- ask user to provide the variables listed below
-	- create permissible item and condition number ranges
-	- read in the .script file as one big string
-	- extract the sentences from this string and write them to files
-	- extract questions from this string and write them to files
-	'''
-	things_to_ask = [
-	'name of your script file',
-	'number of the first item',
-	'total number of items',
-	'number of the first condition',
-	'total number of conditions',
-	'name of your experiment',
-	]
-	user_answers = ask_user_questions(things_to_ask)
-
-	item_range = generate_range(user_answers['number of the first item'], 
-		user_answers['total number of items'])
-	cond_range = generate_range(user_answers['number of the first condition'],
-		user_answers['total number of conditions'])
-
-	script_string = read_script_file(user_answers['name of your script file'])
-
-	sent_rgx = re.compile('trial E(\d+)I(\d+)D0.*?inline =\s.*?\|(.*?)\n', re.DOTALL)
-	sentences = sent_rgx.findall(script_string)
-	write_out(user_answers['name of your experiment'], 'sentences', 
-		item_range, cond_range, sentences)
-
-	question_rgx = re.compile('trial E(\d+)I(\d+)D1.*?button =\s.*?(\w*?)\n', re.DOTALL)
-	questions = question_rgx.findall(script_string)
-	questions_with_codes = map(trigger_to_code, questions)
-	write_out(user_answers['name of your experiment'], 
-		'questions', 
-		item_range, 
-		cond_range, 
-		questions_with_codes)
 
 if __name__ == '__main__':
 	main()
