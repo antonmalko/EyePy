@@ -35,6 +35,91 @@ from util import *
 # Import other required files; these should be in the same directory
 from eye_measures import *
 
+###########################################################
+## Putting it all together...
+###########################################################
+
+def main(enable_user_input=True):
+    # IK: think about generalizing using experiment names?
+    # IK: the default files dictionary is there mostly for development
+    default_files = {
+        'REG (or DEL) filename': 'gardenias_prolong2.reg',
+        'Question key filename': 'expquestions.txt',
+        'Sentence data folder': 'gardenias-s',
+        'Question data folder': 'gardenias-q',
+        'Output filename': 'generators.csv',
+    }
+    # define list of questions to be asked of user if defaults aren't used
+    our_questions = [
+        'REG (or DEL) filename',
+        'Question key filename',
+        'Sentence data folder',
+        'Question data folder',
+        'Output filename',
+    ]
+
+    # defining output header
+    output_header = [
+        'subj',
+        'order',
+        'cond',
+        'item',
+        'questionRT',
+        'questionAcc',
+        'region',
+        'Xstart',
+        'Xend',
+        'Ystart',
+        'Yend',
+        'fixationtype',
+        'value',
+    ]
+
+    if enable_user_input:
+        file_names = ask_user_questions(our_questions)
+    else:
+        file_names = default_files
+
+    cutoffs = verify_cutoff_values(40, 1000)
+
+    # Read in region key, create dictionary.
+    # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
+    # yStart],[xEnd, yEnd]], ...]
+    table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
+    # Read in question answer key, create dictionary.
+    # Key = item number; value = [correctButton, LorR]
+    answer_key = dict_from_table(read_table(file_names['Question key filename']),
+        paired=False)
+    # Generate table files for all subjects
+    tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
+                                        file_names['Question data folder'])
+    # process all the subject data
+    all_subj_data = tuple(process_subj(tables_by_subj, 
+            table_of_regions, 
+            answer_key, 
+            cutoffs))
+    print('Done processing. Created data for {0} subjects.'.format(len(all_subj_data)))
+
+    subj_rows = (rows for rows, exclusions in all_subj_data)
+    # make data compatible with csv.DictWriter.writerows()
+    flattened_subj_rows = chain(*subj_rows)
+
+    write_to_table(file_names['Output filename'],
+        flattened_subj_rows,
+        header=output_header,
+        delimiter='\t',
+        restval=' ')
+
+    exclusion_header = [
+    'Subject',
+    'Excluded',
+    'Total'
+    ]
+    subj_exclusions = (exclusions for rows, exclusions in all_subj_data)
+    write_to_table('excluded_fixation_counts.csv',
+        subj_exclusions,
+        header=exclusion_header)
+
 
 ###########################################################
 ## Interacting with the user
@@ -302,92 +387,6 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             yield (subj_data, exclusions)
         else:
             print('Found no fixation data for subject. Skipping.')
-
-
-###########################################################
-## Putting it all together...
-###########################################################
-
-def main(enable_user_input=True):
-    # IK: think about generalizing using experiment names?
-    # IK: the default files dictionary is there mostly for development
-    default_files = {
-        'REG (or DEL) filename': 'gardenias_prolong2.reg',
-        'Question key filename': 'expquestions.txt',
-        'Sentence data folder': 'gardenias-s',
-        'Question data folder': 'gardenias-q',
-        'Output filename': 'generators.csv',
-    }
-    # define list of questions to be asked of user if defaults aren't used
-    our_questions = [
-        'REG (or DEL) filename',
-        'Question key filename',
-        'Sentence data folder',
-        'Question data folder',
-        'Output filename',
-    ]
-
-    # defining output header
-    output_header = [
-        'subj',
-        'order',
-        'cond',
-        'item',
-        'questionRT',
-        'questionAcc',
-        'region',
-        'Xstart',
-        'Xend',
-        'Ystart',
-        'Yend',
-        'fixationtype',
-        'value',
-    ]
-
-    if enable_user_input:
-        file_names = ask_user_questions(our_questions)
-    else:
-        file_names = default_files
-
-    cutoffs = verify_cutoff_values(40, 1000)
-
-    # Read in region key, create dictionary.
-    # Key = unique cond/item tag; value = [cond, item, nregions, [[xStart,
-    # yStart],[xEnd, yEnd]], ...]
-    table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
-    # Read in question answer key, create dictionary.
-    # Key = item number; value = [correctButton, LorR]
-    answer_key = dict_from_table(read_table(file_names['Question key filename']),
-        paired=False)
-    # Generate table files for all subjects
-    tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
-                                        file_names['Question data folder'])
-    # process all the subject data
-    all_subj_data = tuple(process_subj(tables_by_subj, 
-            table_of_regions, 
-            answer_key, 
-            cutoffs))
-    print('Done processing. Created data for {0} subjects.'.format(len(all_subj_data)))
-
-    subj_rows = (rows for rows, exclusions in all_subj_data)
-    # make data compatible with csv.DictWriter.writerows()
-    flattened_subj_rows = chain(*subj_rows)
-
-    write_to_table(file_names['Output filename'],
-        flattened_subj_rows,
-        header=output_header,
-        delimiter='\t',
-        restval=' ')
-
-    exclusion_header = [
-    'Subject',
-    'Excluded',
-    'Total'
-    ]
-    subj_exclusions = (exclusions for rows, exclusions in all_subj_data)
-    write_to_table('excluded_fixation_counts.csv',
-        subj_exclusions,
-        header=exclusion_header)
 
 
 if __name__ == '__main__':
