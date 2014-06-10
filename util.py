@@ -1,8 +1,16 @@
-# IK: This file is intended to house some common functions and modules
-# used by all of the eye-tracking data processing scripts
-# this way we ensure that recurring tasks (like writing to files) aren't
-# duplicated in several files but instead stored and defined in just one.
+"""This file serves as a library of common functions and modules used in the EyePy
+scripts. It is intended to simplify maintenance and take care of some boilerplate.
+"""
 
+# Created by Ilia Kurenkov in May and June of 2014.
+# It is structured in the following way:
+# 1. Imports
+# 2. Interacting with the user
+# 3. Processing file paths and names
+# 4. Writing to files
+# 5. Reading in table files
+
+# N.B.
 # This module uses some generator functions. In case you are not familiar with
 # these, please feel free to read up on them here:
 # https://docs.python.org/3.1/reference/simple_stmts.html#yield
@@ -23,10 +31,12 @@ if 'libedit' in readline.__doc__:
 else:
     readline.parse_and_bind("tab: complete")
 
+
 ###############################################################################
 ## Functions for interacting with users
 ###############################################################################
 
+_QUESTION_TEMPLATE = 'Please enter the {} below:\n'
 def ask_user_questions(question_sequence, use_template=True, return_list=False):
     '''Given a sequence of items (can be a list or a dictionary, anything
     that supports iteration), prints prompts for every item in the shell
@@ -37,10 +47,13 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     q_template = 'Please enter the {} below:\n'
 
     if use_template:
-        question_strings = [q_template.format(q) for q in question_sequence]
-        answers = [input(question) for question in question_strings]
+        question_strings = tuple(_QUESTION_TEMPLATE.format(q) 
+            for q in question_sequence)
+        answers = tuple(map(input, question_strings))
     else:
-        answers = [input(question) for question in question_sequence]
+        # if not using a template simply run through unmodified question sequence
+        answers = tuple(map(input, question_sequence))
+
     if return_list:
         return answers
     return dict(zip(question_sequence, answers))
@@ -56,7 +69,11 @@ def ask_single_question(question):
 _YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
 
 def is_yes(user_input):
+    '''This function simply tests wether a user's response (a string)
+    is compatible with the regular expression defined above.
+    '''
     return bool(_YES_RGX.match(user_input))
+
 
 ###############################################################################
 ## Functions for dealing with file names/paths
@@ -71,7 +88,6 @@ def is_DA1_file(filename):
 
 
 _SUBJ_N_RGX = re.compile('\d+')
-
 
 def get_subj_num(file_path):
     '''Given a filename string returns any substring that consists of digits.
@@ -97,12 +113,17 @@ def get_subj_num(file_path):
 
 
 def gen_file_paths(dir_name, filter_func=None):
+    '''A function for wrapping all the os.path commands involved in listing files
+    in a directory, then turning file names into file paths by concatenating
+    them with the directory name.
+    This also optionally supports filtering file names using filter_func.
+    '''
     if filter_func:
-        return (os.path.join(dir_name, file_name) 
-            for file_name in os.listdir(dir_name)
-            if filter_func(file_name))
+        just_file_names = filter(filter_func, os.listdir(dir_name))
+    else:
+        just_file_names = os.listdir(dir_name)
     
-    return (os.path.join(dir_name, file_name) for file_name in os.listdir(dir_name))
+    return (os.path.join(dir_name, file_name) for file_name in just_file_names)
 
 
 ###############################################################################
