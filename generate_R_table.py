@@ -37,7 +37,7 @@ from eye_measures import *
 
 
 ###########################################################
-## Putting it all together...
+## The driver function
 ###########################################################
 
 def main():
@@ -157,7 +157,7 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
 
 
 ###########################################################
-## General functions and dealing with files
+## Creating fixation and question tables for subjects
 ###########################################################
 
 def create_subj_tables(sentence_dir, question_dir):
@@ -293,9 +293,8 @@ def get_region_indices(sentences):
 
 
 ###########################################################
-## Per/Region operations
+## Per/Subject operations
 ###########################################################
-
 
 def process_subj(subjects, table_of_regions, answer_key, cutoffs):
     '''This function takes a subject number with corresponding fixation and 
@@ -379,6 +378,10 @@ def question_info(sentence_table, question_table, answer_key):
             yield ('NA', 'NA')
 
 
+###########################################################
+## Dealing with fixations
+###########################################################
+
 def filter_fixations(cutoffs, trials):
     '''Given the cutoffs and a sequence of trials generates a sequence of
     filtered fixation lists, one for every trial.
@@ -443,6 +446,10 @@ def zero_to_NA(measure_name, measure_value, binomial_measures):
         return (measure_name, 'NA')
     return (measure_name, measure_value)
 
+
+###########################################################
+## Counting exclusions
+###########################################################
 
 def count_exclusions(subj_number, filtered, all_fixations):
     '''Counts how many fixations were excluded based on the list of all fixations
