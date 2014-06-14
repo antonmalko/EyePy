@@ -325,30 +325,42 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             # use trial fields, regions and filtered fixations to get the measures
             subj_data = measures_per_trial(subj_number, all_trial_fields,
                 regions, filtered_fixations)
+            # yield measures paired up with exclusions
             yield (subj_data, exclusions)
         else:
             print('Found no fixation data for subject. Skipping.')
 
 
 def load_subj_regions(table_of_reg, f_table):
+    '''Tries to load table of region entries for all (condition, item) tags in
+    the table of fixations.
+    If this fails, halts the program, informing the user which (cond, item)
+    tag was not found in the table of regions.
+    '''
     try:
         return (table_of_reg[cond_item] for cond_item in f_table)
     except KeyError as error:
+        # use error.message to get the (cond, item) key that caused the problem
         problematic_key = error.message
         print_message = 'Missing region information for this cond/item: {0}'
         raise Exception(print_message.format(problematic_key))
 
 
 def split_trials_from_fixations(fixation_table):
+    '''This function splits the fixation table into just trial information:
+    (order, condition, item#)
+    and lists of fixations for every trial.
+    '''
     trial_fields = (order_etc 
         for cond_item, (order_etc, fixations) in fixation_table.items())
     fixations = (fixations 
         for cond_item, (order_etc, fixations) in fixation_table.items())
+    # fixations turned into tuple because they get looped over several times
     return (trial_fields, tuple(fixations))
 
 
 def question_info(sentence_table, question_table, answer_key):
-    ''' A generator for subject accuracy per item. '''
+    ''' A generator for subject question fields per item. '''
     if question_table:
         for cond_item in sentence_table:
             item = cond_item[1]
@@ -362,18 +374,22 @@ def question_info(sentence_table, question_table, answer_key):
             except KeyError as e:
                 yield ('NA', 'NA')
     else:
-        # if there is no question table found for subject, keep returning NAs infinitely
+        # if no question table found for subject, keep returning NAs infinitely
         while True:
             yield ('NA', 'NA')
 
 
 def filter_fixations(cutoffs, trials):
+    '''Given the cutoffs and a sequence of trials generates a sequence of
+    filtered fixation lists, one for every trial.
+    '''
+    # extract cutoffs
     low_cutoff, high_cutoff = cutoffs
     for trial_fixations in trials:
-        filtered = tuple((X, Y, duration)
-            for X, Y, duration in trial_fixations
-            if low_cutoff < duration < high_cutoff)
-        yield filtered
+        # each member of trial_fixations is a (X, Y, duration) tuple
+        filtered = (X, Y, duration) for X, Y, duration in trial_fixations
+                                    if low_cutoff < duration < high_cutoff)
+        yield tuple(filtered)
 
 
 def measures_per_trial(subj, trial_fields, region_list, trial_fixations):
@@ -390,14 +406,14 @@ def measures_per_trial(subj, trial_fields, region_list, trial_fixations):
 
 
 def region_measures(region, fixations):
-    '''Given a region, a list of fixations, and cutoff values
-    returns a list of (measure name, measure value) tuples for all the measures
-    currently computed at UMD.
+    '''Given a region and a list of fixations calculates all currently used
+    eye-tracking measures for the region.
+    This is one more generator, it is defined to yield one measure at a time.
     Please note that all continuous measures that equal zero are set to "NA" for
     ease of later processing with R.
     '''
     # list below consists of "measure name": measure_function pairs
-    # measure functions are imported from eyeMeasures
+    # measure functions are imported from eye_measures
     measures = (
     ('ff', first_fixation),
     ('fp', first_pass),
@@ -420,15 +436,18 @@ def region_measures(region, fixations):
 def zero_to_NA(measure_name, measure_value, binomial_measures):
     """Given a fixation measure as a tuple consisting of
     (name_of_measure, calculated_value) and a list of binomial measures,
-    sets the value to "NA" if the measure in question is binomial AND the raw
+    sets the value to "NA" if the measure in question is NOT binomial AND the raw
     value is equal to zero. Otherwise returns the value unchanged.
     """
-    if measure_name not in binomial_measures and measure_value == 0:
+    if measure_value == 0 and measure_name not in binomial_measures:
         return (measure_name, 'NA')
     return (measure_name, measure_value)
 
 
 def count_exclusions(subj_number, filtered, all_fixations):
+    '''Counts how many fixations were excluded based on the list of all fixations
+    and on the set of fixations left after filtering.
+    '''
     # we count how many fixations were left after filtering
     filtered_count = sum(map(len, filtered))
     # we count how many there were in total
