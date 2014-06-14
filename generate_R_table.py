@@ -166,14 +166,14 @@ def create_subj_tables(sentence_dir, question_dir):
     This is achieved by first creating two dictionaries, one for fixation files
     and one for question files. Both are indexed by subject numbers.
     '''
-    # dictionaries of subj_n: table pairings
+    # dictionaries of (subj_n: table) pairings
     fixation_paths = load_subj_tables(sentence_dir, 'fixations')
     question_paths = load_subj_tables(question_dir, 'questions')
     # start out by listing all the subjects present in both dictionaries
     all_data = [(subj, f_table, question_paths[subj])
                     for subj, f_table in fixation_paths.items()
                     if subj in question_paths]
-    # add to these subjects who only have fixation files for them
+    # add subjects who only have fixation files for them
     all_data += [(subj, f_table, None)
                     for subj, f_table in fixation_paths.items()
                     if subj not in question_paths]
@@ -194,7 +194,9 @@ def load_subj_tables(directory, table_type):
     Pairs up the subject numbers with the file names, then turns these pairings
     into a dictionary which is returned.
     '''
+    # use function from util module to generate file paths keeping only DA1 files
     file_paths = tuple(gen_file_paths(directory, filter_func=is_DA1_file))
+    # from these file paths get subject numbers
     subj_numbers = map(get_subj_num, file_paths)
     if table_type is 'fixations':
         tables = map(read_fixation_table, file_paths)
@@ -204,15 +206,21 @@ def load_subj_tables(directory, table_type):
         # if the table type is unrecognizable, inform user and stop the program
         error = 'Not sure what to do with this table type: {0}\nCheck your code!'
         raise Exception(error.format(table_type))
+    # if tables for subjects loaded, combine them with subject numbers using
+    # zip() and turn the resulting list of tuples into a dictionary
     return dict(zip(subj_numbers, tables))
 
 
 ###########################################################
-## Making a .reg file
+## Making/Loading a .reg file
 ###########################################################
 
 def get_region_table(file_name):
-    # IK: include some print statements in this function
+    '''Given a file name returns a region table.
+    If the file name ends with .reg, loads the region table from that directly.
+    If the file name ends with .del, uses that to create a .reg file and loads
+    the latter.
+    '''
     if '.reg' in file_name:
         print('This looks like a region file. I can load it directly')
         return read_region_table(file_name, 0, 1)
@@ -227,30 +235,60 @@ def get_region_table(file_name):
                                                                                                                                                                                                                             
 
 def make_regions(del_file_name):
+    '''A generator function that, given a .del file name opens the file and loops
+    over its lines, yielding tuples of the following form:
+    (condition, item#, region_indeces)
+    '''
     with open(del_file_name) as del_file:
-        split_lines = [line.split(' ') for line in del_file]
+        split_lines = [line.strip().split(' ') for line in del_file]
     for line in split_lines:
-        item_info = (str(item[0]), str(item[1]))
-        sentence_items = ' '.join(item[2:]).split('\\n')
-        reg_indeces = map(get_region_indices, sentence_items)
+        # convert item information to strings for later writing
+        item_info = (str(line[0]), str(line[1]))
+        # combine the rest of the line into one string and then split it
+        # by the special '\\n' symbol
+        # this is used for items that span multiple lines during presentation
+        item_sents = ' '.join(line[2:]).split('\\n')
+        # use the result to get a list of indeces
+        reg_indeces = get_region_indices(item_sents)
         yield item_info + reg_indeces
 
 
 _SLASH_RGX = re.compile('/')
 
 def get_region_indices(sentences): 
-    all_indeces = iter([])
+    '''Given a sequence of sentences for an item returns a tuple with
+    the number of regions followed by X and Y coordinates for each region
+    (number of regions, X1, Y1, X2, Y2, ...)
+    '''
+    # initialize collection of indices to emtpy list ...
+    all_indeces = []
+    # ... and number of regions to 0
     number_of_regions = 0
     for sent, line_index in zip(sentences, count()):
-        sent_indeces = (match.start() for match in SLASH_RGX.finditer(sent))
+        # get raw indeces of where '/' occurs in the string
+        sent_indeces = (match.start() for match in _SLASH_RGX.finditer(sent))
+        # now we need to normalize these indeces to account for the fact that
+        # we do NOT want to be counting the '/' as part of the string
+        # this means that for every raw index of '/' that we find in the string
+        # we have to subtract the number of times '/' had already occured in
+        # the same string.
+        # So for the first instance of '/' we subtract 0, for the second instance
+        # we subtract 1 and so on and so forth.
+        # This can easily be done with the help Python's built-in enumerate() fxn
+        # https://docs.python.org/3.3/library/functions.html#enumerate
         normalized = tuple(region_index - normalizer
                     for normalizer, region_index in enumerate(sent_indeces))
         number_of_regions += len(normalized)
-        x_y_sequence = chain(*zip(normalized, repeat(line_index)))
-        all_indeces = chain(all_indeces, x_y_sequence)
-
+        # to each region index we add the line index, using itertools.repeat
+        add_line_indx = zip(normalized, repeat(line_index))
+        # now we need to flatten this sequence of pairs to be just a sequence
+        # of X1, Y1, X2, Y2, ... strings
+        x_y_sequence = chain(*add_line_indx)
+        # now we add this to our collection of 
+        all_indeces += list(x_y_sequence)
+    # once we're done collecting all the indices, turn them into strings
     string_indices = map(str, all_indeces)
-
+    # return a tuple: (number of regions, X1, Y1, X2, Y2,...)
     return (str(number_of_regions),) + tuple(string_indices)
 
 
