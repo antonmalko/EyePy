@@ -1,30 +1,29 @@
-# UMD Eye-tracking script
+'''UMD Eye-tracking processor. This file in particular generates a table file
+that can be imported into R for running stats.
+'''
 
 # CHANGELOG
 # Edited by: Shevaun Lewis, Ewan Dunbar & Sol Lago
 # 1. Added code for computing first pass-skips, 'fs' [01/11/13]
 # Last updated: 04/01/14
-# Major revisions by Ilia Kurenkov in Spring of 2014
+# Major revisions by Ilia Kurenkov in Spring/Summer of 2014
 # For a record of activity, see this link:
 # https://github.com/UMDLinguistics/EyeTrackAnalysis.git
 
-# Concatenates data from .DA1, Eyedoctor-processed files into a format
-# suitable for R
-
-# Input (from command line, in same directory as input files):
-# python eyeDataToR.py
-# Directory should contain:
-# - REG file (regions for sentences--compatible with 2-line trials)
-# - Question key file
-# - Folder with DA1 files (first 3 chars of filenames must be subject #: '003-goose-s.DA1')
-# - Folder with question DA1 files (same naming convention: '003-goose-q.DA1')
-# (use organizeDA1-command.py to sort your DA1 files appropriately)
-
-# Output: a single, long-format text file that can be loaded into R
-
-# Revised by Ilia
 # This file is structured in the following way:
-# Coming soon (*as* soon as we finalize this)...
+# 1. Imports
+# 2. the main function (gives overview of whole process)
+# 3. Interacting with users
+# 4. Creating tables from DA1 files
+# 5. Reading or making a .reg file
+# 6. Operations for processing subjects
+#   6.1 Question accuracy and general stuff
+#   6.2 Dealing with fixations
+
+
+###########################################################
+## Imports
+###########################################################
 
 # import iteration functions such as chain, repeat, cycle
 # c.f. https://docs.python.org/2/library/itertools.html
@@ -37,7 +36,7 @@ from eye_measures import *
 
 
 ###########################################################
-## The driver function
+## The main function
 ###########################################################
 
 def main():
@@ -447,10 +446,6 @@ def zero_to_NA(measure_name, measure_value, binomial_measures):
     return (measure_name, measure_value)
 
 
-###########################################################
-## Counting exclusions
-###########################################################
-
 def count_exclusions(subj_number, filtered, all_fixations):
     '''Counts how many fixations were excluded based on the list of all fixations
     and on the set of fixations left after filtering.
@@ -465,5 +460,4 @@ def count_exclusions(subj_number, filtered, all_fixations):
 
 
 if __name__ == '__main__':
-    # main(enable_user_input=False)
     main()
