@@ -1,8 +1,13 @@
+'''Module to house functions that calculate eye-tracking measures.
+'''
+# CHANGELOG
 # edited by: Shevaun Lewis
 # last updated: 3/5/2013
 # fixationed appalling problem in regionCheck
-
 # A function is added for computing first-pass skip -- Wing-Yee Chow (3/6/2013)
+# 5/2014 - 6/2014 by Ilia Kurenkov
+# rewrote the measure functions and moved cutoff filtering to another script
+# added two new measures: single fixation and probability of rereading
 
 
 def region_check(region, fixationX, fixationY):
