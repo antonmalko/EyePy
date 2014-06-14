@@ -1,7 +1,16 @@
-# this script
+'''This script analyzes the .script file used by EyeLink and from it extracts
+the question items as well as the sentence items.
+The question items are used to create an answer key to check if subjects respond
+correctly to a given question.
+The sentence items are used to (manually) create a .del (delimited) file, which 
+in turn is read in by generate_R_table.py and turned into a .reg (region) file.
+'''
 # import everything from the utilities library
 from util import *
 
+###########################################################
+## Main
+###########################################################
 
 def main():
 	'''Bringing it all together:
@@ -19,6 +28,7 @@ def main():
 	'total number of conditions',
 	'name of your experiment',
 	]
+	# use function from util module
 	user_answers = ask_user_questions(things_to_ask)
 
 	item_range = generate_range(user_answers['number of the first item'], 
@@ -41,14 +51,32 @@ def main():
 		item_range, 
 		cond_range, 
 		questions_with_codes)
-	
 
-def check_cond_item(entry, cond_range, item_range):
-	'''Checks if the condition and item members of the "entry" tuple are within
-	their respective permissible ranges.
+
+def generate_range(start, total):
+	'''Provided with two numbers (as strings, because they are input by user),
+	returns a range of numbers from "start" to "end".
 	'''
-	cond, item = entry[:2]
-	return int(cond) in cond_range and int(item) in item_range
+	start_int = int(start)
+	end_int = start_int + int(total)
+	return list(range(start_int, end_int))
+
+
+_READ_ERROR = '''Seems like you did not specify a valid .script file name.
+Please either rename your file or provide a file with a .script extension.
+'''
+
+def read_script_file(file_name):
+	'''This function checks if the given file name has the .script extension
+	and if it does, opens the file and reads it in as one string.
+	If the file has a different extension, an exception is raised which alerts 
+	the user and the program exits.
+	'''
+	if file_name.endswith('.script'):
+		with open(file_name) as f:
+			return f.read()
+	else:
+		raise Exception(_READ_ERROR)
 
 
 def write_out(exp_name, input_type, item_nums, cond_nums, data):
@@ -64,6 +92,14 @@ def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	exp_file = '_'.join([exp_name, input_type]) + '.txt'
 	write_to_table(exp_file, filtered_data, delimiter='\t')
 	print('Wrote {0} {1} to *{2}*'.format(exp_name, input_type, exp_file))
+	
+
+def check_cond_item(entry, cond_range, item_range):
+	'''Checks if the condition and item members of the "entry" tuple are within
+	their respective permissible ranges.
+	'''
+	cond, item = entry[:2]
+	return int(cond) in cond_range and int(item) in item_range
 
 
 def trigger_to_code(question_item):
@@ -77,31 +113,6 @@ def trigger_to_code(question_item):
 	}
 	trigger = question_item[2].strip()
 	return question_item + (codes[trigger],)
-
-
-def read_script_file(file_name):
-	'''This function checks if the given file name has the .script extension
-	and if it does, opens the file and reads it in as one string.
-	If the file has a different extension, an exception is raised which alerts 
-	the user and the program exits.
-	'''
-	error_message = '''Seems like you did not specify a valid .script file name.
-Please either rename your file or provide a file with a .script extension.
-'''
-	if file_name.endswith('.script'):
-		with open(file_name) as f:
-			return f.read()
-	else:
-		raise Exception(error_message)
-
-
-def generate_range(start, total):
-	'''Provided with two numbers (as strings, because they are input by user),
-	returns a range of numbers from "start" to "end".
-	'''
-	start_int = int(start)
-	end_int = start_int + int(total)
-	return list(range(start_int, end_int))
 
 
 if __name__ == '__main__':
