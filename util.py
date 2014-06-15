@@ -59,12 +59,6 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     return dict(zip(question_sequence, answers))
 
 
-def ask_single_question(question):
-    return ask_user_questions([question], 
-        use_template=False, 
-        return_list=True)[0]
-
-
 # define regular expression that checks for "yes" answers
 _YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
 

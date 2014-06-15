@@ -37,7 +37,7 @@ Do you want to split the data by more experiments?
 
 def main():
     # ask user if they want to split da1s
-    split_study = ask_single_question(SPLIT_WHOLE_STUDY)
+    split_study = input(SPLIT_WHOLE_STUDY)
     # if they do, ask them for folder with unsorted DA1s and the name of study
     if is_yes(split_study):
         questions = [
@@ -50,7 +50,7 @@ def main():
         study_root = study_name + '-sorted'
     # if DA1 already sorted, ask for location of sorted files and load them
     else:
-        sorted_folder = ask_single_question('Enter the sorted files folder:\n')
+        sorted_folder = input('Enter the sorted files folder:\n')
         sorted_da1s = load_sorted_da1(sorted_folder)
         study_root = sorted_folder
 
@@ -62,7 +62,7 @@ def main():
     'total number of conditions for this experiment'
     ]
 
-    experiment_split_decision = ask_single_question(START_EXP_SPLIT)
+    experiment_split_decision = input(START_EXP_SPLIT)
     splitting_by_experiment = is_yes(experiment_split_decision)
 
     while splitting_by_experiment:
@@ -75,7 +75,7 @@ def main():
         exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
         write_da1(exp_name, exp_data, nest_under=study_root)
         print('Done writing data for this experiment!')
-        continue_decision = ask_single_question(MORE_EXP_SPLIT)
+        continue_decision = input(MORE_EXP_SPLIT)
         splitting_by_experiment = is_yes(continue_decision)
 
     print('Ok, bye!')
