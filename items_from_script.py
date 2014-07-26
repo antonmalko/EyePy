@@ -38,16 +38,20 @@ def main():
 
 	script_string = read_script_file(user_answers['name of your script file'])
 
-	rgx_template = 'trial E(\d+)I(\d+)D{0}.*?{1} =\s.*?\|({2}*?)\n'
+	rgx_template = 'trial E(\d+)I(\d+)D{0}.*?{1} =\s*{2}'
+	# rgx_template = 'trial E(\d+)I(\d+)D{0}.*?{1} =\s*{2}'
 
-	sent_rgx = re.compile(rgx_template.format(0, 'inline', '.'), re.DOTALL)
+	sent_rgx = re.compile(rgx_template.format(0, 'inline', '\|(.*?)\n'), re.DOTALL)
 	sentences = sent_rgx.findall(script_string)
-	write_out(user_answers['name of your experiment'], 'sentences', 
-		item_range, cond_range, sentences)
+	write_out(user_answers['name of your experiment'], 
+		'sentences', 
+		item_range, 
+		cond_range, 
+		sentences)
 
-	question_rgx = re.compile(rgx_template.format(1, 'button', '\w'), re.DOTALL)
+	question_rgx = re.compile(rgx_template.format(1, 'button', '(\w*)'), re.DOTALL)
 	questions = question_rgx.findall(script_string)
-	questions_with_codes = map(trigger_to_code, questions)
+	questions_with_codes = list(map(trigger_to_code, questions))
 	write_out(user_answers['name of your experiment'], 
 		'questions', 
 		item_range, 
