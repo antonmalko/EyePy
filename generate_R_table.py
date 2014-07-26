@@ -130,7 +130,8 @@ CUTOFF_PROMPT = ('The current cutoff settings are as follows.\n'
     'low: {0}\n'
     'high: {1}\n'
     'Would you like to change them?\n'
-    'N.B. Type yes to change or anything else to proceed with current settings.\n')
+    'Type yes to change current settings.\n'
+    'Type anything else (including Enter) to proceed.\n')
 
 
 def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
