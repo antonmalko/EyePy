@@ -21,12 +21,12 @@ def main():
 	- extract questions from this string and write them to files
 	'''
 	things_to_ask = [
+	'name of your experiment',
 	'name of your script file',
 	'number of the first item',
 	'total number of items',
 	'number of the first condition',
 	'total number of conditions',
-	'name of your experiment',
 	]
 	# use function from util module
 	user_answers = ask_user_questions(things_to_ask)
@@ -38,12 +38,14 @@ def main():
 
 	script_string = read_script_file(user_answers['name of your script file'])
 
-	sent_rgx = re.compile('trial E(\d+)I(\d+)D0.*?inline =\s.*?\|(.*?)\n', re.DOTALL)
+	rgx_template = 'trial E(\d+)I(\d+)D{0}.*?{1} =\s.*?\|({2}*?)\n'
+
+	sent_rgx = re.compile(rgx_template.format(0, 'inline', '.'), re.DOTALL)
 	sentences = sent_rgx.findall(script_string)
 	write_out(user_answers['name of your experiment'], 'sentences', 
 		item_range, cond_range, sentences)
 
-	question_rgx = re.compile('trial E(\d+)I(\d+)D1.*?button =\s.*?(\w*?)\n', re.DOTALL)
+	question_rgx = re.compile(rgx_template.format(1, 'button', '\w'), re.DOTALL)
 	questions = question_rgx.findall(script_string)
 	questions_with_codes = map(trigger_to_code, questions)
 	write_out(user_answers['name of your experiment'], 
@@ -84,12 +86,12 @@ def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	One with all the data and one with only a subset thereof that fits in the 
 	condition and item ranges specified by the user.
 	'''
-	all_file = '_'.join(['all', input_type]) + '.txt'
+	all_file = 'all_' + input_type + '.txt'
 	write_to_table(all_file, data, delimiter='\t')
-	print('Wrote {0} {1} to *{2}*'.format('all', input_type, exp_file))
+	print('Wrote {0} {1} to *{2}*'.format('all', input_type, all_file))
 
 	filtered_data = (d for d in data if check_cond_item(d, cond_nums, item_nums))
-	exp_file = '_'.join([exp_name, input_type]) + '.txt'
+	exp_file = exp_name + '_' + input_type + '.txt'
 	write_to_table(exp_file, filtered_data, delimiter='\t')
 	print('Wrote {0} {1} to *{2}*'.format(exp_name, input_type, exp_file))
 	
