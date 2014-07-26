@@ -126,11 +126,11 @@ def main():
 ## Interacting with the user
 ###########################################################
 
-CUTOFF_PROMPT = '''The current cutoff settings are as follows.
-low: {0}
-high: {1}
-Would you like to change them?
-N.B. Type yes (or any of its variations) to change or anything else to proceed with current settings.\n'''
+CUTOFF_PROMPT = ('The current cutoff settings are as follows.\n'
+    'low: {0}\n'
+    'high: {1}\n'
+    'Would you like to change them?\n'
+    'N.B. Type yes to change or anything else to proceed with current settings.\n')
 
 
 def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
@@ -389,7 +389,7 @@ def filter_fixations(cutoffs, trials):
     low_cutoff, high_cutoff = cutoffs
     for trial_fixations in trials:
         # each member of trial_fixations is a (X, Y, duration) tuple
-        filtered = (X, Y, duration) for X, Y, duration in trial_fixations
+        filtered = ((X, Y, duration) for X, Y, duration in trial_fixations
                                     if low_cutoff < duration < high_cutoff)
         yield tuple(filtered)
 

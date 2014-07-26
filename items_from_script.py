@@ -32,9 +32,9 @@ def main():
 	user_answers = ask_user_questions(things_to_ask)
 
 	item_range = generate_range(user_answers['number of the first item'], 
-		user_answers['total number of items'])
+								user_answers['total number of items'])
 	cond_range = generate_range(user_answers['number of the first condition'],
-		user_answers['total number of conditions'])
+								user_answers['total number of conditions'])
 
 	script_string = read_script_file(user_answers['name of your script file'])
 
@@ -64,9 +64,9 @@ def generate_range(start, total):
 	return list(range(start_int, end_int))
 
 
-_READ_ERROR = '''Seems like you did not specify a valid .script file name.
-Please either rename your file or provide a file with a .script extension.
-'''
+_READ_ERROR = ('Seems like you did not specify a valid .script file name.\n'
+	'Please either rename your file or provide a file with a .script extension.')
+
 
 def read_script_file(file_name):
 	'''This function checks if the given file name has the .script extension

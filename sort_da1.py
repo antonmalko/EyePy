@@ -24,20 +24,17 @@ from util import *
 ## Main
 ###############################################################################
 
-SPLIT_WHOLE_STUDY = '''
-Do you need to split the DA1s into -s, -q, and -reject files?
-(Answer *no* if you already have the data split.)
-'''
-START_EXP_SPLIT = '''
-Do you want to split the data by experiment?
-'''
-MORE_EXP_SPLIT = '''
-Do you want to split the data by more experiments?
-'''
+# starting variable names with "_" makes them private
+_SPLIT_WHOLE_STUDY = (
+    'Do you need to split the DA1s into -s, -q, and -reject files?\n'
+    '(Answer *no* if you already have the data split.)')
+
+_START_EXP_SPLIT = 'Do you want to split the data by experiment?'
+_MORE_EXP_SPLIT = 'Do you want to split the data by more experiments?'
 
 def main():
     # ask user if they want to split da1s
-    split_study = input(SPLIT_WHOLE_STUDY)
+    split_study = input(_SPLIT_WHOLE_STUDY)
     # if they do, ask them for folder with unsorted DA1s and the name of study
     if is_yes(split_study):
         questions = [
@@ -62,7 +59,7 @@ def main():
     'total number of conditions for this experiment'
     ]
 
-    experiment_split_decision = input(START_EXP_SPLIT)
+    experiment_split_decision = input(_START_EXP_SPLIT)
     splitting_by_experiment = is_yes(experiment_split_decision)
 
     while splitting_by_experiment:
@@ -75,7 +72,7 @@ def main():
         exp_data = [get_exp_items(item, exp_filter) for item in sorted_da1s]
         write_da1(exp_name, exp_data, nest_under=study_root)
         print('Done writing data for this experiment!')
-        continue_decision = input(MORE_EXP_SPLIT)
+        continue_decision = input(_MORE_EXP_SPLIT)
         splitting_by_experiment = is_yes(continue_decision)
 
     print('Ok, bye!')
