@@ -36,7 +36,6 @@ else:
 ## Functions for interacting with users
 ###############################################################################
 
-_QUESTION_TEMPLATE = 'Please enter the {} below:\n'
 def ask_user_questions(question_sequence, use_template=True, return_list=False):
     '''Given a sequence of items (can be a list or a dictionary, anything
     that supports iteration), prints prompts for every item in the shell
@@ -44,7 +43,7 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     Returns a dictionary of (item_name : user_input) pairings.
     '''
     # define question prompt template and return variable
-    q_template = 'Please enter the {} below:\n'
+    q_template = 'Please enter the {} below:' + os.linesep
 
     if use_template:
         question_strings = tuple(_QUESTION_TEMPLATE.format(q) 
