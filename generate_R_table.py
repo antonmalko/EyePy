@@ -126,12 +126,12 @@ def main():
 ## Interacting with the user
 ###########################################################
 
-CUTOFF_PROMPT = ('The current cutoff settings are as follows.\n'
-    'low: {0}\n'
-    'high: {1}\n'
-    'Would you like to change them?\n'
-    'Type yes to change current settings.\n'
-    'Type anything else (including Enter) to proceed.\n')
+CUTOFF_PROMPT = ('The current cutoff settings are as follows.',
+    'low: {0}',
+    'high: {1}',
+    'Would you like to change them?',
+    'Type yes to change current settings.',
+    'Type anything else (including Enter) to proceed.')
 
 
 def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
@@ -146,7 +146,10 @@ def verify_cutoff_values(low_cutoff, high_cutoff, prompt=CUTOFF_PROMPT):
     to change them. If their answer is yes, returns user-defined cutoffs, otherwise
     returns passed cutoffs unchanged.
     '''
-    decision = input(prompt.format(low_cutoff, high_cutoff))
+    # sets up the cutoff message to display as separate lines on any machine
+    # os.linesep is '\n' for Unix, '\r\n' on MacOS and '\r\r\n' on Windows
+    friendly_prompt = os.linesep.join(prompt)
+    decision = input(friendly_prompt.format(low_cutoff, high_cutoff))
     if is_yes(decision):
         # if user says something matching yes_rgx, ask them to input their own cutoffs
         user_cutoffs = ask_user_questions(['low cutoff', 'high cutoff'])
