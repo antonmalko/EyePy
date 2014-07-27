@@ -127,8 +127,8 @@ def main():
 ###########################################################
 
 CUTOFF_PROMPT = ('The current cutoff settings are as follows.',
-    'low: {0}',
-    'high: {1}',
+    'low: {0} ms',
+    'high: {1} ms',
     'Would you like to change them?',
     'Type yes to change current settings.',
     'Type anything else (including Enter) to proceed.')
