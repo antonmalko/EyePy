@@ -180,7 +180,7 @@ def load_da1_file(file_path, index):
     with the items extracted from the file.
     '''
     # use function from util to get subject number
-    # subj_number = get_subj_num(file_path)
+    subj_number = get_subj_num(file_path)
     # initialize a frame for a subject with their number and 3 empty lists
     subj_frame = [subj_number, [], [], []]
     with open(file_path) as da1file:
