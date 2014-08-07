@@ -46,7 +46,7 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     q_template = 'Please enter the {} below:' + os.linesep
 
     if use_template:
-        question_strings = tuple(_QUESTION_TEMPLATE.format(q) 
+        question_strings = tuple(q_template.format(q) 
             for q in question_sequence)
         answers = tuple(map(input, question_strings))
     else:
@@ -59,7 +59,7 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
 
 
 # define regular expression that checks for "yes" answers
-_YES_RGX = re.compile('y(:?e[sa]|up)?', re.IGNORECASE)
+_YES_RGX = re.compile('[Yy](:?e[sa]|up)?', re.IGNORECASE)
 
 def is_yes(user_input):
     '''This function simply tests wether a user's response (a string)
