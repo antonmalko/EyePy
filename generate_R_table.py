@@ -339,13 +339,17 @@ def load_subj_regions(table_of_reg, f_table):
     If this fails, halts the program, informing the user which (cond, item)
     tag was not found in the table of regions.
     '''
-    try:
-        return (table_of_reg[cond_item] for cond_item in f_table)
-    except KeyError as error:
-        # use error.message to get the (cond, item) key that caused the problem
-        problematic_key = error.message
-        print_message = 'Missing region information for this cond/item: {0}'
-        raise Exception(print_message.format(problematic_key))
+    regions = []
+    for cond_item in f_table:
+        try:
+            regions.append(table_of_reg[cond_item])
+        except KeyError:
+            # If the region table doesn't have an entry for the condition, item
+            # pair we alert the user of this with a message and move on.
+            condition, item = cond_item
+            print_message = 'Missing region information for condition: {0}, item: {1}'
+            print(print_message.format(condition, item))
+    return regions
 
 
 def split_trials_from_fixations(fixation_table):
