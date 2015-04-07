@@ -46,7 +46,7 @@ def ask_user_questions(question_sequence, use_template=True, return_list=False):
     q_template = 'Please enter the {} below:' + os.linesep
 
     if use_template:
-        question_strings = tuple(q_template.format(q) 
+        question_strings = tuple(q_template.format(q)
             for q in question_sequence)
         answers = tuple(map(input, question_strings))
     else:
@@ -115,7 +115,7 @@ def gen_file_paths(dir_name, filter_func=None):
         just_file_names = filter(filter_func, os.listdir(dir_name))
     else:
         just_file_names = os.listdir(dir_name)
-    
+
     return (os.path.join(dir_name, file_name) for file_name in just_file_names)
 
 
@@ -127,7 +127,7 @@ def create_row_dicts(fields, data, fill_val='NA'):
     '''Helper generator function for the write_to_table(). Collecting data
     is often much more efficient and clear when this data is stored in tuples
     or lists, not dictionaries.
-    Python's csv DictWriter class requires that it be passed a sequence of 
+    Python's csv DictWriter class requires that it be passed a sequence of
     dictionaries, however.
     This function takes a header list of column names as well as some data in
     the form of a sequence of rows (which can be tuples or lists) and converts
@@ -187,7 +187,7 @@ def read_table(filename):
 
 def tag_table(table_lines, one, two):
     '''Given a table iterable for every line of said iterable creates a "tag"
-    by combining the elements of the line indexed by "one" and "two" into 
+    by combining the elements of the line indexed by "one" and "two" into
     a tuple and pairing that up with the rest of the line.
     '''
     tags = ((line[one], line[two]) for line in table_lines)
@@ -209,12 +209,12 @@ def dict_from_table(table, paired=True):
 
 
 def region_coordinates(tagged_table):
-    '''Expects as input a table where every line is a pairing of a 
+    '''Expects as input a table where every line is a pairing of a
     (condition, item) tuple with a line of the form:
     condition, item, #_of_regions, X1, Y1, X2, Y2, ...
     where X and Y are coordinates for one region.
     Assuming such a table was passed, this function converts all the coordinates
-    from strings to integers so that they can be used during processing to 
+    from strings to integers so that they can be used during processing to
     establish whether a fixation is inside a region or not.
     Once converted, the Xs and Ys are paired up as coordinates using the zip()
     function. After that every coordinate pair is combined with the following
@@ -254,10 +254,10 @@ def read_region_table(regFile, one, two):
 
 def fixation_data(tagged_table):
     ''' A generator of fixation data for a tagged table, every line of which
-    consists of a (condition, item#) tag paired up with a sequence of 
+    consists of a (condition, item#) tag paired up with a sequence of
     the following fields:
-    (order, cond, item, totaltime, buttonpress, 
-        [unknown], [unknown], totalfixations, 
+    (order, cond, item, totaltime, buttonpress,
+        [unknown], [unknown], totalfixations,
         series of [X Y fixation_start fixation_end] groups)
     Of these fields, only the fixations are of interest to us, so the function
     condenses the sequence of fields to a sequence of (X, Y, fixation_duration)
@@ -271,7 +271,7 @@ def fixation_data(tagged_table):
         fixation_starts = map(int, line[10::4])
         fixation_ends = map(int, line[11::4])
         # compute durations by subtracting start times from end times
-        fixation_durations = (end - start 
+        fixation_durations = (end - start
             for end, start in zip(fixation_ends, fixation_starts))
         # combine into a sequence of (X, Y, duration) tuples
         fixations = zip(Xes, Ys, fixation_durations)
@@ -289,7 +289,7 @@ def read_fixation_table(da1File):
 
 
 def read_question_table(da1QFile):
-    ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries. 
+    ''' Returns dict of ((cond, item) : (RT, buttonpress)) entries.
     As input assumes a DA1 question file where every line is a list of fields:
     order, cond, item, rt, buttonpress
     '''

@@ -2,7 +2,7 @@
 the question items as well as the sentence items.
 The question items are used to create an answer key to check if subjects respond
 correctly to a given question.
-The sentence items are used to (manually) create a .del (delimited) file, which 
+The sentence items are used to (manually) create a .del (delimited) file, which
 in turn is read in by generate_R_table.py and turned into a .reg (region) file.
 '''
 # import everything from the utilities library
@@ -31,7 +31,7 @@ def main():
 	# use function from util module
 	user_answers = ask_user_questions(things_to_ask)
 
-	item_range = generate_range(user_answers['number of the first item'], 
+	item_range = generate_range(user_answers['number of the first item'],
 								user_answers['total number of items'])
 	cond_range = generate_range(user_answers['number of the first condition'],
 								user_answers['total number of conditions'])
@@ -43,19 +43,19 @@ def main():
 
 	sent_rgx = re.compile(rgx_template.format(0, 'inline', '\|(.*?)\n'), re.DOTALL)
 	sentences = sent_rgx.findall(script_string)
-	write_out(user_answers['name of your experiment'], 
-		'sentences', 
-		item_range, 
-		cond_range, 
+	write_out(user_answers['name of your experiment'],
+		'sentences',
+		item_range,
+		cond_range,
 		sentences)
 
 	question_rgx = re.compile(rgx_template.format(1, 'button', '(\w*)'), re.DOTALL)
 	questions = question_rgx.findall(script_string)
 	questions_with_codes = list(map(trigger_to_code, questions))
-	write_out(user_answers['name of your experiment'], 
-		'questions', 
-		item_range, 
-		cond_range, 
+	write_out(user_answers['name of your experiment'],
+		'questions',
+		item_range,
+		cond_range,
 		questions_with_codes)
 
 
@@ -75,7 +75,7 @@ _READ_ERROR = ('Seems like you did not specify a valid .script file name.\n'
 def read_script_file(file_name):
 	'''This function checks if the given file name has the .script extension
 	and if it does, opens the file and reads it in as one string.
-	If the file has a different extension, an exception is raised which alerts 
+	If the file has a different extension, an exception is raised which alerts
 	the user and the program exits.
 	'''
 	if file_name.endswith('.script'):
@@ -87,7 +87,7 @@ def read_script_file(file_name):
 
 def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	'''Writes all the data collected to two files:
-	One with all the data and one with only a subset thereof that fits in the 
+	One with all the data and one with only a subset thereof that fits in the
 	condition and item ranges specified by the user.
 	'''
 	all_file = 'all_' + input_type + '.txt'
@@ -98,7 +98,7 @@ def write_out(exp_name, input_type, item_nums, cond_nums, data):
 	exp_file = exp_name + '_' + input_type + '.txt'
 	write_to_table(exp_file, filtered_data, delimiter='\t')
 	print('Wrote {0} {1} to *{2}*'.format(exp_name, input_type, exp_file))
-	
+
 
 def check_cond_item(entry, cond_range, item_range):
 	'''Checks if the condition and item members of the "entry" tuple are within

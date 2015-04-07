@@ -11,7 +11,7 @@
 
 
 def region_check(region, fixationX, fixationY):
-    '''Takes a region in the form [[Xstart, Ystart],[Xend, Yend]] and a pair of 
+    '''Takes a region in the form [[Xstart, Ystart],[Xend, Yend]] and a pair of
     coordinates for a fixation. It then checks where the coordinates are with
     respect to the region.
     Depending on where that is returns 'within', 'before' or 'after'.
@@ -58,7 +58,7 @@ def region_check(region, fixationX, fixationY):
 
 
 def first_skip(region, fixations):
-    '''Given a region, a list of fixations and cutoff values returns either 
+    '''Given a region, a list of fixations and cutoff values returns either
     1 or 0 for whether the region was skipped or not.
     '''
     was_skipped = 1
@@ -80,7 +80,7 @@ def first_skip(region, fixations):
 
 
 def first_fixation(region, fixations):
-    '''Given a region, a list of fixations and cutoff values, returns 
+    '''Given a region, a list of fixations and cutoff values, returns
     the duration of the first fixation.
     '''
     first_fixation_time = 0
@@ -104,7 +104,7 @@ def first_fixation(region, fixations):
 
 def first_pass(region, fixations):
     '''Given a region and a list of fixations as well as cutoff values,
-    returns the sum of all the fixations in the region before it is exited in 
+    returns the sum of all the fixations in the region before it is exited in
     either direction.
     '''
     first_pass_sum = 0  # initialize sum to 0
@@ -121,7 +121,7 @@ def first_pass(region, fixations):
         elif fixation_position == 'after':
             # break, because the first pass is over.
             break
-        #if the region has already been entered at least once and fixation 
+        #if the region has already been entered at least once and fixation
         # is before the region, break, because the first pass is over
         elif first_pass_sum > 0 and fixation_position == 'before':
             break
@@ -130,7 +130,7 @@ def first_pass(region, fixations):
 
 
 def regression_path(region, fixations):
-    '''Sums up fixation durations for the current region N and all regions 
+    '''Sums up fixation durations for the current region N and all regions
     to the left of N starting with when region N was entered and up to the point
     when it was exited to the right.
     '''
@@ -152,12 +152,12 @@ def regression_path(region, fixations):
 
 
 def prob_regression(region, fixations):
-    '''Returns either 1 or 0 depending on whether a regression happens 
+    '''Returns either 1 or 0 depending on whether a regression happens
     from current region.
     '''
     was_visited = False
     regression_prob = 0
-    
+
     # set this value to "NA" if there was no first fixation on the region
     if first_skip(region, fixations):
         return 'NA'
@@ -200,7 +200,7 @@ def right_bound(region, fixations):
 
 
 def rereading_time(region, fixations):
-    '''Returns the difference between total reading time and the first pass 
+    '''Returns the difference between total reading time and the first pass
     reading time for the current region.
     '''
     first_duration = first_pass(region, fixations)

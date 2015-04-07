@@ -48,7 +48,7 @@ def main():
         'Question data folder',
         'Output filename',
     ]
-    # ask user to provide values for these questions using function imported 
+    # ask user to provide values for these questions using function imported
     # from util module
     file_names = ask_user_questions(our_questions)
 
@@ -56,12 +56,12 @@ def main():
     cutoffs = verify_cutoff_values(40, 1000)
 
     # Get a region dictionary in the following format.
-    # Key = unique cond/item tag; 
+    # Key = unique cond/item tag;
     # value = (((xStart, yStart), (xEnd, yEnd)), ...)
     table_of_regions = get_region_table(file_names['REG (or DEL) filename'])
     # Using functions from the util module, create a dictionary of correct
     # answers to all the questions
-    # Key = item number; 
+    # Key = item number;
     # value = (correct_button_code, LeftorRight)
     answer_key = dict_from_table(read_table(file_names['Question key filename']),
                                                     paired=False)
@@ -70,15 +70,15 @@ def main():
     # (subject#, list_of_fixations, list_of_questions)
     tables_by_subj = create_subj_tables(file_names['Sentence data folder'],
                                         file_names['Question data folder'])
-    
+
     # collect fixation  data for all subjects as well as exclusion stats
-    all_subj_data = tuple(process_subj(tables_by_subj, table_of_regions, 
+    all_subj_data = tuple(process_subj(tables_by_subj, table_of_regions,
             answer_key, cutoffs))
     print('Done processing. Created data for {0} subjects.'.format(len(all_subj_data)))
 
     # split subject data into fixation information and exclusion statistics
-    # If you unpack a list of tuples using "*" and then pass it to 
-    # the zip() function, you end up with two sequences: one with all the 
+    # If you unpack a list of tuples using "*" and then pass it to
+    # the zip() function, you end up with two sequences: one with all the
     # first members of the tuples and one with all the second members of the tuples
     subj_rows, subj_exclusions = tuple(zip(*all_subj_data))
     # make fixation data compatible with csv.DictWriter (use itertools fxn for that)
@@ -235,7 +235,7 @@ def get_region_table(file_name):
         write_to_table(reg_file_name, region_data, delimiter=' ')
         print('Saved region data to "{0}"'.format(reg_file_name))
         return read_region_table(reg_file_name, 0, 1)
-                                                                                                                                                                                                                            
+
 
 def make_regions(del_file_name):
     '''A generator function that, given a .del file name opens the file and loops
@@ -258,7 +258,7 @@ def make_regions(del_file_name):
 
 _SLASH_RGX = re.compile('/')
 
-def get_region_indices(sentences): 
+def get_region_indices(sentences):
     '''Given a sequence of sentences for an item returns a tuple with
     the number of regions followed by X and Y coordinates for each region
     (number of regions, X1, Y1, X2, Y2, ...)
@@ -287,7 +287,7 @@ def get_region_indices(sentences):
         # now we need to flatten this sequence of pairs to be just a sequence
         # of X1, Y1, X2, Y2, ... strings
         x_y_sequence = chain(*add_line_indx)
-        # now we add this to our collection of 
+        # now we add this to our collection of
         all_indeces += list(x_y_sequence)
     # once we're done collecting all the indices, turn them into strings
     string_indices = map(str, all_indeces)
@@ -300,7 +300,7 @@ def get_region_indices(sentences):
 ###########################################################
 
 def process_subj(subjects, table_of_regions, answer_key, cutoffs):
-    '''This function takes a subject number with corresponding fixation and 
+    '''This function takes a subject number with corresponding fixation and
     question table and constructs a list of tuples to be transformed into
     rows of the output file.
     '''
@@ -318,8 +318,8 @@ def process_subj(subjects, table_of_regions, answer_key, cutoffs):
             # make sure only fixations inside cutoffs are kept
             filtered_fixations = tuple(filter_fixations(cutoffs, fixations))
             # count the number of fixations excluded through filtering
-            exclusions = count_exclusions(subj_number, 
-                filtered_fixations, 
+            exclusions = count_exclusions(subj_number,
+                filtered_fixations,
                 fixations)
             # use table of regions to load per/trial regions for this subject
             regions = load_subj_regions(table_of_regions, f_table)
@@ -357,9 +357,9 @@ def split_trials_from_fixations(fixation_table):
     (order, condition, item#)
     and lists of fixations for every trial.
     '''
-    trial_fields = (order_etc 
+    trial_fields = (order_etc
         for cond_item, (order_etc, fixations) in fixation_table.items())
-    fixations = (fixations 
+    fixations = (fixations
         for cond_item, (order_etc, fixations) in fixation_table.items())
     # fixations turned into tuple because they get looped over several times
     return (trial_fields, tuple(fixations))
@@ -403,7 +403,7 @@ def filter_fixations(cutoffs, trials):
 
 
 def measures_per_trial(subj, trial_fields, region_list, trial_fixations):
-    '''This function is really just a "fancy" wrapper for a very simple 
+    '''This function is really just a "fancy" wrapper for a very simple
     subsetting operation. We take the first 3 members of the trial list.
     '''
     subj_number = (subj,)

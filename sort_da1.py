@@ -85,7 +85,7 @@ def main():
 def sort_da1_data(data_dir):
     '''Sorts a folder with DA1 files.
     Given a folder name, loops over all DA1 files in it and for each file
-    creates a tuple with the subject number tied to the corresponding sentence, 
+    creates a tuple with the subject number tied to the corresponding sentence,
     question and rejected trials.
     '''
     print('Sorting DA1 files from {0}'.format(data_dir))
@@ -96,7 +96,7 @@ def sort_da1_data(data_dir):
 
 
 def parse_da1_file(file_name):
-    '''Given a file name extracts the subject number from it as well as all the 
+    '''Given a file name extracts the subject number from it as well as all the
     sentence, question and rejected items for this subject.
     Returns a tuple of the form:
     (subject_number, sentence_list, question_list, rejected_list)
@@ -114,7 +114,7 @@ def parse_da1_file(file_name):
 
 
 def classify_line(line):
-    '''Given a line (as a list of strings), determines what type of trial 
+    '''Given a line (as a list of strings), determines what type of trial
     this line is: whether it is a question, a sentence or a rejected trial.
     '''
     trial_types = {
@@ -159,7 +159,7 @@ def load_sorted_da1(sorted_dir_path):
 
 
 def get_study_name(dir_path):
-    '''Given a folder name extracts the study name from it, assuming the following 
+    '''Given a folder name extracts the study name from it, assuming the following
     folder name format:
     STUDY_NAME-sorted
     '''
@@ -171,7 +171,7 @@ def get_study_name(dir_path):
 
 def load_da1_file(file_path, index):
     '''This function loads only sentence or question or rejection items
-    for a subject from a da1 file and returns them in the same format as if we 
+    for a subject from a da1 file and returns them in the same format as if we
     read in an unsorted da1 file:
     (subject#, sentences, questions, rejects)
     However, in this case two of the lists will be empty, as we are loading a
@@ -255,10 +255,10 @@ def write_da1(study_exp_name, data, nest_under=''):
 
 
 def create_folder(root_path, study_exp_name, suffix, data):
-    '''Given a root path as well as a study or experiment name, a suffix 
+    '''Given a root path as well as a study or experiment name, a suffix
     (e.g. -s or -q) and data to write, creates an output folder under the root_path
     directory with the passed suffix.
-    Then creates files for all the subjects that have non-empty data for 
+    Then creates files for all the subjects that have non-empty data for
     this folder.
     '''
     # we start by setting up the output folder
