@@ -5,10 +5,13 @@ that can be imported into R for running stats.
 # CHANGELOG
 # Edited by: Shevaun Lewis, Ewan Dunbar & Sol Lago
 # 1. Added code for computing first pass-skips, 'fs' [01/11/13]
-# Last updated: 04/01/14
+# Last updated: Jan 30, 2016 by Anton Malko
 # Major revisions by Ilia Kurenkov in Spring/Summer of 2014
 # For a record of activity, see this link:
 # https://github.com/UMDLinguistics/EyeTrackAnalysis.git
+#
+# Anton Malko: added a call to the script mergewords.py
+#              to add word in formation into R table
 
 # This file is structured in the following way:
 # 1. Imports
@@ -33,6 +36,8 @@ from util import *
 
 # Import all currently supported eye-tracking measures
 from eye_measures import *
+
+from mergewords import *
 
 
 ###########################################################
@@ -120,6 +125,17 @@ def main():
     write_to_table(excl_file_name,
         subj_exclusions,
         header=exclusion_table_header)
+        
+    # add word information in the table
+    # Two last arguments are the same: the first tells us from which file
+    # to read the R table, the second one - where to write the modified
+    # table. Thus here we over-write the table file.
+    
+    add_words(file_names['REG (or DEL) filename'],
+        file_names['Output filename'],
+        file_names['Output filename'])
+        
+    
 
 
 ###########################################################
