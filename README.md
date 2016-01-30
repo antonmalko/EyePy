@@ -24,12 +24,14 @@ If you want to run this script on Windows, install *cygwin* package (https://www
 The default answers the scripts gives to EyePy scripts are (underscores are replaced with  dashes):
 
 sort-da1.py
+
 	1. Do you need to split the DA1s into -s, -q, and -reject files? - Yes
 	2. Please enter the folder with unsorted DA1 files below - DA1
 	3.  Please enter the name of your study below - exp_name 
 	4.  Do you want to split the data by experiment? - No
 
 generate-R-table
+
 	1.  Please enter the REG (or DEL) filename below: expname-postfix.del OR expname-postfix/expname_postfix.del (if the folder already exists)
 	2.  Please enter the Question key filename below: expname-questions.txt
 	3.  Please enter the Sentence data folder below: expname-sorted/expname-s
