@@ -1,7 +1,7 @@
 EyePy
 ================
 
-Collection of scripts for processing Eye-tracking data.
+Collection of scripts for processing Eye-tracking data. The bulk of the scripts were written in 2014 by Copper-Head. 
 
 Changelog
 ================
