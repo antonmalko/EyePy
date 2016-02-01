@@ -1,7 +1,7 @@
 #!bin/bash
 
 # PUT THE PATH TO YOU PYTHON SCRIPTS DIRECTORY HERE 
-python_scripts_folder=""
+python_scripts_folder="/Users/antonmalko/Documents/Code/EyePy"
 
 # if the directory doesn't exist, tell this and exit
 if [ ! -d "$python_scripts_folder" ]; then
@@ -101,7 +101,7 @@ cp -f "$exp_name"_"$postfix.txt" ../"$exp_name"_"$postfix"/"$exp_name"_"$postfix
 # move all the files related to this analysis variant into separate folder in the 
 # script directory
 mkdir ./"$exp_name"_"$postfix"/
-[[ -e *.reg ]] && mv *.reg ./"$exp_name"_"$postfix"/
+[[ -e "$exp_name"_"$postfix.reg" ]] && mv "$exp_name"_"$postfix.reg" ./"$exp_name"_"$postfix"/
 mv "excluded_fixation_counts.csv" ./"$exp_name"_"$postfix"/
 # if .del file is in the script directory, move it to the new folder
 [[ -e "$exp_name"_"$postfix.del" ]] && \
