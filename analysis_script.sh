@@ -1,7 +1,7 @@
 #!bin/bash
 
 # PUT THE PATH TO YOU PYTHON SCRIPTS DIRECTORY HERE 
-python_scripts_folder="/Users/antonmalko/Documents/Code/EyePy"
+python_scripts_folder=""
 
 # if the directory doesn't exist, tell this and exit
 if [ ! -d "$python_scripts_folder" ]; then
