@@ -21,6 +21,9 @@ read exp_name
 echo "Enter a postfix. It will be used to name the resulting R table (e.g. if your experiment is called \"exp\", and you enter \"main\", the R table will be called \"exp_main\")"
 read postfix
 
+echo "Enter the path to the folder with your DA1 files"
+read da1_folder
+
 #############################
 ## Find DEL file
 #############################
@@ -59,7 +62,7 @@ expect "you need to split"
 send "y\r"
 expect "the folder with unsorted" 
 # change if your DA1 folder is not in the same dir with the script
-send "DA1\r"
+send "$da1_folder\r"
 expect "name of your study"
 send "$exp_name\r"
 expect "split the data by experiment"
@@ -84,6 +87,7 @@ expect "change current settings"
 send "n\r"
 expect sleep 3
 expect "Writing statistics"
+expect sleep 3
 close
 
 EOF
@@ -92,10 +96,10 @@ EOF
 ## Arrange created files
 #############################
 
-# go to the parent folder, create there a folder of the type "experimet_postfix"
-mkdir ../"$exp_name"_"$postfix"/
-# move the R table into that table
-cp -f "$exp_name"_"$postfix.txt" ../"$exp_name"_"$postfix"/"$exp_name"_"$postfix.txt"
+# move the R table into Data folder
+# assuming the current folder is, with . being root project folder:
+# ./Analysis/scripts/Making R table
+cp -f "$exp_name"_"$postfix.txt" ../../../Data/csv/"$exp_name"_"$postfix.txt"
 
 
 # move all the files related to this analysis variant into separate folder in the 
