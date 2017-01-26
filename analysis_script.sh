@@ -99,6 +99,7 @@ EOF
 # move the R table into Data folder
 # assuming the current folder is, with . being root project folder:
 # ./Analysis/scripts/Making R table
+mkdir ../../../Data/csv
 cp -f "$exp_name"_"$postfix.txt" ../../../Data/csv/"$exp_name"_"$postfix.txt"
 
 
