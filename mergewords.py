@@ -87,7 +87,7 @@ def add_words(del_file, table_file, output_file):
     ]
 
     for i in range(1, len(tabl)):
-	    word_key = itemgetter(1, 2, 5)(tabl[i])
+	    word_key = itemgetter(2, 3, 6)(tabl[i])
 	    # write both word and its length
 	    tabl[i].extend([word_dict[word_key], len(word_dict[word_key])])
 		
