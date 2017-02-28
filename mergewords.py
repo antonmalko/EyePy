@@ -8,9 +8,10 @@ If you have an older version of generate_R_table.py without the call to this scr
 ###########################################################
 ## Imports
 ###########################################################
-
+# import regex lib
+import re
 # import some aux functions 
-from util import *
+from util import read_table, write_to_table, ask_user_questions, is_yes
 # import function to get non-adjacent elements from a list
 from operator import itemgetter
 
@@ -35,14 +36,14 @@ def make_word_dict(del_file):
         item_info = [str(line[0]), str(line[1])]
         # remove newlines symbols in the beginning of the line
         # or after a region boundary
-        line = [re.sub('(^|/)\\\\n','\\1', s) for s in line]
+        line = [re.sub('(^|/)\\\\n', '\\1', s) for s in line]
         # if the newlines symbols are in the middle of the line,
         # replace them with whitespaces
-        line = [re.sub('\\\\n',' ', s) for s in line]
+        line = [re.sub('\\\\n', ' ', s) for s in line]
         # split by /, which denote region boundaries
         item_sents = ' '.join(line[2:]).split('/')
         #item_sents = [s.replace('\n','') for s in item_sents]
-        res = dict ((tuple(item_info+[str(count)]), word) for count, word in enumerate(item_sents))
+        res = dict((tuple(item_info + [str(count)]), word) for count, word in enumerate(item_sents))
         word_dict.update(res)
 
     return word_dict
@@ -63,7 +64,7 @@ def add_words(del_file, table_file, output_file):
     - Words from each region
     - Length of every region
     '''
-
+    print("Adding word information...")
     word_dict = make_word_dict(del_file)
     tabl = read_table(table_file)
     tabl = [list(x) for x in tabl]
@@ -85,8 +86,8 @@ def add_words(del_file, table_file, output_file):
         'wordsLen'
     ]
 
-    for i in range(1,len(tabl)):
-	    word_key = itemgetter(2,3,6)(tabl[i])
+    for i in range(1, len(tabl)):
+	    word_key = itemgetter(1, 2, 5)(tabl[i])
 	    # write both word and its length
 	    tabl[i].extend([word_dict[word_key], len(word_dict[word_key])])
 		
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     our_questions = ["DEL filename", "R table filename"]
     
     # get file names, using function from util.py
-    file_names = ask_user_questions (our_questions)
+    file_names = ask_user_questions(our_questions)
     
     # ask whether the user wants to over-write the existing table. If no, 
     # ask for the new name

@@ -1,3 +1,4 @@
+#!/Users/antonmalko/anaconda/bin/python
 '''This script analyzes the .script file used by EyeLink and from it extracts
 the question items as well as the sentence items.
 The question items are used to create an answer key to check if subjects respond

@@ -1,3 +1,4 @@
+#!/Users/antonmalko/anaconda/bin/ python
 '''UMD Eye-tracking processor. This file in particular generates a table file
 that can be imported into R for running stats.
 '''
@@ -68,8 +69,13 @@ def main():
     # answers to all the questions
     # Key = item number;
     # value = (correct_button_code, LeftorRight)
-    answer_key = dict_from_table(read_table(file_names['Question key filename']),
-                                                    paired=False)
+    
+    # THE TWO LINES BELOW ARE COMMENTED BECAUSE THEY DON'T WORK CORRECTLY.
+    # THE LINE BELOW THEM IS A QUICK FIX (ALSO SEE LINE 396). 
+    #answer_key = dict_from_table(read_table(file_names['Question key filename']),
+    #                                               paired=False)
+    answer_key = dict_from_table(tag_table(read_table(file_names['Question key filename']), 0, 1))
+    
     # take locations of sentence and question files (all defined by the user)
     # turn these into a sequence of tuples of the form:
     # (subject#, list_of_fixations, list_of_questions)
@@ -120,6 +126,7 @@ def main():
     'Excluded',
     'Total'
     ]
+    
     excl_file_name = 'excluded_fixation_counts.csv'
     print('Writing statistics of exclusions to *{0}*'.format(excl_file_name))
     write_to_table(excl_file_name,
@@ -130,7 +137,6 @@ def main():
     # Two last arguments are the same: the first tells us from which file
     # to read the R table, the second one - where to write the modified
     # table. Thus here we over-write the table file.
-    
     add_words(file_names['REG (or DEL) filename'],
         file_names['Output filename'],
         file_names['Output filename'])
@@ -388,7 +394,11 @@ def question_info(sentence_table, question_table, answer_key):
             item = cond_item[1]
             try:
                 RT, subj_response = question_table[cond_item]
-                correct_button = answer_key[item][0]
+                
+                # THE LINE BELOW IS COMMENTED BECAUSE IT DOESN'T WORK CORRECTLY.
+                # THE LINE BELOW IT IS A QUICK FIX (ALSO SEE LINE 76)
+                # correct_button = answer_key[item][0]
+                correct_button = answer_key[cond_item][3]
                 # check if subject responded correctly and convert that to int
                 accuracy = int(subj_response == correct_button)
                 yield (RT, accuracy)
