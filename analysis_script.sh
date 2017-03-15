@@ -50,6 +50,17 @@ else
 fi
 
 #############################
+## Clean up from previous runs
+#############################
+
+# If there are "split" folders from the previous runs, remove them. Otherwise their contents may interfere with the current analysis (e.g. if there are more subjects in there than you currently run, it normally wouldn't delete those extraneous files and they would make it to the R table)
+
+if [ -d "$exp_name-sorted" ]; then
+	echo "Found an existing split folder, will rename it to $exp_name-old. If you don't need it, remove it later"
+	mv "$exp_name-sorted" "$exp_name-sorted-old"
+fi
+
+#############################
 ## Main: Run EyePy with expect
 #############################
 
