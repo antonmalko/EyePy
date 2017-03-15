@@ -1,4 +1,3 @@
-#!/Users/antonmalko/anaconda/bin/ python
 '''UMD Eye-tracking processor. This file in particular generates a table file
 that can be imported into R for running stats.
 '''
