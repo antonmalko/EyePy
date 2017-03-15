@@ -21,7 +21,8 @@ from operator import itemgetter
 ###########################################################
 
 def make_word_dict(del_file):
-    '''A function to create dictionary of the following kind:
+    '''
+    A function to create dictionary of the following kind:
     key = tuple (condition, item, region)
     value = words in a given condition, item, region.
     
@@ -29,10 +30,10 @@ def make_word_dict(del_file):
     '''
     word_dict = {}
     with open(del_file) as del_file:
-    	# split into condition number, item number, words in the sentence
+        # split into condition number, item number, words in the sentence
         split_lines = [line.strip().split(' ') for line in del_file]
     for line in split_lines:
-    	# extract condition and item number
+        # extract condition and item number
         item_info = [str(line[0]), str(line[1])]
         # remove newlines symbols in the beginning of the line
         # or after a region boundary
@@ -42,13 +43,13 @@ def make_word_dict(del_file):
         line = [re.sub('\\\\n', ' ', s) for s in line]
         # split by /, which denote region boundaries
         item_sents = ' '.join(line[2:]).split('/')
-        #item_sents = [s.replace('\n','') for s in item_sents]
+        # item_sents = [s.replace('\n','') for s in item_sents]
         res = dict((tuple(item_info + [str(count)]), word) for count, word in enumerate(item_sents))
         word_dict.update(res)
 
     return word_dict
 
-    
+
 ###########################################################
 ## The main function
 ###########################################################
@@ -69,10 +70,10 @@ def add_words(del_file, table_file, output_file):
     tabl = read_table(table_file)
     tabl = [list(x) for x in tabl]
     tabl[0] = [
-        'subj', 
-        'order', 
+        'subj',
+        'order',
         'cond',
-        'item', 
+        'item',
         'questionRT',
         'questionAcc',
         'region',
@@ -87,29 +88,29 @@ def add_words(del_file, table_file, output_file):
     ]
 
     for i in range(1, len(tabl)):
-	    word_key = itemgetter(2, 3, 6)(tabl[i])
-	    # write both word and its length
-	    tabl[i].extend([word_dict[word_key], len(word_dict[word_key])])
-		
+        word_key = itemgetter(2, 3, 6)(tabl[i])
+        # write both word and its length
+        tabl[i].extend([word_dict[word_key], len(word_dict[word_key])])
+
     write_to_table(output_file, tabl, delimiter='\t')
-	
-	
+
+
 ###########################################################
 ## EXECUTE
 ###########################################################
-    
+
 if __name__ == "__main__":
 
     our_questions = ["DEL filename", "R table filename"]
-    
+
     # get file names, using function from util.py
     file_names = ask_user_questions(our_questions)
-    
+
     # ask whether the user wants to over-write the existing table. If no, 
     # ask for the new name
-    output_file = input ("Do you wih to save changes into existing table?" + 
-        "If no, type the name of the new file; otherwise, type 'yes': ")
+    output_file = input("Do you wih to save changes into existing table?" +
+                        "If no, type the name of the new file; otherwise, type 'yes': ")
     if is_yes(output_file):
         output_file = file_names["R table filename"]
-        
+
     add_words(file_names["DEL filename"], file_names["R table filename"], output_file)
